@@ -1,0 +1,65 @@
+{
+  "name": "04_GreenLife_AI_Invoice_Extraction",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ai-extraction",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-ai-in",
+      "name": "AI Extraction Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || $input.first().json;\n// Mock or forward structured parse\nreturn [{\n  json: {\n    customer: {\n      name: body.customer_name || 'Ravi Kumar',\n      phone: body.customer_phone || '+91 98421 88990'\n    },\n    items: [\n      {\n        product: 'Idly Podi',\n        quantity: 3,\n        unit: 'kg',\n        price: 200\n      }\n    ],\n    previous_balance: 400,\n    courier_charge: 60,\n    confidence_score: 0.96\n  }\n}];"
+      },
+      "id": "code-ai-parse",
+      "name": "Extract Invoice Entities",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "respond-ai",
+      "name": "Return Extraction",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [720, 300]
+    }
+  ],
+  "connections": {
+    "AI Extraction Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract Invoice Entities",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Invoice Entities": {
+      "main": [
+        [
+          {
+            "node": "Return Extraction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true
+}

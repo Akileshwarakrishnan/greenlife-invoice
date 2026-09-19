@@ -1,0 +1,94 @@
+{
+  "name": "01_GreenLife_Order_Processing",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "order-processing",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-order-in",
+      "name": "Order Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validate Order payload\nconst body = $input.first().json.body || $input.first().json;\nif (!body.order_id) {\n  throw new Error('Missing required field: order_id');\n}\nreturn [{\n  json: {\n    order_id: body.order_id,\n    order_number: body.order_number,\n    customer_id: body.customer_id,\n    customer_name: body.customer_name,\n    customer_email: body.customer_email,\n    customer_phone: body.customer_phone,\n    grand_total: body.grand_total,\n    invoice_id: body.invoice_id,\n    invoice_number: body.invoice_number,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "code-validate",
+      "name": "Validate Order Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://backend:8000/api/automation/webhook-callback",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"workflow_name\": \"Order Processing\",\n  \"status\": \"success\",\n  \"order_id\": {{ $json.order_id }},\n  \"invoice_id\": {{ $json.invoice_id }},\n  \"duration_ms\": 120\n}",
+        "options": {}
+      },
+      "id": "http-backend-ack",
+      "name": "Post Status to Backend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Order \" + $json.order_number + \" processed successfully through n8n workflow\",\n  \"order_id\": $json.order_id\n}",
+        "options": {}
+      },
+      "id": "respond-webhook",
+      "name": "Respond to FastAPI",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [900, 300]
+    }
+  ],
+  "connections": {
+    "Order Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate Order Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Order Data": {
+      "main": [
+        [
+          {
+            "node": "Post Status to Backend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Status to Backend": {
+      "main": [
+        [
+          {
+            "node": "Respond to FastAPI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  postgresql:
+    image: postgres:16-alpine
+    container_name: greenlife-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: greenlife
+      POSTGRES_PASSWORD: greenlife123
+      POSTGRES_DB: greenlife_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U greenlife -d greenlife_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: greenlife-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://greenlife:greenlife123@postgresql:5432/greenlife_db
+      - JWT_SECRET=greenlife-production-jwt-secret-key-2026
+      - N8N_WEBHOOK_URL=http://n8n:5678/webhook/order-processing
+      - N8N_EMAIL_WEBHOOK_URL=http://n8n:5678/webhook/email-invoice
+      - N8N_WHATSAPP_WEBHOOK_URL=http://n8n:5678/webhook/whatsapp-notification
+      - N8N_AI_WEBHOOK_URL=http://n8n:5678/webhook/ai-extraction
+      - STORAGE_LOCAL_PATH=/app/storage
+      - N8N_MOCK_FALLBACK=true
+    volumes:
+      - backend_storage:/app/storage
+    depends_on:
+      postgresql:
+        condition: service_healthy
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: greenlife-n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=false
+      - N8N_HOST=n8n
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://localhost:5678/
+      - GENERIC_TIMEZONE=Asia/Kolkata
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      - backend
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: greenlife-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  n8n_data:
+  backend_storage:

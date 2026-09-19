@@ -1,0 +1,129 @@
+{
+  "name": "02_GreenLife_Email_Invoice",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "email-invoice",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-email-in",
+      "name": "Email Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body ? $json.body.recipient_email : $json.recipient_email }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "id": "check-email",
+      "name": "Has Valid Email?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.SMTP_FROM_EMAIL || 'invoices@greenlife.com' }}",
+        "toEmail": "={{ $json.body ? $json.body.recipient_email : $json.recipient_email }}",
+        "subject": "=GreenLife Natural Foods — Tax Invoice #{{ $json.body ? $json.body.invoice_number : $json.invoice_number }}",
+        "html": "=<h2>Hello {{ $json.body ? $json.body.customer_name : $json.customer_name }},</h2><p>Thank you for choosing <b>GreenLife Natural Foods</b>.</p><p>Your order has been confirmed. Total amount due: <b>₹{{ $json.body ? $json.body.grand_total : $json.grand_total }}</b>.</p><p>Please find your invoice details online at: <a href=\"http://localhost:3000/invoices\">View Invoice</a></p><br/><p>Warm Regards,<br/>GreenLife Natural Foods Team</p>"
+      },
+      "id": "send-email",
+      "name": "Send Email via SMTP",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [700, 240]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://backend:8000/api/automation/webhook-callback",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"workflow_name\": \"Email Invoice Notification\",\n  \"status\": \"success\",\n  \"invoice_id\": {{ $json.body ? $json.body.invoice_id : $json.invoice_id }},\n  \"duration_ms\": 250\n}",
+        "options": {}
+      },
+      "id": "log-email-success",
+      "name": "Log Success to Backend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [920, 240]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Email invoice workflow completed\"\n}",
+        "options": {}
+      },
+      "id": "respond-email",
+      "name": "Respond Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1140, 300]
+    }
+  ],
+  "connections": {
+    "Email Webhook": {
+      "main": [
+        [
+          {
+            "node": "Has Valid Email?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Valid Email?": {
+      "main": [
+        [
+          {
+            "node": "Send Email via SMTP",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email via SMTP": {
+      "main": [
+        [
+          {
+            "node": "Log Success to Backend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Success to Backend": {
+      "main": [
+        [
+          {
+            "node": "Respond Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true
+}

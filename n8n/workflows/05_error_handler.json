@@ -1,0 +1,70 @@
+{
+  "name": "05_GreenLife_Error_Handler",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "workflow-error",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-error-in",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://backend:8000/api/automation/webhook-callback",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"workflow_name\": {{ $json.body ? $json.body.workflow_name : 'Unknown Workflow' }},\n  \"status\": \"failed\",\n  \"error_message\": {{ $json.body ? $json.body.error_message : 'An error occurred during workflow execution' }},\n  \"order_id\": {{ $json.body ? $json.body.order_id : null }},\n  \"invoice_id\": {{ $json.body ? $json.body.invoice_id : null }}\n}",
+        "options": {}
+      },
+      "id": "http-log-failure",
+      "name": "Log Failure to Backend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"captured\": true,\n  \"message\": \"Error logged and admin notified\"\n}",
+        "options": {}
+      },
+      "id": "respond-error",
+      "name": "Respond Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [720, 300]
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Log Failure to Backend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Failure to Backend": {
+      "main": [
+        [
+          {
+            "node": "Respond Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true
+}

@@ -1,0 +1,91 @@
+{
+  "name": "03_GreenLife_WhatsApp_Notification",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-notification",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-whatsapp-in",
+      "name": "WhatsApp Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const b = $input.first().json.body || $input.first().json;\nreturn [{\n  json: {\n    invoice_id: b.invoice_id,\n    invoice_number: b.invoice_number,\n    recipient_phone: b.recipient_phone,\n    customer_name: b.customer_name,\n    message_body: b.message || `Hello ${b.customer_name},\\n\\nThank you for your order from GreenLife Natural Foods.\\n\\nInvoice: ${b.invoice_number}\\nTotal: ₹${b.grand_total}\\n\\nYour invoice is ready.\\n\\nThank you.\\nGreenLife Natural Foods`,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "format-whatsapp-msg",
+      "name": "Format Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://backend:8000/api/automation/webhook-callback",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"workflow_name\": \"WhatsApp Notification\",\n  \"status\": \"success\",\n  \"invoice_id\": {{ $json.invoice_id }},\n  \"duration_ms\": 180\n}",
+        "options": {}
+      },
+      "id": "log-whatsapp-success",
+      "name": "Log to Backend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [700, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"WhatsApp notification dispatched\"\n}",
+        "options": {}
+      },
+      "id": "respond-whatsapp",
+      "name": "Respond Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [920, 300]
+    }
+  ],
+  "connections": {
+    "WhatsApp Webhook": {
+      "main": [
+        [
+          {
+            "node": "Format Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Message": {
+      "main": [
+        [
+          {
+            "node": "Log to Backend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Backend": {
+      "main": [
+        [
+          {
+            "node": "Respond Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true
+}
