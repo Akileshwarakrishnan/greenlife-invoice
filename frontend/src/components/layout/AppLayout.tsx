@@ -12,10 +12,10 @@ export const AppLayout: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-brand-cream">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F7F5EF' }}>
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-sm font-semibold text-slate-600">Loading GreenLife System...</p>
+          <div className="w-12 h-12 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-4" style={{ borderColor: '#2D6A4F', borderTopColor: 'transparent' }}></div>
+          <p className="text-sm font-semibold" style={{ color: '#4A4740' }}>Loading GreenLife System...</p>
         </div>
       </div>
     );
@@ -26,12 +26,12 @@ export const AppLayout: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#E4EFE7] dark:bg-[#112419] flex transition-colors duration-200">
+    <div className="min-h-screen bg-[#F7F5EF] dark:bg-[#0D1B11] text-[#1C1A15] dark:text-[#F4F7F4] flex transition-colors duration-200">
       {/* Sidebar Navigation */}
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      {/* Main Workspace Area */}
-      <div className="flex-1 lg:pl-68 flex flex-col min-h-screen">
+      {/* Main Workspace Area: lg:pl-64 aligns perfectly with Sidebar w-64 */}
+      <div className="flex-1 lg:pl-64 flex flex-col min-h-screen w-full min-w-0">
         <Navbar
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
           onOpenAiAssistant={() => setAiAssistantOpen(true)}

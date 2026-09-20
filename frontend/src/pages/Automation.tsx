@@ -97,7 +97,7 @@ export const Automation: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto" style={{ background: 'transparent' }}>
       <PageHeader
         title={t('nav.automation', 'Automation & n8n Workflows')}
         subtitle="Manage asynchronous business processes, test webhook hooks, and review execution latencies."
@@ -105,17 +105,18 @@ export const Automation: React.FC = () => {
         actions={
           <button
             onClick={loadStatus}
-            className="flex items-center space-x-1.5 px-3.5 py-2 bg-white dark:bg-[#082216] hover:bg-slate-50 dark:hover:bg-emerald-950/40 border border-slate-200 dark:border-emerald-800/40 text-slate-700 dark:text-emerald-200 font-semibold rounded-xl text-xs shadow-xs transition-colors cursor-pointer"
+            className="flex items-center space-x-1.5 px-3.5 py-2 border font-semibold rounded-xl text-xs shadow-xs transition-colors cursor-pointer"
+            style={{ background: 'white', borderColor: '#EEEAE0', color: '#4A4740' }}
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-slate-400 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} style={{ color: '#8C8880' }} />
             <span>{t('action.refresh', 'Refresh Telemetry')}</span>
           </button>
         }
       />
 
       {statusMessage && (
-        <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-200 text-xs rounded-2xl flex items-center space-x-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+        <div className="p-3.5 border text-xs rounded-2xl flex items-center space-x-2" style={{ background: '#EBF5EE', borderColor: '#B7D9C4', color: '#2D6A4F' }}>
+          <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: '#2D6A4F' }} />
           <span>{statusMessage}</span>
         </div>
       )}
@@ -123,39 +124,43 @@ export const Automation: React.FC = () => {
       {/* Workflows Cards */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-emerald-300">Registered Automation Pipelines</h2>
-          <span className="text-xs text-slate-500 dark:text-emerald-400 font-medium">5 active workflows</span>
+          <h2 className="text-sm font-bold uppercase tracking-wider" style={{ color: '#1C1A15' }}>Registered Automation Pipelines</h2>
+          <span className="text-xs font-medium" style={{ color: '#8C8880' }}>5 active workflows</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {registeredWorkflows.map((w) => (
             <div
               key={w.name}
-              className="bg-white dark:bg-[#082216] p-5 rounded-2xl border border-emerald-100 dark:border-emerald-900/40 shadow-xs flex flex-col justify-between space-y-4 hover:border-emerald-500/40 transition-all group"
+              className="p-5 rounded-2xl border shadow-xs flex flex-col justify-between space-y-4 transition-all"
+              style={{ background: 'white', borderColor: '#EEEAE0' }}
+              onMouseEnter={(e) => e.currentTarget.style.borderColor = '#2D6A4F'}
+              onMouseLeave={(e) => e.currentTarget.style.borderColor = '#EEEAE0'}
             >
               <div>
                 <div className="flex items-center justify-between mb-2.5">
                   <div className="flex items-center space-x-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-100 dark:border-emerald-800/50">
+                    <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#2D6A4F' }}></span>
+                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md border" style={{ background: '#EBF5EE', borderColor: '#B7D9C4', color: '#2D6A4F' }}>
                       Live
                     </span>
                   </div>
-                  <span className="text-[10px] font-mono text-slate-400 dark:text-emerald-400/70 bg-slate-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md border border-slate-200/60 dark:border-emerald-800/40">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-md border" style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#8C8880' }}>
                     {w.webhook}
                   </span>
                 </div>
-                <h3 className="font-bold text-sm text-slate-900 dark:text-emerald-50 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                <h3 className="font-bold text-sm transition-colors" style={{ color: '#1C1A15' }}>
                   {w.name}
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-emerald-300/70 mt-1.5 leading-relaxed">{w.description}</p>
+                <p className="text-xs mt-1.5 leading-relaxed" style={{ color: '#8C8880' }}>{w.description}</p>
               </div>
 
               <button
                 onClick={() => handleTrigger(w.name)}
                 disabled={triggering === w.name}
-                className="w-full py-2 bg-emerald-50/60 hover:bg-emerald-100/70 dark:bg-emerald-950/50 dark:hover:bg-emerald-900/50 text-emerald-800 dark:text-emerald-200 border border-emerald-200/80 dark:border-emerald-800/50 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all cursor-pointer"
+                className="w-full py-2 border rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all cursor-pointer"
+                style={{ background: '#EBF5EE', borderColor: '#B7D9C4', color: '#2D6A4F' }}
               >
-                <Zap className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <Zap className="w-3.5 h-3.5" style={{ color: '#2D6A4F' }} />
                 <span>{triggering === w.name ? 'Dispatched...' : 'Trigger Webhook'}</span>
               </button>
             </div>
@@ -164,20 +169,20 @@ export const Automation: React.FC = () => {
       </div>
 
       {/* Execution Logs Table */}
-      <div className="bg-white dark:bg-[#082216] rounded-2xl border border-emerald-100 dark:border-emerald-900/40 shadow-xs overflow-hidden">
-        <div className="p-5 border-b border-emerald-100 dark:border-emerald-900/40 flex items-center justify-between">
+      <div className="rounded-2xl border shadow-xs overflow-hidden" style={{ background: 'white', borderColor: '#EEEAE0' }}>
+        <div className="p-5 border-b flex items-center justify-between" style={{ borderColor: '#EEEAE0' }}>
           <div>
-            <h3 className="font-bold text-sm text-slate-900 dark:text-emerald-50">Workflow Execution Telemetry</h3>
-            <p className="text-xs text-slate-500 dark:text-emerald-300/70 mt-0.5">Real-time trace logs of dispatch events, status, and latency.</p>
+            <h3 className="font-bold text-sm" style={{ color: '#1C1A15' }}>Workflow Execution Telemetry</h3>
+            <p className="text-xs mt-0.5" style={{ color: '#8C8880' }}>Real-time trace logs of dispatch events, status, and latency.</p>
           </div>
-          <span className="text-xs font-semibold text-slate-500 dark:text-emerald-300 bg-slate-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-lg border border-slate-200/60 dark:border-emerald-800/40">
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-lg border" style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#8C8880' }}>
             {logs.length} executions
           </span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50/75 text-slate-500 font-semibold uppercase tracking-wider text-[11px] border-b border-slate-100">
+            <thead className="font-semibold uppercase tracking-wider text-[11px] border-b" style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#8C8880' }}>
               <tr>
                 <th className="px-5 py-3.5">Execution ID</th>
                 <th className="px-5 py-3.5">Workflow Name</th>
@@ -188,34 +193,34 @@ export const Automation: React.FC = () => {
                 <th className="px-5 py-3.5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-700">
+            <tbody className="divide-y" style={{ borderColor: '#EEEAE0', color: '#4A4740' }}>
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="px-5 py-8 text-center text-slate-400">
+                  <td colSpan={7} className="px-5 py-8 text-center" style={{ color: '#8C8880' }}>
                     Loading telemetry logs...
                   </td>
                 </tr>
               ) : logs.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-5 py-8 text-center text-slate-400">
+                  <td colSpan={7} className="px-5 py-8 text-center" style={{ color: '#8C8880' }}>
                     No workflow executions recorded yet.
                   </td>
                 </tr>
               ) : (
                 logs.map((log) => (
-                  <tr key={log.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="px-5 py-3.5 font-mono font-semibold text-slate-500 text-[11px]">
+                  <tr key={log.id} onMouseEnter={(e) => e.currentTarget.style.background = '#F7F5EF'} onMouseLeave={(e) => e.currentTarget.style.background = 'white'} style={{ background: 'white' }}>
+                    <td className="px-5 py-3.5 font-mono font-semibold text-[11px]" style={{ color: '#8C8880' }}>
                       {log.execution_id || `#${log.id}`}
                     </td>
-                    <td className="px-5 py-3.5 font-bold text-slate-900">{log.workflow_name}</td>
-                    <td className="px-5 py-3.5 text-slate-500">{log.trigger_source}</td>
+                    <td className="px-5 py-3.5 font-bold" style={{ color: '#1C1A15' }}>{log.workflow_name}</td>
+                    <td className="px-5 py-3.5" style={{ color: '#8C8880' }}>{log.trigger_source}</td>
                     <td className="px-5 py-3.5 text-center">
                       <Badge status={log.status} />
                     </td>
-                    <td className="px-5 py-3.5 text-right font-mono text-slate-600 font-medium">
+                    <td className="px-5 py-3.5 text-right font-mono font-medium" style={{ color: '#4A4740' }}>
                       {log.duration_ms.toFixed(1)} ms
                     </td>
-                    <td className="px-5 py-3.5 text-slate-500">
+                    <td className="px-5 py-3.5" style={{ color: '#8C8880' }}>
                       {new Date(log.started_at).toLocaleTimeString('en-IN', {
                         hour: '2-digit',
                         minute: '2-digit',
@@ -226,13 +231,14 @@ export const Automation: React.FC = () => {
                       {log.status === 'failed' ? (
                         <button
                           onClick={() => handleRetry(log.id)}
-                          className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg font-semibold text-[11px] inline-flex items-center space-x-1 cursor-pointer transition-colors"
+                          className="px-2.5 py-1 rounded-lg font-semibold text-[11px] inline-flex items-center space-x-1 cursor-pointer transition-colors"
+                          style={{ background: '#FDF3E3', color: '#C68B3A' }}
                         >
                           <RotateCcw className="w-3 h-3" />
                           <span>Retry</span>
                         </button>
                       ) : (
-                        <span className="text-slate-300">—</span>
+                        <span style={{ color: '#EEEAE0' }}>—</span>
                       )}
                     </td>
                   </tr>

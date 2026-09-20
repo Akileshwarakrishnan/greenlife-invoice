@@ -55,7 +55,7 @@ export const Reports: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto" style={{ background: 'transparent' }}>
       <PageHeader
         title={t('nav.reports', 'Business Analytics & Reports')}
         subtitle="Financial ledgers, product velocity metrics, customer lifetime value, and payment breakdowns."
@@ -64,9 +64,10 @@ export const Reports: React.FC = () => {
           <>
             <button
               onClick={() => window.print()}
-              className="flex items-center space-x-1.5 px-3.5 py-2 bg-white dark:bg-[#082216] hover:bg-slate-50 dark:hover:bg-emerald-950/40 border border-slate-200 dark:border-emerald-800/40 text-slate-700 dark:text-emerald-200 rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+              className="flex items-center space-x-1.5 px-3.5 py-2 border rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+              style={{ background: 'white', borderColor: '#EEEAE0', color: '#4A4740' }}
             >
-              <Printer className="w-4 h-4 text-slate-500" />
+              <Printer className="w-4 h-4" style={{ color: '#8C8880' }} />
               <span>{t('action.print', 'Print Statement')}</span>
             </button>
 
@@ -74,7 +75,8 @@ export const Reports: React.FC = () => {
               href={reportApi.getExportCsvUrl()}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center space-x-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-sm shadow-emerald-600/20 transition-all cursor-pointer"
+              className="flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all cursor-pointer"
+              style={{ background: '#2D6A4F', color: 'white' }}
             >
               <Download className="w-4 h-4" />
               <span>{t('action.export_csv', 'Export CSV')}</span>
@@ -84,7 +86,7 @@ export const Reports: React.FC = () => {
       />
 
       {/* Tabs */}
-      <div className="flex items-center space-x-1.5 border-b border-emerald-100 dark:border-emerald-900/40 pb-2 overflow-x-auto">
+      <div className="flex items-center space-x-1.5 border-b pb-2 overflow-x-auto" style={{ borderColor: '#EEEAE0' }}>
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -92,13 +94,14 @@ export const Reports: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                isActive
-                  ? 'bg-emerald-600 text-white shadow-xs shadow-emerald-600/20'
-                  : 'text-slate-600 dark:text-emerald-300/80 hover:text-slate-900 dark:hover:text-emerald-100 hover:bg-emerald-50/60 dark:hover:bg-emerald-950/40'
-              }`}
+              className="flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
+              style={{
+                background: isActive ? '#2D6A4F' : 'transparent',
+                color: isActive ? 'white' : '#4A4740',
+                boxShadow: isActive ? '0 1px 2px rgba(45,106,79,0.2)' : 'none'
+              }}
             >
-              <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400 dark:text-emerald-400/60'}`} />
+              <Icon className="w-4 h-4" style={{ color: isActive ? 'white' : '#8C8880' }} />
               <span>{tab.label}</span>
             </button>
           );
@@ -106,24 +109,24 @@ export const Reports: React.FC = () => {
       </div>
 
       {loading ? (
-        <div className="p-12 text-center text-xs text-slate-400">Loading reporting analytics...</div>
+        <div className="p-12 text-center text-xs" style={{ color: '#8C8880' }}>Loading reporting analytics...</div>
       ) : (
         <>
           {/* Tab 1: Sales Report */}
           {activeTab === 'sales' && (
-            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-              <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+            <div className="rounded-2xl border shadow-xs overflow-hidden" style={{ background: 'white', borderColor: '#EEEAE0' }}>
+              <div className="p-5 border-b flex items-center justify-between" style={{ borderColor: '#EEEAE0' }}>
                 <div>
-                  <h3 className="font-bold text-sm text-slate-900">Daily Sales & Collections Ledger</h3>
-                  <p className="text-xs text-slate-500 mt-0.5">Aggregated subtotal, tax, shipping, and realized collections.</p>
+                  <h3 className="font-bold text-sm" style={{ color: '#1C1A15' }}>Daily Sales & Collections Ledger</h3>
+                  <p className="text-xs mt-0.5" style={{ color: '#8C8880' }}>Aggregated subtotal, tax, shipping, and realized collections.</p>
                 </div>
-                <span className="text-xs font-semibold text-slate-500 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/60">
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-lg border" style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#8C8880' }}>
                   {salesData.length} records
                 </span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50/75 text-slate-500 font-semibold uppercase tracking-wider text-[11px] border-b border-slate-100">
+                  <thead className="font-semibold uppercase tracking-wider text-[11px] border-b" style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#8C8880' }}>
                     <tr>
                       <th className="px-5 py-3.5">Date</th>
                       <th className="px-5 py-3.5 text-center">Invoices</th>
@@ -134,31 +137,31 @@ export const Reports: React.FC = () => {
                       <th className="px-5 py-3.5 text-right">Collected</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 text-slate-700">
+                  <tbody className="divide-y" style={{ borderColor: '#EEEAE0', color: '#4A4740' }}>
                     {salesData.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="px-5 py-8 text-center text-slate-400 text-xs">
+                        <td colSpan={7} className="px-5 py-8 text-center text-xs" style={{ color: '#8C8880' }}>
                           No sales data recorded for this period.
                         </td>
                       </tr>
                     ) : (
                       salesData.map((row, i) => (
-                        <tr key={i} className="hover:bg-slate-50/70 transition-colors">
-                          <td className="px-5 py-3.5 font-bold text-slate-900">{row.date}</td>
+                        <tr key={i} onMouseEnter={(e) => e.currentTarget.style.background = '#F7F5EF'} onMouseLeave={(e) => e.currentTarget.style.background = 'white'} style={{ background: 'white' }}>
+                          <td className="px-5 py-3.5 font-bold" style={{ color: '#1C1A15' }}>{row.date}</td>
                           <td className="px-5 py-3.5 text-center font-medium">{row.invoices_count}</td>
-                          <td className="px-5 py-3.5 text-right font-medium text-slate-600">
+                          <td className="px-5 py-3.5 text-right font-medium" style={{ color: '#4A4740' }}>
                             ₹{row.subtotal.toLocaleString('en-IN')}
                           </td>
-                          <td className="px-5 py-3.5 text-right font-medium text-slate-600">
+                          <td className="px-5 py-3.5 text-right font-medium" style={{ color: '#4A4740' }}>
                             ₹{row.courier_charges.toLocaleString('en-IN')}
                           </td>
-                          <td className="px-5 py-3.5 text-right font-medium text-slate-600">
+                          <td className="px-5 py-3.5 text-right font-medium" style={{ color: '#4A4740' }}>
                             ₹{row.tax_amount.toLocaleString('en-IN')}
                           </td>
-                          <td className="px-5 py-3.5 text-right font-bold text-slate-900">
+                          <td className="px-5 py-3.5 text-right font-bold" style={{ color: '#1C1A15' }}>
                             ₹{row.net_sales.toLocaleString('en-IN')}
                           </td>
-                          <td className="px-5 py-3.5 text-right font-bold text-emerald-600">
+                          <td className="px-5 py-3.5 text-right font-bold" style={{ color: '#2D6A4F' }}>
                             ₹{row.amount_collected.toLocaleString('en-IN')}
                           </td>
                         </tr>
@@ -172,19 +175,19 @@ export const Reports: React.FC = () => {
 
           {/* Tab 2: Products Report */}
           {activeTab === 'products' && (
-            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-              <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+            <div className="rounded-2xl border shadow-xs overflow-hidden" style={{ background: 'white', borderColor: '#EEEAE0' }}>
+              <div className="p-5 border-b flex items-center justify-between" style={{ borderColor: '#EEEAE0' }}>
                 <div>
-                  <h3 className="font-bold text-sm text-slate-900">Product Sales Volume & Turnover</h3>
-                  <p className="text-xs text-slate-500 mt-0.5">Top-selling items, order frequencies, and gross turnover.</p>
+                  <h3 className="font-bold text-sm" style={{ color: '#1C1A15' }}>Product Sales Volume & Turnover</h3>
+                  <p className="text-xs mt-0.5" style={{ color: '#8C8880' }}>Top-selling items, order frequencies, and gross turnover.</p>
                 </div>
-                <span className="text-xs font-semibold text-slate-500 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/60">
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-lg border" style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#8C8880' }}>
                   {productsData.length} products
                 </span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50/75 text-slate-500 font-semibold uppercase tracking-wider text-[11px] border-b border-slate-100">
+                  <thead className="font-semibold uppercase tracking-wider text-[11px] border-b" style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#8C8880' }}>
                     <tr>
                       <th className="px-5 py-3.5">Product Name</th>
                       <th className="px-5 py-3.5">Category</th>
@@ -193,27 +196,27 @@ export const Reports: React.FC = () => {
                       <th className="px-5 py-3.5 text-right">Total Revenue</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 text-slate-700">
+                  <tbody className="divide-y" style={{ borderColor: '#EEEAE0', color: '#4A4740' }}>
                     {productsData.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="px-5 py-8 text-center text-slate-400 text-xs">
+                        <td colSpan={5} className="px-5 py-8 text-center text-xs" style={{ color: '#8C8880' }}>
                           No product sales volume logged.
                         </td>
                       </tr>
                     ) : (
                       productsData.map((p) => (
-                        <tr key={p.product_id} className="hover:bg-slate-50/70 transition-colors">
-                          <td className="px-5 py-3.5 font-bold text-slate-900">{p.product_name}</td>
-                          <td className="px-5 py-3.5 text-slate-500">
-                            <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[11px] font-medium">
+                        <tr key={p.product_id} onMouseEnter={(e) => e.currentTarget.style.background = '#F7F5EF'} onMouseLeave={(e) => e.currentTarget.style.background = 'white'} style={{ background: 'white' }}>
+                          <td className="px-5 py-3.5 font-bold" style={{ color: '#1C1A15' }}>{p.product_name}</td>
+                          <td className="px-5 py-3.5" style={{ color: '#8C8880' }}>
+                            <span className="px-2 py-0.5 rounded-md text-[11px] font-medium" style={{ background: '#F7F5EF', color: '#4A4740' }}>
                               {p.category}
                             </span>
                           </td>
                           <td className="px-5 py-3.5 text-center font-medium">{p.order_occurrences}</td>
-                          <td className="px-5 py-3.5 text-center font-bold text-slate-800">
+                          <td className="px-5 py-3.5 text-center font-bold" style={{ color: '#1C1A15' }}>
                             {p.units_sold} {p.unit}
                           </td>
-                          <td className="px-5 py-3.5 text-right font-bold text-emerald-700">
+                          <td className="px-5 py-3.5 text-right font-bold" style={{ color: '#2D6A4F' }}>
                             ₹{p.total_revenue.toLocaleString('en-IN')}
                           </td>
                         </tr>
@@ -227,19 +230,19 @@ export const Reports: React.FC = () => {
 
           {/* Tab 3: Customer Report */}
           {activeTab === 'customers' && (
-            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-              <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+            <div className="rounded-2xl border shadow-xs overflow-hidden" style={{ background: 'white', borderColor: '#EEEAE0' }}>
+              <div className="p-5 border-b flex items-center justify-between" style={{ borderColor: '#EEEAE0' }}>
                 <div>
-                  <h3 className="font-bold text-sm text-slate-900">Customer Lifetime Value & Receivables</h3>
-                  <p className="text-xs text-slate-500 mt-0.5">Order history, aggregate spend, and pending credit balances.</p>
+                  <h3 className="font-bold text-sm" style={{ color: '#1C1A15' }}>Customer Lifetime Value & Receivables</h3>
+                  <p className="text-xs mt-0.5" style={{ color: '#8C8880' }}>Order history, aggregate spend, and pending credit balances.</p>
                 </div>
-                <span className="text-xs font-semibold text-slate-500 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/60">
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-lg border" style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#8C8880' }}>
                   {customersData.length} accounts
                 </span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50/75 text-slate-500 font-semibold uppercase tracking-wider text-[11px] border-b border-slate-100">
+                  <thead className="font-semibold uppercase tracking-wider text-[11px] border-b" style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#8C8880' }}>
                     <tr>
                       <th className="px-5 py-3.5">Customer</th>
                       <th className="px-5 py-3.5">Phone</th>
@@ -248,29 +251,30 @@ export const Reports: React.FC = () => {
                       <th className="px-5 py-3.5 text-right">Outstanding Balance</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 text-slate-700">
+                  <tbody className="divide-y" style={{ borderColor: '#EEEAE0', color: '#4A4740' }}>
                     {customersData.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="px-5 py-8 text-center text-slate-400 text-xs">
+                        <td colSpan={5} className="px-5 py-8 text-center text-xs" style={{ color: '#8C8880' }}>
                           No customer insights available.
                         </td>
                       </tr>
                     ) : (
                       customersData.map((c) => (
-                        <tr key={c.customer_id} className="hover:bg-slate-50/70 transition-colors">
-                          <td className="px-5 py-3.5 font-bold text-slate-900">{c.customer_name}</td>
-                          <td className="px-5 py-3.5 text-slate-500 font-mono">{c.phone}</td>
+                        <tr key={c.customer_id} onMouseEnter={(e) => e.currentTarget.style.background = '#F7F5EF'} onMouseLeave={(e) => e.currentTarget.style.background = 'white'} style={{ background: 'white' }}>
+                          <td className="px-5 py-3.5 font-bold" style={{ color: '#1C1A15' }}>{c.customer_name}</td>
+                          <td className="px-5 py-3.5 font-mono" style={{ color: '#8C8880' }}>{c.phone}</td>
                           <td className="px-5 py-3.5 text-center font-medium">{c.total_orders}</td>
-                          <td className="px-5 py-3.5 text-right font-bold text-slate-900">
+                          <td className="px-5 py-3.5 text-right font-bold" style={{ color: '#1C1A15' }}>
                             ₹{c.total_spent.toLocaleString('en-IN')}
                           </td>
                           <td className="px-5 py-3.5 text-right font-bold">
                             <span
-                              className={`px-2 py-0.5 rounded-md text-[11px] font-semibold ${
-                                c.outstanding_balance > 0
-                                  ? 'bg-amber-50 text-amber-700 border border-amber-200/60'
-                                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
-                              }`}
+                              className="px-2 py-0.5 rounded-md text-[11px] font-semibold border"
+                              style={{
+                                background: c.outstanding_balance > 0 ? '#FDF3E3' : '#EBF5EE',
+                                color: c.outstanding_balance > 0 ? '#C68B3A' : '#2D6A4F',
+                                borderColor: c.outstanding_balance > 0 ? '#C68B3A' : '#B7D9C4'
+                              }}
                             >
                               ₹{c.outstanding_balance.toLocaleString('en-IN')}
                             </span>
@@ -286,41 +290,41 @@ export const Reports: React.FC = () => {
 
           {/* Tab 4: Payments Report */}
           {activeTab === 'payments' && (
-            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-              <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+            <div className="rounded-2xl border shadow-xs overflow-hidden" style={{ background: 'white', borderColor: '#EEEAE0' }}>
+              <div className="p-5 border-b flex items-center justify-between" style={{ borderColor: '#EEEAE0' }}>
                 <div>
-                  <h3 className="font-bold text-sm text-slate-900">Settlement Method Distribution</h3>
-                  <p className="text-xs text-slate-500 mt-0.5">Payment gateways, cash on delivery, and UPI transaction volume.</p>
+                  <h3 className="font-bold text-sm" style={{ color: '#1C1A15' }}>Settlement Method Distribution</h3>
+                  <p className="text-xs mt-0.5" style={{ color: '#8C8880' }}>Payment gateways, cash on delivery, and UPI transaction volume.</p>
                 </div>
-                <span className="text-xs font-semibold text-slate-500 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/60">
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-lg border" style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#8C8880' }}>
                   {paymentsData.length} channels
                 </span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50/75 text-slate-500 font-semibold uppercase tracking-wider text-[11px] border-b border-slate-100">
+                  <thead className="font-semibold uppercase tracking-wider text-[11px] border-b" style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#8C8880' }}>
                     <tr>
                       <th className="px-5 py-3.5">Payment Method</th>
                       <th className="px-5 py-3.5 text-center">Transactions Count</th>
                       <th className="px-5 py-3.5 text-right">Total Realized Amount</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 text-slate-700">
+                  <tbody className="divide-y" style={{ borderColor: '#EEEAE0', color: '#4A4740' }}>
                     {paymentsData.length === 0 ? (
                       <tr>
-                        <td colSpan={3} className="px-5 py-8 text-center text-slate-400 text-xs">
+                        <td colSpan={3} className="px-5 py-8 text-center text-xs" style={{ color: '#8C8880' }}>
                           No payment distribution data found.
                         </td>
                       </tr>
                     ) : (
                       paymentsData.map((pm, i) => (
-                        <tr key={i} className="hover:bg-slate-50/70 transition-colors">
-                          <td className="px-5 py-3.5 font-bold text-slate-900 flex items-center space-x-2">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <tr key={i} onMouseEnter={(e) => e.currentTarget.style.background = '#F7F5EF'} onMouseLeave={(e) => e.currentTarget.style.background = 'white'} style={{ background: 'white' }}>
+                          <td className="px-5 py-3.5 font-bold flex items-center space-x-2" style={{ color: '#1C1A15' }}>
+                            <span className="w-2 h-2 rounded-full" style={{ background: '#2D6A4F' }}></span>
                             <span>{pm.payment_method.toUpperCase()}</span>
                           </td>
                           <td className="px-5 py-3.5 text-center font-medium">{pm.transactions_count}</td>
-                          <td className="px-5 py-3.5 text-right font-bold text-emerald-600">
+                          <td className="px-5 py-3.5 text-right font-bold" style={{ color: '#2D6A4F' }}>
                             ₹{pm.total_amount.toLocaleString('en-IN')}
                           </td>
                         </tr>

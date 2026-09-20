@@ -228,7 +228,7 @@ export const Products: React.FC = () => {
   const categories = Array.from(new Set(products.map((p) => p.category)));
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12" style={{ background: 'transparent' }}>
       <PageHeader
         title={isTamil ? 'பொருட்கள் & விலை பட்டியல்' : 'Products & Stock Catalog'}
         subtitle={isTamil ? 'இயற்கை உணவுப் பொருட்களின் விலை, அளவு மற்றும் இருப்பு விவரங்களை நிர்வகிக்க' : 'Manage organic products, units, retail prices, and inventory stock'}
@@ -236,29 +236,30 @@ export const Products: React.FC = () => {
         actions={
           <button
             onClick={handleOpenAdd}
-            className="flex items-center space-x-2 px-5 py-3 bg-[#284B35] hover:bg-[#1E3827] text-white font-black rounded-2xl text-xs sm:text-sm shadow-md transition-all cursor-pointer"
+            className="flex items-center space-x-2 px-5 py-3 font-black rounded-2xl text-xs sm:text-sm shadow-md transition-all cursor-pointer"
+            style={{ background: '#2D6A4F', color: 'white' }}
           >
-            <PlusCircle className="w-4 h-4 text-[#F5C242]" />
+            <PlusCircle className="w-4 h-4" style={{ color: '#C68B3A' }} />
             <span>+ {isTamil ? 'புதிய பொருள் சேர்க்க' : 'Add New Product'}</span>
           </button>
         }
       />
 
       {/* SMART WHATSAPP / TAMIL PASTE SPACE */}
-      <div className="bg-white rounded-3xl border-2 border-[#284B35]/30 p-5 sm:p-6 shadow-sm space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E4EFE7] pb-4">
+      <div className="rounded-3xl border-2 p-5 sm:p-6 shadow-sm space-y-4" style={{ background: 'white', borderColor: 'rgba(45,106,79,0.30)' }}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-4" style={{ borderColor: '#EEEAE0' }}>
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#284B35] text-[#F5C242] flex items-center justify-center shadow-xs">
+            <div className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-xs" style={{ background: '#2D6A4F', color: '#C68B3A' }}>
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-black text-slate-900 flex items-center space-x-2">
+              <h2 className="text-base sm:text-lg font-black flex items-center space-x-2" style={{ color: '#1C1A15' }}>
                 <span>{isTamil ? 'வாட்ஸ்அப் / தமிழ் உரை மூலம் பொருட்கள் சேர்க்க' : 'Smart WhatsApp / Tamil Paste Space'}</span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] bg-[#E4EFE7] text-[#284B35] font-black uppercase">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase" style={{ background: '#EBF5EE', color: '#2D6A4F' }}>
                   {isTamil ? 'தானியங்கி தமிழ் & ஆங்கிலம்' : 'Auto Bilingual'}
                 </span>
               </h2>
-              <p className="text-xs text-slate-500 font-medium">
+              <p className="text-xs font-medium" style={{ color: '#8C8880' }}>
                 {isTamil
                   ? 'வாட்ஸ்அப் மெசேஜ் அல்லது பட்டியலை இங்கே ஒட்டினால், சிஸ்டம் தானாகவே தமிழ்+ஆங்கில பெயர், எடை மற்றும் விலையை உரிய காலத்தில் சேர்க்கும்!'
                   : 'Paste WhatsApp product list here — auto-extracts Tamil & English names, unit/kg, and price into DB columns!'}
@@ -269,7 +270,8 @@ export const Products: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsPasteSpaceOpen(!isPasteSpaceOpen)}
-            className="self-start sm:self-auto px-3.5 py-1.5 bg-[#E4EFE7] hover:bg-[#D4E8DA] text-[#284B35] text-xs font-black rounded-xl transition-all flex items-center space-x-1.5 cursor-pointer"
+            className="self-start sm:self-auto px-3.5 py-1.5 text-xs font-black rounded-xl transition-all flex items-center space-x-1.5 cursor-pointer"
+            style={{ background: '#EBF5EE', color: '#2D6A4F' }}
           >
             {isPasteSpaceOpen ? (
               <>
@@ -288,8 +290,8 @@ export const Products: React.FC = () => {
         {isPasteSpaceOpen && (
           <div className="space-y-4 pt-1">
             {batchSuccessMessage && (
-              <div className="p-4 bg-emerald-50 border-2 border-emerald-300 text-emerald-900 font-black rounded-2xl flex items-center space-x-3 text-sm">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+              <div className="p-4 border-2 font-black rounded-2xl flex items-center space-x-3 text-sm" style={{ background: '#EBF5EE', borderColor: '#B7D9C4', color: '#2D6A4F' }}>
+                <CheckCircle2 className="w-5 h-5 flex-shrink-0" style={{ color: '#2D6A4F' }} />
                 <span>{batchSuccessMessage}</span>
               </div>
             )}
@@ -304,7 +306,8 @@ export const Products: React.FC = () => {
                     ? `பொருட்களை இங்கே ஒட்டவும்...\nஎடுத்துக்காட்டு:\nஇட்லி பொடி 250 கிராம் 200\nநாட்டு சர்க்கரை 1 கிலோ 90\nமரச்செக்கு நல்லெண்ணெய் 1 லிட்டர் 380\nசுக்கு காபி பொடி 100 கிராம் 85`
                     : `Paste items here...\nExample:\nஇட்லி பொடி 250 கிராம் 200\nநாட்டு சர்க்கரை 1 கிலோ 90\nமரச்செக்கு நல்லெண்ணெய் 1 லிட்டர் 380`
                 }
-                className="w-full p-4 bg-[#F9FCFA] border-2 border-[#C9DFCF] focus:border-[#284B35] focus:bg-white rounded-2xl text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-hidden transition-all shadow-inner leading-relaxed"
+                className="w-full p-4 border-2 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-hidden transition-all shadow-inner leading-relaxed"
+                style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
               />
             </div>
 
@@ -314,7 +317,8 @@ export const Products: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleInsertSample}
-                  className="px-3.5 py-2 bg-[#E4EFE7] hover:bg-[#D4E8DA] text-[#284B35] font-black text-xs rounded-xl transition-all cursor-pointer flex items-center space-x-1.5"
+                  className="px-3.5 py-2 font-black text-xs rounded-xl transition-all cursor-pointer flex items-center space-x-1.5"
+                  style={{ background: '#EBF5EE', color: '#2D6A4F' }}
                 >
                   <ClipboardPaste className="w-3.5 h-3.5" />
                   <span>{isTamil ? 'எடுத்துக்காட்டு உரை (Sample)' : 'Insert Sample'}</span>
@@ -324,7 +328,8 @@ export const Products: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => { setPasteText(''); setParsedItems([]); setBatchSuccessMessage(null); }}
-                    className="px-3 py-2 text-slate-500 hover:text-rose-600 text-xs font-bold rounded-xl transition-all cursor-pointer hover:bg-slate-100"
+                    className="px-3 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                    style={{ color: '#4A4740', background: 'transparent' }}
                   >
                     {isTamil ? 'அழி' : 'Clear'}
                   </button>
@@ -335,16 +340,17 @@ export const Products: React.FC = () => {
                 type="button"
                 disabled={parsingText || !pasteText.trim()}
                 onClick={handleParseText}
-                className="px-5 py-2.5 bg-[#284B35] hover:bg-[#1E3827] text-white font-black text-xs sm:text-sm rounded-xl shadow-md transition-all cursor-pointer disabled:opacity-50 flex items-center space-x-2"
+                className="px-5 py-2.5 font-black text-xs sm:text-sm rounded-xl shadow-md transition-all cursor-pointer disabled:opacity-50 flex items-center space-x-2"
+                style={{ background: '#2D6A4F', color: 'white' }}
               >
                 {parsingText ? (
                   <>
-                    <RefreshCw className="w-4 h-4 animate-spin text-[#F5C242]" />
+                    <RefreshCw className="w-4 h-4 animate-spin" style={{ color: '#C68B3A' }} />
                     <span>{isTamil ? 'பிரித்தெடுக்கப்படுகிறது...' : 'Parsing...'}</span>
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4 text-[#F5C242]" />
+                    <Sparkles className="w-4 h-4" style={{ color: '#C68B3A' }} />
                     <span>{isTamil ? 'விவரங்களை பிரித்தெடு ✨' : 'Parse Product Details ✨'}</span>
                   </>
                 )}
@@ -353,23 +359,23 @@ export const Products: React.FC = () => {
 
             {/* Parsed Items Preview Table */}
             {parsedItems.length > 0 && (
-              <div className="pt-4 border-t border-[#E4EFE7] space-y-4">
+              <div className="pt-4 border-t space-y-4" style={{ borderColor: '#EEEAE0' }}>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center space-x-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                    <h3 className="font-black text-sm text-slate-900">
+                    <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#2D6A4F' }}></span>
+                    <h3 className="font-black text-sm" style={{ color: '#1C1A15' }}>
                       {isTamil ? `பிரித்தெடுக்கப்பட்ட விவரங்கள் (${parsedItems.length} பொருட்கள்):` : `Parsed Product Items (${parsedItems.length} items):`}
                     </h3>
                   </div>
-                  <span className="text-[11px] font-bold text-slate-500">
+                  <span className="text-[11px] font-bold" style={{ color: '#8C8880' }}>
                     {isTamil ? 'தேவைப்பட்டால் எழுத்துக்கள்/விலையை மாற்றலாம்' : 'Review & adjust any value before saving to DB'}
                   </span>
                 </div>
 
-                <div className="overflow-x-auto rounded-2xl border-2 border-[#C9DFCF]">
+                <div className="overflow-x-auto rounded-2xl border-2" style={{ borderColor: '#EEEAE0' }}>
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
-                      <tr className="bg-[#E4EFE7] text-[#284B35] font-black text-[11px] uppercase tracking-wider">
+                      <tr className="font-black text-[11px] uppercase tracking-wider" style={{ background: '#EEEAE0', color: '#4A4740' }}>
                         <th className="p-3">#</th>
                         <th className="p-3">{isTamil ? 'தமிழ் பெயர்' : 'Tamil Name'}</th>
                         <th className="p-3">{isTamil ? 'ஆங்கில பெயர்' : 'English Name'}</th>
@@ -380,16 +386,17 @@ export const Products: React.FC = () => {
                         <th className="p-3 text-center">{isTamil ? 'நீக்கு' : 'Action'}</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#E4EFE7] bg-white">
+                    <tbody className="divide-y" style={{ background: 'white', borderColor: '#EEEAE0' }}>
                       {parsedItems.map((item, idx) => (
-                        <tr key={idx} className="hover:bg-[#F9FCFA]">
-                          <td className="p-3 font-black text-slate-400">{idx + 1}</td>
+                        <tr key={idx} onMouseEnter={(e) => e.currentTarget.style.background = '#F7F5EF'} onMouseLeave={(e) => e.currentTarget.style.background = 'white'}>
+                          <td className="p-3 font-black" style={{ color: '#8C8880' }}>{idx + 1}</td>
                           <td className="p-2 min-w-[150px]">
                             <input
                               type="text"
                               value={item.name_ta || ''}
                               onChange={(e) => handleUpdateParsedItem(idx, 'name_ta', e.target.value)}
-                              className="w-full px-2.5 py-1.5 bg-[#F9FCFA] border border-[#C9DFCF] rounded-xl font-bold text-slate-900 text-xs focus:bg-white focus:outline-hidden"
+                              className="w-full px-2.5 py-1.5 border rounded-xl font-bold text-xs focus:outline-hidden"
+                              style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
                             />
                           </td>
                           <td className="p-2 min-w-[170px]">
@@ -397,7 +404,8 @@ export const Products: React.FC = () => {
                               type="text"
                               value={item.name_en || ''}
                               onChange={(e) => handleUpdateParsedItem(idx, 'name_en', e.target.value)}
-                              className="w-full px-2.5 py-1.5 bg-[#F9FCFA] border border-[#C9DFCF] rounded-xl font-bold text-slate-900 text-xs focus:bg-white focus:outline-hidden"
+                              className="w-full px-2.5 py-1.5 border rounded-xl font-bold text-xs focus:outline-hidden"
+                              style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
                             />
                           </td>
                           <td className="p-2 min-w-[110px]">
@@ -405,19 +413,21 @@ export const Products: React.FC = () => {
                               type="text"
                               value={item.unit || 'kg'}
                               onChange={(e) => handleUpdateParsedItem(idx, 'unit', e.target.value)}
-                              className="w-full px-2 py-1.5 bg-[#F9FCFA] border border-[#C9DFCF] rounded-xl font-black text-[#284B35] text-xs text-center focus:bg-white focus:outline-hidden"
+                              className="w-full px-2 py-1.5 border rounded-xl font-black text-xs text-center focus:outline-hidden"
+                              style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#2D6A4F' }}
                             />
                           </td>
                           <td className="p-2 min-w-[110px]">
                             <div className="relative">
-                              <span className="absolute left-2.5 top-1.5 font-bold text-slate-400">₹</span>
+                              <span className="absolute left-2.5 top-1.5 font-bold" style={{ color: '#8C8880' }}>₹</span>
                               <input
                                 type="number"
                                 min="0"
                                 step="any"
                                 value={item.price}
                                 onChange={(e) => handleUpdateParsedItem(idx, 'price', Number(e.target.value))}
-                                className="w-full pl-6 pr-2 py-1.5 bg-[#F9FCFA] border border-[#C9DFCF] rounded-xl font-black text-[#284B35] text-xs focus:bg-white focus:outline-hidden"
+                                className="w-full pl-6 pr-2 py-1.5 border rounded-xl font-black text-xs focus:outline-hidden"
+                                style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#2D6A4F' }}
                               />
                             </div>
                           </td>
@@ -426,7 +436,8 @@ export const Products: React.FC = () => {
                               type="text"
                               value={item.category || 'General'}
                               onChange={(e) => handleUpdateParsedItem(idx, 'category', e.target.value)}
-                              className="w-full px-2.5 py-1.5 bg-[#F9FCFA] border border-[#C9DFCF] rounded-xl font-bold text-slate-700 text-xs focus:bg-white focus:outline-hidden"
+                              className="w-full px-2.5 py-1.5 border rounded-xl font-bold text-xs focus:outline-hidden"
+                              style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#4A4740' }}
                             />
                           </td>
                           <td className="p-2 min-w-[90px]">
@@ -435,15 +446,17 @@ export const Products: React.FC = () => {
                               min="0"
                               value={item.stock_quantity}
                               onChange={(e) => handleUpdateParsedItem(idx, 'stock_quantity', Number(e.target.value))}
-                              className="w-full px-2 py-1.5 bg-[#F9FCFA] border border-[#C9DFCF] rounded-xl font-bold text-slate-800 text-xs text-center focus:bg-white focus:outline-hidden"
+                              className="w-full px-2 py-1.5 border rounded-xl font-bold text-xs text-center focus:outline-hidden"
+                              style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
                             />
                           </td>
                           <td className="p-2 text-center">
                             <button
                               type="button"
                               onClick={() => handleRemoveParsedItem(idx)}
-                              className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+                              className="p-1.5 rounded-lg transition-colors cursor-pointer"
                               title={isTamil ? 'நீக்கு' : 'Remove'}
+                              style={{ color: '#8C8880' }}
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -455,9 +468,9 @@ export const Products: React.FC = () => {
                 </div>
 
                 {/* Big Chunky Save-to-Database CTA */}
-                <div className="p-4 bg-[#E4EFE7] rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 border border-[#C9DFCF]">
-                  <div className="flex items-center space-x-2 text-xs font-black text-[#284B35]">
-                    <CheckCircle2 className="w-4 h-4 text-[#284B35]" />
+                <div className="p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 border" style={{ background: '#EEEAE0', borderColor: '#EEEAE0' }}>
+                  <div className="flex items-center space-x-2 text-xs font-black" style={{ color: '#2D6A4F' }}>
+                    <CheckCircle2 className="w-4 h-4" style={{ color: '#2D6A4F' }} />
                     <span>
                       {isTamil
                         ? `மொத்தம் ${parsedItems.length} பொருட்கள் டேட்டாபேஸில் சேர்க்கத் தயாராக உள்ளன.`
@@ -469,16 +482,17 @@ export const Products: React.FC = () => {
                     type="button"
                     disabled={savingBatch}
                     onClick={handleSaveBatchToDatabase}
-                    className="w-full sm:w-auto px-6 py-3 bg-[#284B35] hover:bg-[#1E3827] text-white font-black text-sm rounded-2xl shadow-lg transition-all flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-60"
+                    className="w-full sm:w-auto px-6 py-3 font-black text-sm rounded-2xl shadow-lg transition-all flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-60"
+                    style={{ background: '#2D6A4F', color: 'white' }}
                   >
                     {savingBatch ? (
                       <>
-                        <RefreshCw className="w-4 h-4 animate-spin text-[#F5C242]" />
+                        <RefreshCw className="w-4 h-4 animate-spin" style={{ color: '#C68B3A' }} />
                         <span>{isTamil ? 'டேட்டாபேஸில் சேமிக்கப்படுகிறது...' : 'Saving to Database...'}</span>
                       </>
                     ) : (
                       <>
-                        <Layers className="w-4 h-4 text-[#F5C242]" />
+                        <Layers className="w-4 h-4" style={{ color: '#C68B3A' }} />
                         <span>{isTamil ? 'இருப்புப் பட்டியலில் சேமி (Save All to Database)' : 'Save All to Database'}</span>
                       </>
                     )}
@@ -490,17 +504,17 @@ export const Products: React.FC = () => {
         )}
       </div>
 
-
       {/* Filter & Category Pills */}
-      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-[#C9DFCF] shadow-xs flex flex-col md:flex-row gap-4 items-center justify-between">
+      <div className="p-4 sm:p-5 rounded-3xl flex flex-col md:flex-row gap-4 items-center justify-between" style={{ background: 'white', border: '1px solid #EEEAE0' }}>
         <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+          <Search className="w-4 h-4 absolute left-3.5 top-3.5" style={{ color: '#8C8880' }} />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={isTamil ? 'பொருளின் பெயர் அல்லது வகை கொண்டு தேடவும்...' : 'Search product name or category...'}
-            className="w-full pl-10 pr-4 py-2.5 bg-[#F9FCFA] border-2 border-[#C9DFCF] rounded-2xl text-xs sm:text-sm font-semibold text-slate-900 focus:outline-hidden focus:border-[#284B35] focus:bg-white"
+            className="w-full pl-10 pr-4 py-2.5 border-2 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-hidden"
+            style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
           />
         </div>
 
@@ -508,11 +522,11 @@ export const Products: React.FC = () => {
         <div className="flex items-center space-x-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
           <button
             onClick={() => setCategoryFilter('')}
-            className={`px-4 py-2 rounded-2xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
-              categoryFilter === ''
-                ? 'bg-[#284B35] text-white shadow-xs'
-                : 'bg-[#E4EFE7] text-[#284B35] hover:bg-[#D4E8DA]'
-            }`}
+            className="px-4 py-2 rounded-2xl text-xs font-black transition-all cursor-pointer whitespace-nowrap shadow-xs"
+            style={{
+              background: categoryFilter === '' ? '#2D6A4F' : '#EEEAE0',
+              color: categoryFilter === '' ? 'white' : '#4A4740'
+            }}
           >
             {isTamil ? 'அனைத்து பொருட்கள்' : 'All Products'}
           </button>
@@ -521,11 +535,11 @@ export const Products: React.FC = () => {
             <button
               key={c}
               onClick={() => setCategoryFilter(c)}
-              className={`px-4 py-2 rounded-2xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
-                categoryFilter === c
-                  ? 'bg-[#284B35] text-white shadow-xs'
-                  : 'bg-[#E4EFE7] text-[#284B35] hover:bg-[#D4E8DA]'
-              }`}
+              className="px-4 py-2 rounded-2xl text-xs font-black transition-all cursor-pointer whitespace-nowrap shadow-xs"
+              style={{
+                background: categoryFilter === c ? '#2D6A4F' : '#EEEAE0',
+                color: categoryFilter === c ? 'white' : '#4A4740'
+              }}
             >
               {c}
             </button>
@@ -536,11 +550,11 @@ export const Products: React.FC = () => {
       {/* Products Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {loading ? (
-          <div className="col-span-full py-16 text-center text-slate-400 font-semibold text-sm">
+          <div className="col-span-full py-16 text-center font-semibold text-sm" style={{ color: '#8C8880' }}>
             {isTamil ? 'பொருட்கள் பட்டியல் ஏற்றப்படுகிறது...' : 'Loading products...'}
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="col-span-full py-16 text-center text-slate-400 font-semibold text-sm bg-white rounded-3xl border border-[#C9DFCF] p-8">
+          <div className="col-span-full py-16 text-center font-semibold text-sm rounded-3xl border p-8" style={{ background: 'white', borderColor: '#EEEAE0', color: '#8C8880' }}>
             {isTamil ? 'பொருட்கள் எதுவும் இல்லை. "+ புதிய பொருள் சேர்க்க" கிளிக் செய்யவும்.' : 'No products found.'}
           </div>
         ) : (
@@ -549,19 +563,22 @@ export const Products: React.FC = () => {
             return (
               <div
                 key={p.id}
-                className="bg-white rounded-3xl p-6 border border-[#C9DFCF] shadow-xs hover:shadow-md hover:border-[#284B35] transition-all flex flex-col justify-between space-y-4"
+                className="rounded-3xl p-6 border shadow-xs transition-all flex flex-col justify-between space-y-4"
+                style={{ background: 'white', borderColor: '#EEEAE0' }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#2D6A4F'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(45,106,79,0.1)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#EEEAE0'; e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)'; }}
               >
                 <div>
                   <div className="flex items-start justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 rounded-2xl bg-[#E4EFE7] text-[#284B35] flex items-center justify-center flex-shrink-0">
+                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: '#EBF5EE', color: '#2D6A4F' }}>
                         <Package className="w-6 h-6" />
                       </div>
                       <div>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                        <span className="text-[10px] font-bold uppercase tracking-wider block" style={{ color: '#8C8880' }}>
                           {p.category}
                         </span>
-                        <h3 className="font-black text-base sm:text-lg text-slate-900 leading-tight">
+                        <h3 className="font-black text-base sm:text-lg leading-tight" style={{ color: '#1C1A15' }}>
                           {p.name}
                         </h3>
                       </div>
@@ -569,43 +586,47 @@ export const Products: React.FC = () => {
 
                     <button
                       onClick={() => handleOpenEdit(p)}
-                      className="p-2 text-slate-400 hover:text-[#284B35] hover:bg-[#E4EFE7] rounded-xl transition-colors cursor-pointer"
+                      className="p-2 rounded-xl transition-colors cursor-pointer"
                       title={isTamil ? 'விலை / விவரம் திருத்த' : 'Edit Product'}
+                      style={{ color: '#8C8880', background: 'transparent' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.color = '#2D6A4F'; e.currentTarget.style.background = '#EBF5EE'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.color = '#8C8880'; e.currentTarget.style.background = 'transparent'; }}
                     >
                       <Edit2 className="w-4 h-4" />
                     </button>
                   </div>
 
                   {p.description && (
-                    <p className="mt-3 text-xs text-slate-500 line-clamp-2 font-medium">
+                    <p className="mt-3 text-xs line-clamp-2 font-medium" style={{ color: '#8C8880' }}>
                       {p.description}
                     </p>
                   )}
                 </div>
 
                 {/* Price & Stock Display */}
-                <div className="pt-4 border-t border-[#E4EFE7] space-y-3">
+                <div className="pt-4 border-t space-y-3" style={{ borderColor: '#EEEAE0' }}>
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-[10px] text-slate-400 block font-bold uppercase tracking-wider">
+                      <span className="text-[10px] block font-bold uppercase tracking-wider" style={{ color: '#8C8880' }}>
                         {isTamil ? 'விற்பனை விலை' : 'Retail Price'}
                       </span>
-                      <div className="text-xl sm:text-2xl font-black text-[#284B35]">
+                      <div className="text-xl sm:text-2xl font-black" style={{ color: '#2D6A4F' }}>
                         ₹{p.price}{' '}
-                        <span className="text-xs text-slate-500 font-semibold">/ {p.unit}</span>
+                        <span className="text-xs font-semibold" style={{ color: '#8C8880' }}>/ {p.unit}</span>
                       </div>
                     </div>
 
                     <div className="text-right">
-                      <span className="text-[10px] text-slate-400 block font-bold uppercase tracking-wider">
+                      <span className="text-[10px] block font-bold uppercase tracking-wider" style={{ color: '#8C8880' }}>
                         {isTamil ? 'இருப்பு' : 'In Stock'}
                       </span>
                       <span
-                        className={`inline-block px-2.5 py-1 rounded-xl text-xs font-black ${
-                          isLowStock
-                            ? 'bg-amber-100 text-amber-900 border border-amber-300'
-                            : 'bg-[#E4EFE7] text-[#284B35]'
-                        }`}
+                        className="inline-block px-2.5 py-1 rounded-xl text-xs font-black"
+                        style={{
+                          background: isLowStock ? '#FDF3E3' : '#EBF5EE',
+                          color: isLowStock ? '#C68B3A' : '#2D6A4F',
+                          border: isLowStock ? '1px solid #C68B3A' : 'none'
+                        }}
                       >
                         {p.stock_quantity} {p.unit}
                       </span>
@@ -615,7 +636,10 @@ export const Products: React.FC = () => {
                   {/* Quick Action to Bill this Product */}
                   <Link
                     to="/orders/new"
-                    className="w-full py-2.5 px-3 bg-[#E4EFE7] hover:bg-[#284B35] text-[#284B35] hover:text-white rounded-xl text-xs font-black flex items-center justify-center space-x-1.5 transition-colors cursor-pointer"
+                    className="w-full py-2.5 px-3 rounded-xl text-xs font-black flex items-center justify-center space-x-1.5 transition-colors cursor-pointer"
+                    style={{ background: '#EBF5EE', color: '#2D6A4F' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = '#2D6A4F'; e.currentTarget.style.color = 'white'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = '#EBF5EE'; e.currentTarget.style.color = '#2D6A4F'; }}
                   >
                     <FilePlus className="w-3.5 h-3.5" />
                     <span>{isTamil ? 'இப்பொருளுக்கு பில் போட' : 'Bill this Item'}</span>
@@ -629,17 +653,18 @@ export const Products: React.FC = () => {
 
       {/* Add / Edit Product Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl space-y-5 border border-[#C9DFCF]">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="font-black text-base text-slate-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(28, 26, 21, 0.6)', backdropFilter: 'blur(4px)' }}>
+          <div className="rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl space-y-5 border" style={{ background: 'white', borderColor: '#EEEAE0' }}>
+            <div className="flex items-center justify-between pb-3 border-b" style={{ borderColor: '#EEEAE0' }}>
+              <h3 className="font-black text-base" style={{ color: '#1C1A15' }}>
                 {editingProduct
                   ? (isTamil ? 'பொருள் தகவலை மாற்ற' : 'Update Product')
                   : (isTamil ? 'புதிய பொருள் சேர்க்க' : 'Add New Product')}
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-1 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
+                className="p-1 rounded-lg cursor-pointer"
+                style={{ color: '#8C8880' }}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -647,7 +672,7 @@ export const Products: React.FC = () => {
 
             <form onSubmit={handleSubmit} className="space-y-4 text-xs">
               <div>
-                <label className="block font-black text-slate-700 mb-1">
+                <label className="block font-black mb-1" style={{ color: '#4A4740' }}>
                   {isTamil ? 'பொருளின் முழு பெயர் (காட்சி பெயர்) *' : 'Display Name (e.g. தமிழ் / English) *'}
                 </label>
                 <input
@@ -656,13 +681,14 @@ export const Products: React.FC = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder={isTamil ? 'எ.கா. நாட்டு சர்க்கரை / Country Sugar' : 'e.g. நாட்டு சர்க்கரை / Country Sugar'}
-                  className="w-full px-3.5 py-2.5 bg-[#F9FCFA] border-2 border-[#C9DFCF] rounded-xl text-sm font-bold text-slate-900"
+                  className="w-full px-3.5 py-2.5 border-2 rounded-xl text-sm font-bold focus:outline-hidden"
+                  style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-black text-slate-700 mb-1">
+                  <label className="block font-black mb-1" style={{ color: '#4A4740' }}>
                     {isTamil ? 'தமிழ் பெயர் (தனித்திறன்)' : 'Tamil Name'}
                   </label>
                   <input
@@ -673,12 +699,13 @@ export const Products: React.FC = () => {
                       if (!editingProduct && !name) setName(e.target.value);
                     }}
                     placeholder={isTamil ? 'எ.கா. நாட்டு சர்க்கரை' : 'e.g. நாட்டு சர்க்கரை'}
-                    className="w-full px-3.5 py-2 bg-[#F9FCFA] border-2 border-[#C9DFCF] rounded-xl text-xs font-bold text-slate-900"
+                    className="w-full px-3.5 py-2 border-2 rounded-xl text-xs font-bold focus:outline-hidden"
+                    style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
                   />
                 </div>
 
                 <div>
-                  <label className="block font-black text-slate-700 mb-1">
+                  <label className="block font-black mb-1" style={{ color: '#4A4740' }}>
                     {isTamil ? 'ஆங்கில பெயர் (English Name)' : 'English Name'}
                   </label>
                   <input
@@ -686,14 +713,15 @@ export const Products: React.FC = () => {
                     value={nameEn}
                     onChange={(e) => setNameEn(e.target.value)}
                     placeholder="e.g. Country Sugar"
-                    className="w-full px-3.5 py-2 bg-[#F9FCFA] border-2 border-[#C9DFCF] rounded-xl text-xs font-bold text-slate-900"
+                    className="w-full px-3.5 py-2 border-2 rounded-xl text-xs font-bold focus:outline-hidden"
+                    style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-black text-slate-700 mb-1">
+                  <label className="block font-black mb-1" style={{ color: '#4A4740' }}>
                     {isTamil ? 'பொருளின் வகை *' : 'Category *'}
                   </label>
                   <input
@@ -702,18 +730,20 @@ export const Products: React.FC = () => {
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
                     placeholder={isTamil ? 'எ.கா. எண்ணெய்கள், சர்க்கரை' : 'e.g. Traditional Oils, Grains'}
-                    className="w-full px-3.5 py-2 bg-[#F9FCFA] border-2 border-[#C9DFCF] rounded-xl text-xs font-bold"
+                    className="w-full px-3.5 py-2 border-2 rounded-xl text-xs font-bold focus:outline-hidden"
+                    style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
                   />
                 </div>
 
                 <div>
-                  <label className="block font-black text-slate-700 mb-1">
+                  <label className="block font-black mb-1" style={{ color: '#4A4740' }}>
                     {isTamil ? 'அளவீட்டு அலகு (Unit) *' : 'Unit *'}
                   </label>
                   <select
                     value={unit}
                     onChange={(e) => setUnit(e.target.value)}
-                    className="w-full px-3.5 py-2 bg-[#F9FCFA] border-2 border-[#C9DFCF] rounded-xl text-xs font-bold"
+                    className="w-full px-3.5 py-2 border-2 rounded-xl text-xs font-bold focus:outline-hidden"
+                    style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
                   >
                     <option value="kg">kg (கிலோ)</option>
                     <option value="liter">liter (லிட்டர்)</option>
@@ -727,7 +757,7 @@ export const Products: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-black text-slate-700 mb-1">
+                  <label className="block font-black mb-1" style={{ color: '#4A4740' }}>
                     {isTamil ? 'விற்பனை விலை (₹) *' : 'Retail Price (₹) *'}
                   </label>
                   <input
@@ -737,12 +767,13 @@ export const Products: React.FC = () => {
                     step="any"
                     value={price}
                     onChange={(e) => setPrice(Number(e.target.value))}
-                    className="w-full px-3.5 py-2.5 bg-[#F9FCFA] border-2 border-[#C9DFCF] rounded-xl text-base font-black text-[#284B35]"
+                    className="w-full px-3.5 py-2.5 border-2 rounded-xl text-base font-black focus:outline-hidden"
+                    style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#2D6A4F' }}
                   />
                 </div>
 
                 <div>
-                  <label className="block font-black text-slate-700 mb-1">
+                  <label className="block font-black mb-1" style={{ color: '#4A4740' }}>
                     {isTamil ? 'கையிருப்பு அளவு *' : 'Stock Quantity *'}
                   </label>
                   <input
@@ -752,13 +783,14 @@ export const Products: React.FC = () => {
                     step="any"
                     value={stockQuantity}
                     onChange={(e) => setStockQuantity(Number(e.target.value))}
-                    className="w-full px-3.5 py-2.5 bg-[#F9FCFA] border-2 border-[#C9DFCF] rounded-xl text-base font-black text-slate-900"
+                    className="w-full px-3.5 py-2.5 border-2 rounded-xl text-base font-black focus:outline-hidden"
+                    style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-black text-slate-700 mb-1">
+                <label className="block font-black mb-1" style={{ color: '#4A4740' }}>
                   {isTamil ? 'விளக்கம் (தேவைப்பட்டால்)' : 'Description (Optional)'}
                 </label>
                 <textarea
@@ -766,22 +798,25 @@ export const Products: React.FC = () => {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder={isTamil ? 'பாரம்பரிய இயற்கை தயாரிப்பு...' : 'Pure natural cold pressed...'}
-                  className="w-full px-3.5 py-2 bg-[#F9FCFA] border border-[#C9DFCF] rounded-xl text-xs"
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs focus:outline-hidden"
+                  style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
                 />
               </div>
 
-              <div className="flex justify-end space-x-2 pt-3 border-t border-slate-100">
+              <div className="flex justify-end space-x-2 pt-3 border-t" style={{ borderColor: '#EEEAE0' }}>
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl cursor-pointer"
+                  className="px-4 py-2.5 font-bold rounded-xl cursor-pointer"
+                  style={{ background: '#F7F5EF', color: '#4A4740' }}
                 >
                   {isTamil ? 'ரத்து' : 'Cancel'}
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2.5 bg-[#284B35] hover:bg-[#1E3827] text-white font-black rounded-xl shadow-md cursor-pointer disabled:opacity-60"
+                  className="px-5 py-2.5 font-black rounded-xl shadow-md cursor-pointer disabled:opacity-60"
+                  style={{ background: '#2D6A4F', color: 'white' }}
                 >
                   {submitting
                     ? (isTamil ? 'சேமிக்கப்படுகிறது...' : 'Saving...')

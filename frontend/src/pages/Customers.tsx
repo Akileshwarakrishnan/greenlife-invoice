@@ -143,7 +143,7 @@ export const Customers: React.FC = () => {
   const totalOutstandingDue = customers.reduce((sum, c) => sum + (c.previous_balance || 0), 0);
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12" style={{ background: 'transparent' }}>
       <PageHeader
         title={isTamil ? 'வாடிக்கையாளர் பட்டியல் & பாக்கி கணக்கு' : 'Customer Accounts & Ledger'}
         subtitle={isTamil ? 'வாடிக்கையாளர்களின் விவரங்கள், முகவரி மற்றும் பாக்கி பண விபரம்' : 'Manage store customers, contact numbers, addresses, and pending dues'}
@@ -151,25 +151,27 @@ export const Customers: React.FC = () => {
         actions={
           <button
             onClick={handleOpenAdd}
-            className="flex items-center space-x-2 px-5 py-3 bg-[#284B35] hover:bg-[#1E3827] text-white font-black rounded-2xl text-xs sm:text-sm shadow-md transition-all cursor-pointer"
+            className="flex items-center space-x-2 px-5 py-3 font-black rounded-2xl text-xs sm:text-sm shadow-md transition-all cursor-pointer"
+            style={{ background: '#2D6A4F', color: 'white' }}
           >
-            <UserPlus className="w-4 h-4 text-[#F5C242]" />
+            <UserPlus className="w-4 h-4" style={{ color: '#C68B3A' }} />
             <span>+ {isTamil ? 'புதிய வாடிக்கையாளர் சேர்க்க' : 'Add New Customer'}</span>
           </button>
         }
       />
 
       {/* Quick Summary Pill & Filter Bar */}
-      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-[#C9DFCF] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-4 sm:p-5 rounded-3xl flex flex-col md:flex-row md:items-center justify-between gap-4" style={{ background: 'white', border: '1px solid #EEEAE0' }}>
         {/* Search */}
         <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+          <Search className="w-4 h-4 absolute left-3.5 top-3.5" style={{ color: '#8C8880' }} />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={isTamil ? 'பெயர், தொலைபேசி அல்லது ஊர் கொண்டு தேடவும்...' : 'Search by name, phone, or town...'}
-            className="w-full pl-10 pr-4 py-2.5 bg-[#F9FCFA] border-2 border-[#C9DFCF] rounded-2xl text-xs sm:text-sm font-semibold text-slate-900 focus:outline-hidden focus:border-[#284B35] focus:bg-white"
+            className="w-full pl-10 pr-4 py-2.5 border-2 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-hidden"
+            style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
           />
         </div>
 
@@ -178,19 +180,20 @@ export const Customers: React.FC = () => {
           <button
             type="button"
             onClick={() => setFilterDueOnly(!filterDueOnly)}
-            className={`px-4 py-2 rounded-2xl text-xs font-black border-2 flex items-center space-x-2 cursor-pointer transition-all ${
-              filterDueOnly
-                ? 'bg-amber-100 border-amber-400 text-amber-900'
-                : 'bg-white border-[#C9DFCF] text-slate-700 hover:bg-[#E4EFE7]'
-            }`}
+            className="px-4 py-2 rounded-2xl text-xs font-black border-2 flex items-center space-x-2 cursor-pointer transition-all"
+            style={{
+              background: filterDueOnly ? '#FDF3E3' : 'white',
+              borderColor: filterDueOnly ? '#C68B3A' : '#EEEAE0',
+              color: filterDueOnly ? '#C68B3A' : '#4A4740'
+            }}
           >
-            <Clock className="w-4 h-4 text-amber-700" />
+            <Clock className="w-4 h-4" style={{ color: '#C68B3A' }} />
             <span>{isTamil ? 'பாக்கி உள்ளவர்கள் மட்டும்' : 'Show Outstanding Dues Only'}</span>
           </button>
 
-          <div className="px-4 py-2 bg-[#EBF3ED] rounded-2xl border border-[#C9DFCF] text-xs font-bold text-[#284B35]">
+          <div className="px-4 py-2 rounded-2xl border text-xs font-bold" style={{ background: '#EBF5EE', borderColor: '#B7D9C4', color: '#2D6A4F' }}>
             <span>{isTamil ? 'மொத்த பாக்கி:' : 'Total Outstanding:'} </span>
-            <span className="font-black text-sm text-[#284B35]">₹{totalOutstandingDue.toLocaleString('en-IN')}</span>
+            <span className="font-black text-sm" style={{ color: '#2D6A4F' }}>₹{totalOutstandingDue.toLocaleString('en-IN')}</span>
           </div>
         </div>
       </div>
@@ -198,30 +201,33 @@ export const Customers: React.FC = () => {
       {/* Customers Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {loading ? (
-          <div className="col-span-full py-16 text-center text-slate-400 font-semibold text-sm">
+          <div className="col-span-full py-16 text-center font-semibold text-sm" style={{ color: '#8C8880' }}>
             {isTamil ? 'விவரங்கள் ஏற்றப்படுகின்றன...' : 'Loading customer list...'}
           </div>
         ) : filteredCustomers.length === 0 ? (
-          <div className="col-span-full py-16 text-center text-slate-400 font-semibold text-sm bg-white rounded-3xl border border-[#C9DFCF] p-8">
+          <div className="col-span-full py-16 text-center font-semibold text-sm rounded-3xl border p-8" style={{ background: 'white', borderColor: '#EEEAE0', color: '#8C8880' }}>
             {isTamil ? 'வாடிக்கையாளர்கள் யாரும் இல்லை. "+ புதிய வாடிக்கையாளர் சேர்க்க" கிளிக் செய்யவும்.' : 'No customers found. Click "+ Add New Customer" to register one.'}
           </div>
         ) : (
           filteredCustomers.map((c) => (
             <div
               key={c.id}
-              className="bg-white rounded-3xl p-6 border border-[#C9DFCF] shadow-xs hover:shadow-md hover:border-[#284B35] transition-all flex flex-col justify-between space-y-4"
+              className="rounded-3xl p-6 border shadow-xs transition-all flex flex-col justify-between space-y-4"
+              style={{ background: 'white', borderColor: '#EEEAE0' }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#2D6A4F'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(45,106,79,0.1)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#EEEAE0'; e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)'; }}
             >
               <div>
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 rounded-2xl bg-[#E4EFE7] text-[#284B35] font-black text-base flex items-center justify-center flex-shrink-0">
+                    <div className="w-12 h-12 rounded-2xl font-black text-base flex items-center justify-center flex-shrink-0" style={{ background: '#EBF5EE', color: '#2D6A4F' }}>
                       {c.name ? c.name[0].toUpperCase() : 'C'}
                     </div>
                     <div>
-                      <h3 className="font-black text-base sm:text-lg text-slate-900 leading-tight">
+                      <h3 className="font-black text-base sm:text-lg leading-tight" style={{ color: '#1C1A15' }}>
                         {c.name}
                       </h3>
-                      <span className="text-[11px] font-bold text-slate-400 font-mono">
+                      <span className="text-[11px] font-bold font-mono" style={{ color: '#8C8880' }}>
                         {c.customer_code || `CUST-${c.id}`}
                       </span>
                     </div>
@@ -229,22 +235,25 @@ export const Customers: React.FC = () => {
 
                   <button
                     onClick={() => handleOpenEdit(c)}
-                    className="p-2 text-slate-400 hover:text-[#284B35] hover:bg-[#E4EFE7] rounded-xl transition-colors cursor-pointer"
+                    className="p-2 rounded-xl transition-colors cursor-pointer"
                     title={isTamil ? 'திருத்த' : 'Edit Customer'}
+                    style={{ color: '#8C8880', background: 'transparent' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = '#2D6A4F'; e.currentTarget.style.background = '#EBF5EE'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = '#8C8880'; e.currentTarget.style.background = 'transparent'; }}
                   >
                     <Edit2 className="w-4 h-4" />
                   </button>
                 </div>
 
                 {/* Contact details */}
-                <div className="mt-4 space-y-2 text-xs text-slate-600 font-medium">
+                <div className="mt-4 space-y-2 text-xs font-medium" style={{ color: '#4A4740' }}>
                   <div className="flex items-center space-x-2">
-                    <Phone className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                    <span className="font-bold text-slate-800">{c.phone}</span>
+                    <Phone className="w-4 h-4 flex-shrink-0" style={{ color: '#8C8880' }} />
+                    <span className="font-bold" style={{ color: '#1C1A15' }}>{c.phone}</span>
                   </div>
 
                   <div className="flex items-start space-x-2">
-                    <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
+                    <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#8C8880' }} />
                     <span className="line-clamp-2">
                       {c.address}, {c.city || 'Kangeyam'} - {c.pincode || '638701'}
                     </span>
@@ -253,16 +262,15 @@ export const Customers: React.FC = () => {
               </div>
 
               {/* Balance & Action Buttons */}
-              <div className="pt-4 border-t border-[#E4EFE7] space-y-3">
+              <div className="pt-4 border-t space-y-3" style={{ borderColor: '#EEEAE0' }}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-[10px] text-slate-400 block font-bold uppercase tracking-wider">
+                    <span className="text-[10px] block font-bold uppercase tracking-wider" style={{ color: '#8C8880' }}>
                       {isTamil ? 'பாக்கி இருப்பு' : 'Account Balance'}
                     </span>
                     <span
-                      className={`font-black text-base ${
-                        (c.previous_balance || 0) > 0 ? 'text-amber-800' : 'text-emerald-700'
-                      }`}
+                      className="font-black text-base"
+                      style={{ color: (c.previous_balance || 0) > 0 ? '#C68B3A' : '#2D6A4F' }}
                     >
                       {(c.previous_balance || 0) > 0
                         ? `₹${c.previous_balance.toLocaleString('en-IN')} பாக்கி`
@@ -271,7 +279,7 @@ export const Customers: React.FC = () => {
                   </div>
 
                   {c.gst_number && (
-                    <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md text-[10px] font-mono font-bold">
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold" style={{ background: '#F7F5EF', color: '#4A4740' }}>
                       GST: {c.gst_number}
                     </span>
                   )}
@@ -280,7 +288,10 @@ export const Customers: React.FC = () => {
                 <div className="flex items-center space-x-2 pt-1">
                   <Link
                     to="/orders/new"
-                    className="flex-1 py-2 px-3 bg-[#E4EFE7] hover:bg-[#284B35] text-[#284B35] hover:text-white rounded-xl text-xs font-black flex items-center justify-center space-x-1.5 transition-colors cursor-pointer"
+                    className="flex-1 py-2 px-3 rounded-xl text-xs font-black flex items-center justify-center space-x-1.5 transition-colors cursor-pointer"
+                    style={{ background: '#EBF5EE', color: '#2D6A4F' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = '#2D6A4F'; e.currentTarget.style.color = 'white'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = '#EBF5EE'; e.currentTarget.style.color = '#2D6A4F'; }}
                   >
                     <FilePlus className="w-3.5 h-3.5" />
                     <span>{isTamil ? 'பில் போடுங்க' : 'Bill Order'}</span>
@@ -290,8 +301,11 @@ export const Customers: React.FC = () => {
                     href={`https://wa.me/91${(c.phone || '').replace(/\D/g, '')}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="p-2 bg-[#25D366]/15 hover:bg-[#25D366]/25 text-[#128C7E] rounded-xl transition-colors cursor-pointer"
+                    className="p-2 rounded-xl transition-colors cursor-pointer"
                     title={isTamil ? 'வாட்ஸ்அப் செய்தி அனுப்ப' : 'WhatsApp'}
+                    style={{ background: 'rgba(37, 211, 102, 0.15)', color: '#128C7E' }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(37, 211, 102, 0.25)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(37, 211, 102, 0.15)'}
                   >
                     <MessageSquare className="w-4 h-4" />
                   </a>
@@ -304,17 +318,18 @@ export const Customers: React.FC = () => {
 
       {/* Add / Edit Customer Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto border border-[#C9DFCF]">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="font-black text-base text-slate-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(28, 26, 21, 0.6)', backdropFilter: 'blur(4px)' }}>
+          <div className="rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto border" style={{ background: 'white', borderColor: '#EEEAE0' }}>
+            <div className="flex items-center justify-between pb-3 border-b" style={{ borderColor: '#EEEAE0' }}>
+              <h3 className="font-black text-base" style={{ color: '#1C1A15' }}>
                 {editingCustomer
                   ? (isTamil ? 'வாடிக்கையாளர் தகவலை மாற்ற' : 'Update Customer Record')
                   : (isTamil ? 'புதிய வாடிக்கையாளர் சேர்க்க' : 'Add New Customer')}
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-1 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
+                className="p-1 rounded-lg cursor-pointer"
+                style={{ color: '#8C8880' }}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -323,7 +338,7 @@ export const Customers: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-4 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-black text-slate-700 mb-1">
+                  <label className="block font-black mb-1" style={{ color: '#4A4740' }}>
                     {isTamil ? 'வாடிக்கையாளர் பெயர் *' : 'Customer Name *'}
                   </label>
                   <input
@@ -332,11 +347,12 @@ export const Customers: React.FC = () => {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder={isTamil ? 'எ.கா. ராஜா' : 'e.g. Raja'}
-                    className="w-full px-3.5 py-2.5 bg-[#F9FCFA] border-2 border-[#C9DFCF] rounded-xl text-sm font-bold text-slate-900"
+                    className="w-full px-3.5 py-2.5 border-2 rounded-xl text-sm font-bold focus:outline-hidden"
+                    style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
                   />
                 </div>
                 <div>
-                  <label className="block font-black text-slate-700 mb-1">
+                  <label className="block font-black mb-1" style={{ color: '#4A4740' }}>
                     {isTamil ? 'தொலைபேசி எண் *' : 'Phone Number *'}
                   </label>
                   <input
@@ -345,13 +361,14 @@ export const Customers: React.FC = () => {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="98421 88990"
-                    className="w-full px-3.5 py-2.5 bg-[#F9FCFA] border-2 border-[#C9DFCF] rounded-xl text-sm font-bold text-slate-900"
+                    className="w-full px-3.5 py-2.5 border-2 rounded-xl text-sm font-bold focus:outline-hidden"
+                    style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-black text-slate-700 mb-1">
+                <label className="block font-black mb-1" style={{ color: '#4A4740' }}>
                   {isTamil ? 'முகவரி *' : 'Address *'}
                 </label>
                 <textarea
@@ -360,49 +377,53 @@ export const Customers: React.FC = () => {
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder={isTamil ? 'கதவு எண், தெரு...' : 'Street / Door number...'}
-                  className="w-full px-3.5 py-2 bg-[#F9FCFA] border-2 border-[#C9DFCF] rounded-xl text-sm font-semibold"
+                  className="w-full px-3.5 py-2 border-2 rounded-xl text-sm font-semibold focus:outline-hidden"
+                  style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
                 />
               </div>
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block font-black text-slate-700 mb-1">
+                  <label className="block font-black mb-1" style={{ color: '#4A4740' }}>
                     {isTamil ? 'ஊர்' : 'City/Town'}
                   </label>
                   <input
                     type="text"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#F9FCFA] border border-[#C9DFCF] rounded-xl text-xs font-semibold"
+                    className="w-full px-3 py-2 border rounded-xl text-xs font-semibold focus:outline-hidden"
+                    style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
                   />
                 </div>
                 <div>
-                  <label className="block font-black text-slate-700 mb-1">
+                  <label className="block font-black mb-1" style={{ color: '#4A4740' }}>
                     {isTamil ? 'மாவட்டம்' : 'District'}
                   </label>
                   <input
                     type="text"
                     value={district}
                     onChange={(e) => setDistrict(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#F9FCFA] border border-[#C9DFCF] rounded-xl text-xs font-semibold"
+                    className="w-full px-3 py-2 border rounded-xl text-xs font-semibold focus:outline-hidden"
+                    style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
                   />
                 </div>
                 <div>
-                  <label className="block font-black text-slate-700 mb-1">
+                  <label className="block font-black mb-1" style={{ color: '#4A4740' }}>
                     {isTamil ? 'பின்கோடு' : 'Pincode'}
                   </label>
                   <input
                     type="text"
                     value={pincode}
                     onChange={(e) => setPincode(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#F9FCFA] border border-[#C9DFCF] rounded-xl text-xs font-semibold"
+                    className="w-full px-3 py-2 border rounded-xl text-xs font-semibold focus:outline-hidden"
+                    style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-black text-slate-700 mb-1">
+                  <label className="block font-black mb-1" style={{ color: '#4A4740' }}>
                     {isTamil ? 'முந்தைய பாக்கி பணம் (₹)' : 'Opening Balance (₹)'}
                   </label>
                   <input
@@ -410,11 +431,12 @@ export const Customers: React.FC = () => {
                     step="any"
                     value={previousBalance}
                     onChange={(e) => setPreviousBalance(Number(e.target.value))}
-                    className="w-full px-3.5 py-2 bg-[#F9FCFA] border-2 border-[#C9DFCF] rounded-xl text-sm font-black text-[#284B35]"
+                    className="w-full px-3.5 py-2 border-2 rounded-xl text-sm font-black focus:outline-hidden"
+                    style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#2D6A4F' }}
                   />
                 </div>
                 <div>
-                  <label className="block font-black text-slate-700 mb-1">
+                  <label className="block font-black mb-1" style={{ color: '#4A4740' }}>
                     {isTamil ? 'GST எண் (இருந்தால்)' : 'GST Number (Optional)'}
                   </label>
                   <input
@@ -422,23 +444,26 @@ export const Customers: React.FC = () => {
                     value={gstNumber}
                     onChange={(e) => setGstNumber(e.target.value)}
                     placeholder="33AAAAA0000A1Z5"
-                    className="w-full px-3 py-2 bg-[#F9FCFA] border border-[#C9DFCF] rounded-xl text-xs font-mono"
+                    className="w-full px-3 py-2 border rounded-xl text-xs font-mono focus:outline-hidden"
+                    style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
                   />
                 </div>
               </div>
 
-              <div className="flex justify-end space-x-2 pt-3 border-t border-slate-100">
+              <div className="flex justify-end space-x-2 pt-3 border-t" style={{ borderColor: '#EEEAE0' }}>
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl cursor-pointer"
+                  className="px-4 py-2.5 font-bold rounded-xl cursor-pointer"
+                  style={{ background: '#F7F5EF', color: '#4A4740' }}
                 >
                   {isTamil ? 'ரத்து' : 'Cancel'}
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2.5 bg-[#284B35] hover:bg-[#1E3827] text-white font-black rounded-xl shadow-md cursor-pointer disabled:opacity-60"
+                  className="px-5 py-2.5 font-black rounded-xl shadow-md cursor-pointer disabled:opacity-60"
+                  style={{ background: '#2D6A4F', color: 'white' }}
                 >
                   {submitting
                     ? (isTamil ? 'சேமிக்கப்படுகிறது...' : 'Saving...')

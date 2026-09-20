@@ -132,10 +132,8 @@ export const NewOrder: React.FC = () => {
   };
 
   const handleAddProductFromCatalog = (product: Product) => {
-    // Check if product already exists in item list
     const existingIndex = items.findIndex((i) => i.product_id === product.id);
     if (existingIndex >= 0) {
-      // Increment quantity
       const newItems = [...items];
       const newQty = (newItems[existingIndex].quantity || 0) + 1;
       newItems[existingIndex].quantity = newQty;
@@ -143,8 +141,6 @@ export const NewOrder: React.FC = () => {
       setItems(newItems);
       return;
     }
-
-    // If first item is empty, replace it
     if (items.length === 1 && !items[0].product_name && items[0].unit_price === 0) {
       setItems([
         {
@@ -160,8 +156,6 @@ export const NewOrder: React.FC = () => {
       ]);
       return;
     }
-
-    // Otherwise append new item
     setItems([
       ...items,
       {
@@ -180,12 +174,10 @@ export const NewOrder: React.FC = () => {
   const handleProductSelect = (index: number, productId: number) => {
     const prod = products.find((p) => p.id === productId);
     if (!prod) return;
-
     const newItems = [...items];
     const qty = newItems[index].quantity || 1;
     const price = prod.price;
     const lineTotal = Number((qty * price).toFixed(2));
-
     newItems[index] = {
       product_id: prod.id,
       product_name: prod.name,
@@ -212,14 +204,11 @@ export const NewOrder: React.FC = () => {
   const handleItemChange = (index: number, field: keyof OrderItem, value: any) => {
     const newItems = [...items];
     const item = { ...newItems[index], [field]: value };
-
     const qty = Number(item.quantity) || 0;
     const price = Number(item.unit_price) || 0;
     const disc = Number(item.discount) || 0;
-
     const lineBase = Math.max(0, qty * price - disc);
     item.total_amount = Number(lineBase.toFixed(2));
-
     newItems[index] = item;
     setItems(newItems);
   };
@@ -242,7 +231,6 @@ export const NewOrder: React.FC = () => {
 
   const removeItemRow = (index: number) => {
     if (items.length <= 1) {
-      // Reset first item
       setItems([
         {
           product_id: undefined,
@@ -262,27 +250,15 @@ export const NewOrder: React.FC = () => {
 
   const handleDeliveryToggle = (type: 'store' | 'courier') => {
     setDeliveryType(type);
-    if (type === 'store') {
-      setCourierCharges(0);
-    } else {
-      setCourierCharges(60);
-    }
+    if (type === 'store') setCourierCharges(0);
+    else setCourierCharges(60);
   };
 
   const subtotal = Number(
     items.reduce((sum, item) => sum + (Number(item.quantity) * Number(item.unit_price) || 0), 0).toFixed(2)
   );
-
   const appliedPreviousBalance = includePreviousBalance ? Number(previousBalance || 0) : 0;
-
-  const grandTotal = Number(
-    (
-      subtotal +
-      appliedPreviousBalance +
-      Number(courierCharges || 0) -
-      Number(discountAmount || 0)
-    ).toFixed(2)
-  );
+  const grandTotal = Number((subtotal + appliedPreviousBalance + Number(courierCharges || 0) - Number(discountAmount || 0)).toFixed(2));
 
   const handleQuickAddCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -317,17 +293,14 @@ export const NewOrder: React.FC = () => {
       const parsed = res.data.items;
       if (parsed.length > 0) {
         const newOrderItems: OrderItem[] = parsed.map((p) => {
-          // Look for matching product in store catalog
           const matchedProd = products.find(
             (sp) =>
               (p.name_ta && sp.name.toLowerCase().includes(p.name_ta.toLowerCase())) ||
               (p.name_en && sp.name.toLowerCase().includes(p.name_en.toLowerCase()))
           );
-
           const unitPrice = p.price > 0 ? p.price : (matchedProd ? matchedProd.price : 0);
           const qty = p.quantity > 0 ? p.quantity : 1;
           const lineTotal = Number((qty * unitPrice).toFixed(2));
-
           return {
             product_id: matchedProd ? matchedProd.id : undefined,
             product_name: p.name,
@@ -339,14 +312,11 @@ export const NewOrder: React.FC = () => {
             total_amount: lineTotal,
           };
         });
-
-        // Replace if first line is empty
         if (items.length === 1 && !items[0].product_name && items[0].unit_price === 0) {
           setItems(newOrderItems);
         } else {
           setItems([...items, ...newOrderItems]);
         }
-
         setShowWhatsAppOrderModal(false);
         setWhatsAppText('');
       }
@@ -367,43 +337,25 @@ export const NewOrder: React.FC = () => {
       setError(isTamil ? 'வாடிக்கையாளரைத் தேர்வு செய்யவும்.' : 'Please select a customer.');
       return;
     }
-
     const validItems = items.filter((i) => i.product_name.trim() && i.quantity > 0);
     if (validItems.length === 0) {
       setError(isTamil ? 'தயவுசெய்து குறைந்தது ஒரு பொருளையாவது பில்லில் சேர்க்கவும்.' : 'Please add at least one product with name and quantity.');
       return;
     }
-
     if (paymentStatus === 'partially_paid') {
       if (partialAmountPaid === '' || Number(partialAmountPaid) <= 0) {
-        setError(
-          isTamil
-            ? 'தயவுசெய்து வாடிக்கையாளர் தற்போது செலுத்திய தொகையை (Paid Amount) உள்ளிடவும்.'
-            : 'Please enter the amount paid by the customer.'
-        );
+        setError(isTamil ? 'தயவுசெய்து வாடிக்கையாளர் தற்போது செலுத்திய தொகையை (Paid Amount) உள்ளிடவும்.' : 'Please enter the amount paid by the customer.');
         return;
       }
       if (Number(partialAmountPaid) >= grandTotal) {
-        setError(
-          isTamil
-            ? 'முழுத் தொகையும் செலுத்தப்பட்டால் "முழு பணம் கொடுத்தார்" (Paid in Full) தேர்வு செய்யவும்.'
-            : 'Paid amount equals or exceeds grand total. Please select "Paid in Full".'
-        );
+        setError(isTamil ? 'முழுத் தொகையும் செலுத்தப்பட்டால் "முழு பணம் கொடுத்தார்" (Paid in Full) தேர்வு செய்யவும்.' : 'Paid amount equals or exceeds grand total. Please select "Paid in Full".');
         return;
       }
     }
-
     setLoading(true);
     setError(null);
-
     try {
-      const computedAmountPaid =
-        paymentStatus === 'paid'
-          ? grandTotal
-          : paymentStatus === 'partially_paid'
-          ? Number(partialAmountPaid) || 0
-          : 0.0;
-
+      const computedAmountPaid = paymentStatus === 'paid' ? grandTotal : paymentStatus === 'partially_paid' ? Number(partialAmountPaid) || 0 : 0.0;
       const payload = {
         customer_id: Number(selectedCustomerId),
         items: validItems.map((i) => ({
@@ -424,18 +376,11 @@ export const NewOrder: React.FC = () => {
         notes: notes || undefined,
         auto_generate_invoice: true,
       };
-
       const res = await orderApi.create(payload);
-      if (res.data.invoice_id) {
-        navigate(`/invoices/${res.data.invoice_id}`);
-      } else {
-        navigate('/invoices');
-      }
+      if (res.data.invoice_id) navigate(`/invoices/${res.data.invoice_id}`);
+      else navigate('/invoices');
     } catch (err: any) {
-      setError(
-        err.response?.data?.detail ||
-          (isTamil ? 'பில் உருவாக்குவதில் பிழை ஏற்பட்டுள்ளது. மீண்டும் முயற்சிக்கவும்.' : 'Failed to create order.')
-      );
+      setError(err.response?.data?.detail || (isTamil ? 'பில் உருவாக்குவதில் பிழை ஏற்பட்டுள்ளது. மீண்டும் முயற்சிக்கவும்.' : 'Failed to create order.'));
     } finally {
       setLoading(false);
     }
@@ -444,7 +389,7 @@ export const NewOrder: React.FC = () => {
   const selectedCustomer = customers.find((c) => c.id === Number(selectedCustomerId));
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto pb-12">
+    <div className="space-y-6 max-w-5xl mx-auto pb-12" style={{ background: 'transparent' }}>
       <PageHeader
         title={isTamil ? 'புதிய பில் போடுங்க' : 'Create Customer Bill'}
         subtitle={isTamil ? 'வாடிக்கையாளரைத் தேர்வு செய்து, பொருட்களைத் தட்டி 1 நிமிடத்தில் பில் கொடுங்கள்' : 'Select customer, tap organic items, and issue bill immediately'}
@@ -452,21 +397,21 @@ export const NewOrder: React.FC = () => {
       />
 
       {error && (
-        <div className="p-4 bg-rose-50 border-2 border-rose-200 text-rose-800 text-sm font-bold rounded-2xl flex items-center space-x-3">
-          <AlertCircle className="w-5 h-5 flex-shrink-0 text-rose-600" />
+        <div className="p-4 border-2 font-bold rounded-2xl flex items-center space-x-3 text-sm" style={{ background: '#FDF3E3', borderColor: '#C68B3A', color: '#1C1A15' }}>
+          <AlertCircle className="w-5 h-5 flex-shrink-0" style={{ color: '#C68B3A' }} />
           <span>{error}</span>
         </div>
       )}
 
       <form onSubmit={handleSubmitOrder} className="space-y-7">
         {/* STEP 1: CUSTOMER SELECTION */}
-        <div className="bg-white p-6 sm:p-7 rounded-3xl border border-[#C9DFCF] shadow-xs space-y-5">
+        <div className="p-6 sm:p-7 rounded-3xl border shadow-xs space-y-5" style={{ background: 'white', borderColor: '#EEEAE0' }}>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center space-x-3">
-              <span className="w-8 h-8 rounded-full bg-[#284B35] text-white flex items-center justify-center font-black text-sm">
+              <span className="w-8 h-8 rounded-full flex items-center justify-center font-black text-sm" style={{ background: '#2D6A4F', color: 'white' }}>
                 1
               </span>
-              <h2 className="text-lg font-black text-slate-900">
+              <h2 className="text-lg font-black" style={{ color: '#1C1A15' }}>
                 {isTamil ? 'வாடிக்கையாளர் யார்?' : 'Step 1: Who is the Customer?'}
               </h2>
             </div>
@@ -474,23 +419,25 @@ export const NewOrder: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowAddCustomer(true)}
-              className="inline-flex items-center space-x-2 px-4 py-2 bg-[#E4EFE7] hover:bg-[#D4E8DA] text-[#284B35] font-black text-xs rounded-xl transition-all cursor-pointer self-start sm:self-auto"
+              className="inline-flex items-center space-x-2 px-4 py-2 font-black text-xs rounded-xl transition-all cursor-pointer self-start sm:self-auto"
+              style={{ background: '#EBF5EE', color: '#2D6A4F' }}
             >
-              <UserPlus className="w-4 h-4 text-[#284B35]" />
+              <UserPlus className="w-4 h-4" style={{ color: '#2D6A4F' }} />
               <span>+ {isTamil ? 'புதிய வாடிக்கையாளர் சேர்க்க' : 'Add New Customer'}</span>
             </button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-black text-[#284B35] uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-black uppercase tracking-wider mb-1.5" style={{ color: '#2D6A4F' }}>
                 {isTamil ? 'வாடிக்கையாளரைத் தேர்ந்தெடுக்கவும் *' : 'Choose Customer *'}
               </label>
               <select
                 required
                 value={selectedCustomerId}
                 onChange={(e) => handleCustomerChange(Number(e.target.value))}
-                className="w-full px-4 py-3 bg-[#F9FCFA] border-2 border-[#C9DFCF] rounded-2xl text-sm font-bold text-slate-900 focus:outline-hidden focus:border-[#284B35] focus:bg-white"
+                className="w-full px-4 py-3 border-2 rounded-2xl text-sm font-bold focus:outline-hidden"
+                style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
               >
                 <option value="">{isTamil ? '-- வாடிக்கையாளரைத் தேர்வு செய்யவும் --' : '-- Choose Customer --'}</option>
                 {customers.map((c) => (
@@ -502,19 +449,18 @@ export const NewOrder: React.FC = () => {
             </div>
 
             {selectedCustomer && (
-              <div className="p-4 bg-[#EBF3ED] border border-[#C9DFCF] rounded-2xl space-y-1.5 text-xs text-slate-700">
+              <div className="p-4 border rounded-2xl space-y-1.5 text-xs" style={{ background: '#EBF5EE', borderColor: '#B7D9C4', color: '#4A4740' }}>
                 <div className="flex items-center justify-between">
-                  <span className="font-extrabold text-sm text-[#284B35]">{selectedCustomer.name}</span>
-                  <span className="font-bold text-slate-600">📞 {selectedCustomer.phone}</span>
+                  <span className="font-extrabold text-sm" style={{ color: '#2D6A4F' }}>{selectedCustomer.name}</span>
+                  <span className="font-bold">📞 {selectedCustomer.phone}</span>
                 </div>
-                <p className="text-slate-600 flex items-center space-x-1">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                <p className="flex items-center space-x-1">
+                  <MapPin className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#8C8880' }} />
                   <span className="truncate">{selectedCustomer.address}, {selectedCustomer.city || 'Kangeyam'}</span>
                 </p>
 
-                {/* Outstanding balance warning pill */}
                 {selectedCustomer.previous_balance > 0 ? (
-                  <div className="mt-2 p-2.5 bg-amber-100/90 border border-amber-300 rounded-xl text-amber-900 font-bold flex items-center justify-between">
+                  <div className="mt-2 p-2.5 border rounded-xl font-bold flex items-center justify-between" style={{ background: '#FDF3E3', borderColor: '#C68B3A', color: '#C68B3A' }}>
                     <span className="flex items-center space-x-1.5">
                       <span>⚠️ {isTamil ? 'முந்தைய பாக்கி பணம்:' : 'Old Balance Due:'}</span>
                       <span className="text-base font-black">₹{selectedCustomer.previous_balance}</span>
@@ -524,14 +470,14 @@ export const NewOrder: React.FC = () => {
                         type="checkbox"
                         checked={includePreviousBalance}
                         onChange={(e) => setIncludePreviousBalance(e.target.checked)}
-                        className="rounded accent-[#284B35]"
+                        className="rounded"
                       />
                       <span>{isTamil ? 'பில்லில் சேர்க்க' : 'Add to bill'}</span>
                     </label>
                   </div>
                 ) : (
-                  <div className="text-[11px] font-bold text-emerald-800 flex items-center space-x-1">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                  <div className="text-[11px] font-bold flex items-center space-x-1" style={{ color: '#2D6A4F' }}>
+                    <CheckCircle2 className="w-3.5 h-3.5" style={{ color: '#2D6A4F' }} />
                     <span>{isTamil ? 'முந்தைய பாக்கி எதுவும் இல்லை (Clean Record)' : 'No old pending balance'}</span>
                   </div>
                 )}
@@ -541,17 +487,17 @@ export const NewOrder: React.FC = () => {
         </div>
 
         {/* STEP 2: PRODUCTS & QUANTITY */}
-        <div className="bg-white p-6 sm:p-7 rounded-3xl border border-[#C9DFCF] shadow-xs space-y-6">
+        <div className="p-6 sm:p-7 rounded-3xl border shadow-xs space-y-6" style={{ background: 'white', borderColor: '#EEEAE0' }}>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center space-x-3">
-              <span className="w-8 h-8 rounded-full bg-[#284B35] text-white flex items-center justify-center font-black text-sm">
+              <span className="w-8 h-8 rounded-full flex items-center justify-center font-black text-sm" style={{ background: '#2D6A4F', color: 'white' }}>
                 2
               </span>
               <div>
-                <h2 className="text-lg font-black text-slate-900">
+                <h2 className="text-lg font-black" style={{ color: '#1C1A15' }}>
                   {isTamil ? 'பொருட்கள் சேர்க்கவும்' : 'Step 2: Add Items to Bill'}
                 </h2>
-                <p className="text-xs text-slate-500 font-medium">
+                <p className="text-xs font-medium" style={{ color: '#8C8880' }}>
                   {isTamil ? 'கீழே உள்ள பொருட்களைத் தட்டினால் தானாக பில்லில் ஏறும்' : 'Tap items below to add instantly, or adjust with + / -'}
                 </p>
               </div>
@@ -561,27 +507,28 @@ export const NewOrder: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowWhatsAppOrderModal(true)}
-                className="inline-flex items-center space-x-2 px-4 py-2 bg-[#284B35] hover:bg-[#1E3827] text-white font-black text-xs rounded-xl shadow-xs transition-all cursor-pointer"
+                className="inline-flex items-center space-x-2 px-4 py-2 font-black text-xs rounded-xl shadow-xs transition-all cursor-pointer"
+                style={{ background: '#2D6A4F', color: 'white' }}
               >
-                <ClipboardPaste className="w-4 h-4 text-[#F5C242]" />
+                <ClipboardPaste className="w-4 h-4" style={{ color: '#C68B3A' }} />
                 <span>+ {isTamil ? 'வாட்ஸ்அப் ஆர்டர் ஒட்டுக' : 'Paste WhatsApp Order'}</span>
               </button>
 
               <button
                 type="button"
                 onClick={addItemRow}
-                className="inline-flex items-center space-x-2 px-4 py-2 bg-[#E4EFE7] hover:bg-[#D4E8DA] text-[#284B35] font-black text-xs rounded-xl transition-all cursor-pointer"
+                className="inline-flex items-center space-x-2 px-4 py-2 font-black text-xs rounded-xl transition-all cursor-pointer"
+                style={{ background: '#EBF5EE', color: '#2D6A4F' }}
               >
-                <Plus className="w-4 h-4 text-[#284B35]" />
+                <Plus className="w-4 h-4" style={{ color: '#2D6A4F' }} />
                 <span>+ {isTamil ? 'வேறு பொருள் சேர்க்க' : 'Add Custom Item'}</span>
               </button>
             </div>
           </div>
 
-          {/* Senior-Friendly Quick-Tap Catalog Pills */}
           {products.length > 0 && (
             <div>
-              <span className="text-xs font-black text-slate-400 uppercase tracking-wider block mb-2.5">
+              <span className="text-xs font-black uppercase tracking-wider block mb-2.5" style={{ color: '#8C8880' }}>
                 {isTamil ? 'கடைப் பொருட்கள் (தட்டினால் உடனே சேரும்):' : 'Store Catalog (Tap to add):'}
               </span>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
@@ -590,13 +537,16 @@ export const NewOrder: React.FC = () => {
                     key={prod.id}
                     type="button"
                     onClick={() => handleAddProductFromCatalog(prod)}
-                    className="p-3 bg-[#F9FCFA] hover:bg-[#E4EFE7] border-2 border-[#C9DFCF] hover:border-[#284B35] rounded-2xl text-left transition-all active:scale-95 cursor-pointer flex flex-col justify-between group"
+                    className="p-3 border-2 rounded-2xl text-left transition-all active:scale-95 cursor-pointer flex flex-col justify-between group"
+                    style={{ background: '#F7F5EF', borderColor: '#EEEAE0' }}
+                    onMouseEnter={(e) => e.currentTarget.style.borderColor = '#2D6A4F'}
+                    onMouseLeave={(e) => e.currentTarget.style.borderColor = '#EEEAE0'}
                   >
-                    <span className="font-extrabold text-xs sm:text-sm text-slate-900 group-hover:text-[#284B35] line-clamp-1">
+                    <span className="font-extrabold text-xs sm:text-sm line-clamp-1" style={{ color: '#1C1A15' }}>
                       {prod.name}
                     </span>
-                    <span className="text-xs font-black text-[#284B35] mt-1">
-                      ₹{prod.price} <span className="text-[10px] text-slate-500 font-semibold">/ {prod.unit}</span>
+                    <span className="text-xs font-black mt-1" style={{ color: '#2D6A4F' }}>
+                      ₹{prod.price} <span className="text-[10px] font-semibold" style={{ color: '#8C8880' }}>/ {prod.unit}</span>
                     </span>
                   </button>
                 ))}
@@ -604,23 +554,23 @@ export const NewOrder: React.FC = () => {
             </div>
           )}
 
-          {/* Bill Line Items Table / Cards */}
           <div className="space-y-3 pt-2">
-            <span className="text-xs font-black text-[#284B35] uppercase tracking-wider block">
+            <span className="text-xs font-black uppercase tracking-wider block" style={{ color: '#2D6A4F' }}>
               {isTamil ? 'பில்லில் உள்ள பொருட்கள்:' : 'Items in Bill:'}
             </span>
 
             {items.map((item, index) => (
               <div
                 key={index}
-                className="p-4 sm:p-5 bg-[#F9FCFA] border-2 border-[#C9DFCF] rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                className="p-4 sm:p-5 border-2 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                style={{ background: '#F7F5EF', borderColor: '#EEEAE0' }}
               >
-                {/* Product Name & Catalog Select */}
                 <div className="flex-1 space-y-1.5">
                   <select
                     value={item.product_id || ''}
                     onChange={(e) => handleProductSelect(index, Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-white border border-[#C9DFCF] rounded-xl text-xs font-bold text-slate-900"
+                    className="w-full px-3 py-2 border rounded-xl text-xs font-bold focus:outline-hidden"
+                    style={{ background: 'white', borderColor: '#EEEAE0', color: '#1C1A15' }}
                   >
                     <option value="">{isTamil ? '-- பொருளைத் தேர்ந்தெடுக்கவும் --' : '-- Choose from catalog --'}</option>
                     {products.map((p) => (
@@ -635,14 +585,14 @@ export const NewOrder: React.FC = () => {
                     value={item.product_name}
                     onChange={(e) => handleItemChange(index, 'product_name', e.target.value)}
                     placeholder={isTamil ? 'பொருளின் பெயர் (எ.கா. நாட்டு சர்க்கரை)' : 'Item name (e.g. Country Sugar)'}
-                    className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-800"
+                    className="w-full px-3 py-1.5 border rounded-xl text-xs font-semibold focus:outline-hidden"
+                    style={{ background: 'white', borderColor: '#EEEAE0', color: '#1C1A15' }}
                   />
                 </div>
 
-                {/* Price and Unit */}
                 <div className="flex items-center space-x-2">
                   <div className="w-24">
-                    <span className="text-[10px] font-bold text-slate-400 block uppercase">
+                    <span className="text-[10px] font-bold uppercase block" style={{ color: '#8C8880' }}>
                       {isTamil ? 'விலை (₹)' : 'Price (₹)'}
                     </span>
                     <input
@@ -651,34 +601,36 @@ export const NewOrder: React.FC = () => {
                       step="any"
                       value={item.unit_price}
                       onChange={(e) => handleItemChange(index, 'unit_price', Number(e.target.value))}
-                      className="w-full px-2.5 py-1.5 bg-white border border-[#C9DFCF] rounded-xl text-xs font-black text-slate-900"
+                      className="w-full px-2.5 py-1.5 border rounded-xl text-xs font-black focus:outline-hidden"
+                      style={{ background: 'white', borderColor: '#EEEAE0', color: '#1C1A15' }}
                     />
                   </div>
 
                   <div className="w-16">
-                    <span className="text-[10px] font-bold text-slate-400 block uppercase">
+                    <span className="text-[10px] font-bold uppercase block" style={{ color: '#8C8880' }}>
                       {isTamil ? 'அளவு' : 'Unit'}
                     </span>
                     <input
                       type="text"
                       value={item.unit}
                       onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
-                      className="w-full px-2 py-1.5 bg-white border border-[#C9DFCF] rounded-xl text-xs font-bold text-center text-slate-700"
+                      className="w-full px-2 py-1.5 border rounded-xl text-xs font-bold text-center focus:outline-hidden"
+                      style={{ background: 'white', borderColor: '#EEEAE0', color: '#4A4740' }}
                     />
                   </div>
                 </div>
 
-                {/* Chunky Quantity Stepper Buttons */}
                 <div className="flex items-center space-x-2">
                   <div>
-                    <span className="text-[10px] font-bold text-slate-400 block uppercase text-center">
+                    <span className="text-[10px] font-bold uppercase block text-center" style={{ color: '#8C8880' }}>
                       {isTamil ? 'எண்ணிக்கை' : 'Quantity'}
                     </span>
-                    <div className="flex items-center space-x-1.5 bg-white border-2 border-[#C9DFCF] rounded-2xl p-1">
+                    <div className="flex items-center space-x-1.5 border-2 rounded-2xl p-1" style={{ background: 'white', borderColor: '#EEEAE0' }}>
                       <button
                         type="button"
                         onClick={() => handleQuantityStep(index, -1)}
-                        className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-black text-base cursor-pointer transition-colors"
+                        className="w-8 h-8 rounded-xl flex items-center justify-center font-black text-base cursor-pointer transition-colors"
+                        style={{ background: '#F7F5EF', color: '#4A4740' }}
                       >
                         <Minus className="w-4 h-4" />
                       </button>
@@ -689,35 +641,36 @@ export const NewOrder: React.FC = () => {
                         step="any"
                         value={item.quantity}
                         onChange={(e) => handleItemChange(index, 'quantity', Number(e.target.value))}
-                        className="w-12 text-center text-sm font-black text-[#284B35] bg-transparent focus:outline-hidden"
+                        className="w-12 text-center text-sm font-black bg-transparent focus:outline-hidden"
+                        style={{ color: '#2D6A4F' }}
                       />
 
                       <button
                         type="button"
                         onClick={() => handleQuantityStep(index, 1)}
-                        className="w-8 h-8 rounded-xl bg-[#E4EFE7] hover:bg-[#D4E8DA] text-[#284B35] flex items-center justify-center font-black text-base cursor-pointer transition-colors"
+                        className="w-8 h-8 rounded-xl flex items-center justify-center font-black text-base cursor-pointer transition-colors"
+                        style={{ background: '#EBF5EE', color: '#2D6A4F' }}
                       >
                         <Plus className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
 
-                  {/* Line Total */}
                   <div className="text-right pl-3 pr-1 min-w-[90px]">
-                    <span className="text-[10px] font-bold text-slate-400 block uppercase">
+                    <span className="text-[10px] font-bold uppercase block" style={{ color: '#8C8880' }}>
                       {isTamil ? 'கூடுதல்' : 'Total'}
                     </span>
-                    <span className="text-base sm:text-lg font-black text-slate-900 block">
+                    <span className="text-base sm:text-lg font-black block" style={{ color: '#1C1A15' }}>
                       ₹{item.total_amount.toLocaleString('en-IN')}
                     </span>
                   </div>
 
-                  {/* Delete button */}
                   <button
                     type="button"
                     onClick={() => removeItemRow(index)}
-                    className="p-2 text-slate-400 hover:text-rose-600 rounded-xl hover:bg-rose-50 cursor-pointer transition-colors"
+                    className="p-2 rounded-xl cursor-pointer transition-colors"
                     title={isTamil ? 'பொருளை நீக்க' : 'Remove item'}
+                    style={{ color: '#8C8880' }}
                   >
                     <Trash2 className="w-5 h-5" />
                   </button>
@@ -729,71 +682,71 @@ export const NewOrder: React.FC = () => {
 
         {/* STEP 3: ARITHMETIC BREAKDOWN & PAYMENT */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Payment & Delivery Options */}
-          <div className="lg:col-span-7 bg-white p-6 sm:p-7 rounded-3xl border border-[#C9DFCF] shadow-xs space-y-5">
+          <div className="lg:col-span-7 p-6 sm:p-7 rounded-3xl border shadow-xs space-y-5" style={{ background: 'white', borderColor: '#EEEAE0' }}>
             <div className="flex items-center space-x-3">
-              <span className="w-8 h-8 rounded-full bg-[#284B35] text-white flex items-center justify-center font-black text-sm">
+              <span className="w-8 h-8 rounded-full flex items-center justify-center font-black text-sm" style={{ background: '#2D6A4F', color: 'white' }}>
                 3
               </span>
-              <h2 className="text-lg font-black text-slate-900">
+              <h2 className="text-lg font-black" style={{ color: '#1C1A15' }}>
                 {isTamil ? 'பணம் & விநியோகம்' : 'Step 3: Payment & Delivery'}
               </h2>
             </div>
 
-            {/* Delivery Mode: Store Visit vs Courier */}
             <div className="space-y-2">
-              <label className="block text-xs font-black text-[#284B35] uppercase tracking-wider">
+              <label className="block text-xs font-black uppercase tracking-wider" style={{ color: '#2D6A4F' }}>
                 {isTamil ? 'விற்பனை வகை:' : 'Delivery Type:'}
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => handleDeliveryToggle('store')}
-                  className={`p-3.5 rounded-2xl border-2 text-left font-bold text-xs flex items-center space-x-2.5 transition-all cursor-pointer ${
-                    deliveryType === 'store'
-                      ? 'border-[#284B35] bg-[#E4EFE7] text-[#284B35]'
-                      : 'border-[#C9DFCF] bg-white text-slate-700 hover:bg-slate-50'
-                  }`}
+                  className="p-3.5 rounded-2xl border-2 text-left font-bold text-xs flex items-center space-x-2.5 transition-all cursor-pointer"
+                  style={{
+                    background: deliveryType === 'store' ? '#EBF5EE' : 'white',
+                    borderColor: deliveryType === 'store' ? '#2D6A4F' : '#EEEAE0',
+                    color: deliveryType === 'store' ? '#2D6A4F' : '#4A4740'
+                  }}
                 >
-                  <ShoppingBag className="w-4 h-4 text-[#284B35]" />
+                  <ShoppingBag className="w-4 h-4" style={{ color: '#2D6A4F' }} />
                   <span>{isTamil ? 'நேரடி கடை விற்பனை (₹0)' : 'Direct Store (₹0)'}</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => handleDeliveryToggle('courier')}
-                  className={`p-3.5 rounded-2xl border-2 text-left font-bold text-xs flex items-center space-x-2.5 transition-all cursor-pointer ${
-                    deliveryType === 'courier'
-                      ? 'border-[#284B35] bg-[#E4EFE7] text-[#284B35]'
-                      : 'border-[#C9DFCF] bg-white text-slate-700 hover:bg-slate-50'
-                  }`}
+                  className="p-3.5 rounded-2xl border-2 text-left font-bold text-xs flex items-center space-x-2.5 transition-all cursor-pointer"
+                  style={{
+                    background: deliveryType === 'courier' ? '#EBF5EE' : 'white',
+                    borderColor: deliveryType === 'courier' ? '#2D6A4F' : '#EEEAE0',
+                    color: deliveryType === 'courier' ? '#2D6A4F' : '#4A4740'
+                  }}
                 >
-                  <Truck className="w-4 h-4 text-[#284B35]" />
+                  <Truck className="w-4 h-4" style={{ color: '#2D6A4F' }} />
                   <span>{isTamil ? 'கொரியர் பார்சல் (+₹60)' : 'Courier (+₹60)'}</span>
                 </button>
               </div>
             </div>
 
-            {/* Payment Status: Paid vs Pending Due */}
             <div className="space-y-2">
-              <label className="block text-xs font-black text-[#284B35] uppercase tracking-wider">
+              <label className="block text-xs font-black uppercase tracking-wider" style={{ color: '#2D6A4F' }}>
                 {isTamil ? 'வாடிக்கையாளர் பணம் கொடுத்தாரா?' : 'Payment Status:'}
               </label>
               <div className="grid grid-cols-3 gap-2.5">
                 {[
-                  { id: 'paid', label: isTamil ? 'முழு பணம் கொடுத்தார்' : 'Paid in Full', color: 'emerald' },
-                  { id: 'pending', label: isTamil ? 'பாக்கி உள்ளது (Due)' : 'Keep as Due', color: 'amber' },
-                  { id: 'partially_paid', label: isTamil ? 'பாதி பணம் கொடுத்தார்' : 'Partially Paid', color: 'blue' },
+                  { id: 'paid', label: isTamil ? 'முழு பணம் கொடுத்தார்' : 'Paid in Full' },
+                  { id: 'pending', label: isTamil ? 'பாக்கி உள்ளது (Due)' : 'Keep as Due' },
+                  { id: 'partially_paid', label: isTamil ? 'பாதி பணம் கொடுத்தார்' : 'Partially Paid' },
                 ].map((s) => (
                   <button
                     key={s.id}
                     type="button"
                     onClick={() => setPaymentStatus(s.id)}
-                    className={`py-3 px-2 rounded-2xl border-2 font-black text-xs text-center transition-all cursor-pointer ${
-                      paymentStatus === s.id
-                        ? 'border-[#284B35] bg-[#284B35] text-white shadow-xs'
-                        : 'border-[#C9DFCF] bg-white text-slate-700 hover:bg-slate-50'
-                    }`}
+                    className="py-3 px-2 rounded-2xl border-2 font-black text-xs text-center transition-all cursor-pointer"
+                    style={{
+                      background: paymentStatus === s.id ? '#2D6A4F' : 'white',
+                      borderColor: paymentStatus === s.id ? '#2D6A4F' : '#EEEAE0',
+                      color: paymentStatus === s.id ? 'white' : '#4A4740'
+                    }}
                   >
                     {s.label}
                   </button>
@@ -801,20 +754,19 @@ export const NewOrder: React.FC = () => {
               </div>
             </div>
 
-            {/* PARTIALLY PAID AMOUNT INPUT */}
             {paymentStatus === 'partially_paid' && (
-              <div className="p-4 sm:p-5 bg-amber-50/95 border-2 border-amber-300 rounded-2xl space-y-3 shadow-xs">
+              <div className="p-4 sm:p-5 border-2 rounded-2xl space-y-3 shadow-xs" style={{ background: '#FDF3E3', borderColor: '#C68B3A' }}>
                 <div className="flex items-center justify-between">
-                  <label className="block text-xs font-black text-amber-950 uppercase tracking-wider">
+                  <label className="block text-xs font-black uppercase tracking-wider" style={{ color: '#C68B3A' }}>
                     {isTamil ? 'வாடிக்கையாளர் செலுத்திய தொகை (₹) *' : 'Amount Paid by Customer Now (₹) *'}
                   </label>
-                  <span className="text-[11px] font-black px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 uppercase">
+                  <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase" style={{ background: '#F7F5EF', color: '#C68B3A' }}>
                     {isTamil ? 'பாதி பணம்' : 'Partial Due'}
                   </span>
                 </div>
 
                 <div className="relative">
-                  <span className="absolute left-3.5 top-2.5 text-base font-black text-amber-800">₹</span>
+                  <span className="absolute left-3.5 top-2.5 text-base font-black" style={{ color: '#C68B3A' }}>₹</span>
                   <input
                     type="number"
                     min="0"
@@ -823,44 +775,35 @@ export const NewOrder: React.FC = () => {
                     value={partialAmountPaid}
                     onChange={(e) => setPartialAmountPaid(e.target.value === '' ? '' : Number(e.target.value))}
                     placeholder={isTamil ? 'எ.கா. 400' : 'e.g. 400'}
-                    className="w-full pl-8 pr-4 py-2.5 bg-white border-2 border-amber-400 focus:border-[#284B35] rounded-xl text-lg font-black text-amber-950 focus:outline-hidden"
+                    className="w-full pl-8 pr-4 py-2.5 bg-white border-2 rounded-xl text-lg font-black focus:outline-hidden"
+                    style={{ borderColor: '#C68B3A', color: '#1C1A15' }}
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 pt-1 text-xs">
-                  <div className="p-2.5 bg-white rounded-xl border border-amber-200">
-                    <span className="text-[10px] text-slate-500 font-bold block uppercase">
+                  <div className="p-2.5 bg-white rounded-xl border" style={{ borderColor: '#C68B3A' }}>
+                    <span className="text-[10px] font-bold block uppercase" style={{ color: '#8C8880' }}>
                       {isTamil ? 'செலுத்திய தொகை' : 'Paid Now'}
                     </span>
-                    <span className="text-base font-black text-emerald-700">
+                    <span className="text-base font-black" style={{ color: '#2D6A4F' }}>
                       ₹{(Number(partialAmountPaid) || 0).toLocaleString('en-IN')}
                     </span>
                   </div>
 
-                  <div className="p-2.5 bg-white rounded-xl border border-amber-200">
-                    <span className="text-[10px] text-slate-500 font-bold block uppercase">
+                  <div className="p-2.5 bg-white rounded-xl border" style={{ borderColor: '#C68B3A' }}>
+                    <span className="text-[10px] font-bold block uppercase" style={{ color: '#8C8880' }}>
                       {isTamil ? 'மீதமுள்ள பாக்கி (Due)' : 'Remaining Due'}
                     </span>
-                    <span className="text-base font-black text-amber-900">
+                    <span className="text-base font-black" style={{ color: '#C68B3A' }}>
                       ₹{Math.max(0, grandTotal - (Number(partialAmountPaid) || 0)).toLocaleString('en-IN')}
                     </span>
                   </div>
                 </div>
-
-                <p className="text-[11px] text-amber-900 font-semibold flex items-center space-x-1">
-                  <span>ℹ️</span>
-                  <span>
-                    {isTamil
-                      ? 'மீதமுள்ள ₹' + Math.max(0, grandTotal - (Number(partialAmountPaid) || 0)).toLocaleString('en-IN') + ' வாடிக்கையாளரின் பாக்கி கணக்கில் தானாகவே பதிவாகும்.'
-                      : 'The remaining balance due will be tracked on the customer record.'}
-                  </span>
-                </p>
               </div>
             )}
 
-            {/* Payment Method */}
             <div className="space-y-2">
-              <label className="block text-xs font-black text-[#284B35] uppercase tracking-wider">
+              <label className="block text-xs font-black uppercase tracking-wider" style={{ color: '#2D6A4F' }}>
                 {isTamil ? 'பணம் செலுத்திய விதம்:' : 'Payment Method:'}
               </label>
               <div className="grid grid-cols-3 gap-2.5">
@@ -873,11 +816,12 @@ export const NewOrder: React.FC = () => {
                     key={m.id}
                     type="button"
                     onClick={() => setPaymentMethod(m.id)}
-                    className={`py-2.5 px-2 rounded-2xl border-2 font-bold text-xs text-center transition-all cursor-pointer ${
-                      paymentMethod === m.id
-                        ? 'border-[#284B35] bg-[#E4EFE7] text-[#284B35]'
-                        : 'border-[#C9DFCF] bg-white text-slate-700 hover:bg-slate-50'
-                    }`}
+                    className="py-2.5 px-2 rounded-2xl border-2 font-bold text-xs text-center transition-all cursor-pointer"
+                    style={{
+                      background: paymentMethod === m.id ? '#EBF5EE' : 'white',
+                      borderColor: paymentMethod === m.id ? '#2D6A4F' : '#EEEAE0',
+                      color: paymentMethod === m.id ? '#2D6A4F' : '#4A4740'
+                    }}
                   >
                     {m.label}
                   </button>
@@ -885,9 +829,8 @@ export const NewOrder: React.FC = () => {
               </div>
             </div>
 
-            {/* Remarks / Notes */}
             <div>
-              <label className="block text-xs font-black text-[#284B35] uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-black uppercase tracking-wider mb-1.5" style={{ color: '#2D6A4F' }}>
                 {isTamil ? 'குறிப்புகள் (தேவைப்பட்டால்):' : 'Store Notes (Optional):'}
               </label>
               <input
@@ -895,32 +838,31 @@ export const NewOrder: React.FC = () => {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder={isTamil ? 'பேக்கிங் அல்லது வாடிக்கையாளர் குறிப்பு...' : 'Remarks or delivery note...'}
-                className="w-full px-3.5 py-2.5 bg-[#F9FCFA] border border-[#C9DFCF] rounded-2xl text-xs font-semibold"
+                className="w-full px-3.5 py-2.5 border rounded-2xl text-xs font-semibold focus:outline-hidden"
+                style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
               />
             </div>
           </div>
 
-          {/* Big Chunky Arithmetic Breakdown Box */}
-          <div className="lg:col-span-5 bg-[#284B35] text-white p-6 sm:p-7 rounded-3xl shadow-xl flex flex-col justify-between space-y-6 border border-[#1E3827]">
+          <div className="lg:col-span-5 p-6 sm:p-7 rounded-3xl shadow-xl flex flex-col justify-between space-y-6 border" style={{ background: '#1B3A2A', borderColor: 'rgba(255,255,255,0.1)' }}>
             <div className="space-y-4">
-              <div className="flex items-center space-x-2 text-[#F5C242]">
+              <div className="flex items-center space-x-2" style={{ color: '#C68B3A' }}>
                 <Calculator className="w-5 h-5" />
                 <h3 className="font-black text-sm tracking-wider uppercase">
                   {isTamil ? 'பில் கணக்கு விபரம்' : 'Bill Amount Summary'}
                 </h3>
               </div>
 
-              {/* Rows */}
-              <div className="space-y-3 text-sm text-[#E4EFE7]">
+              <div className="space-y-3 text-sm" style={{ color: 'rgba(255,255,255,0.85)' }}>
                 <div className="flex justify-between items-center">
                   <span>{isTamil ? 'பொருட்களின் மதிப்பு:' : 'Items Subtotal:'}</span>
                   <span className="font-bold text-base text-white">₹{subtotal.toLocaleString('en-IN')}</span>
                 </div>
 
                 {appliedPreviousBalance > 0 && (
-                  <div className="flex justify-between items-center text-amber-300 font-bold">
+                  <div className="flex justify-between items-center font-bold" style={{ color: '#C68B3A' }}>
                     <span>{isTamil ? '+ முந்தைய பாக்கி பணம்:' : '+ Old Due Balance:'}</span>
-                    <span className="text-base text-amber-300">+ ₹{appliedPreviousBalance.toLocaleString('en-IN')}</span>
+                    <span className="text-base">+ ₹{appliedPreviousBalance.toLocaleString('en-IN')}</span>
                   </div>
                 )}
 
@@ -932,29 +874,28 @@ export const NewOrder: React.FC = () => {
                 )}
 
                 {discountAmount > 0 && (
-                  <div className="flex justify-between items-center text-emerald-300">
+                  <div className="flex justify-between items-center" style={{ color: '#2D6A4F' }}>
                     <span>{isTamil ? '- தள்ளுபடி (Discount):' : '- Discount:'}</span>
                     <span className="font-bold">- ₹{discountAmount.toLocaleString('en-IN')}</span>
                   </div>
                 )}
 
-                {/* Big Grand Total Highlight */}
-                <div className="pt-4 border-t border-white/20 flex flex-col space-y-1">
-                  <span className="text-xs font-black uppercase text-[#D4E8DA] tracking-wider">
+                <div className="pt-4 border-t flex flex-col space-y-1" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+                  <span className="text-xs font-black uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.45)' }}>
                     {isTamil ? 'மொத்தம் செலுத்த வேண்டிய தொகை' : 'TOTAL BILL AMOUNT'}
                   </span>
-                  <div className="text-3xl sm:text-4xl font-black text-[#F5C242]">
+                  <div className="text-3xl sm:text-4xl font-black" style={{ color: '#C68B3A' }}>
                     ₹{grandTotal.toLocaleString('en-IN')}
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Giant 1-Click Save & Print Button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 px-5 bg-[#F5C242] hover:bg-[#E8AA28] text-[#284B35] font-black rounded-2xl text-base sm:text-lg tracking-wide shadow-lg shadow-black/20 transition-all flex items-center justify-center space-x-3 cursor-pointer disabled:opacity-60 active:scale-98"
+              className="w-full py-4 px-5 font-black rounded-2xl text-base sm:text-lg tracking-wide shadow-lg transition-all flex items-center justify-center space-x-3 cursor-pointer disabled:opacity-60 active:scale-95"
+              style={{ background: '#C68B3A', color: '#1C1A15' }}
             >
               <Check className="w-6 h-6 stroke-[3]" />
               <span>
@@ -969,18 +910,18 @@ export const NewOrder: React.FC = () => {
 
       {/* Quick Add Customer Modal */}
       {showAddCustomer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl space-y-5 border border-[#C9DFCF]">
-            <div className="flex items-center space-x-2 text-[#284B35]">
-              <UserPlus className="w-5 h-5 text-[#284B35]" />
-              <h3 className="font-black text-base text-slate-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(28, 26, 21, 0.6)', backdropFilter: 'blur(4px)' }}>
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl space-y-5 border" style={{ borderColor: '#EEEAE0' }}>
+            <div className="flex items-center space-x-2" style={{ color: '#2D6A4F' }}>
+              <UserPlus className="w-5 h-5" />
+              <h3 className="font-black text-base" style={{ color: '#1C1A15' }}>
                 {isTamil ? 'புதிய வாடிக்கையாளர் விபரம்' : 'Add New Customer'}
               </h3>
             </div>
 
             <form onSubmit={handleQuickAddCustomer} className="space-y-4 text-xs">
               <div>
-                <label className="block font-black text-slate-700 mb-1">
+                <label className="block font-black mb-1" style={{ color: '#4A4740' }}>
                   {isTamil ? 'பெயர் *' : 'Customer Name *'}
                 </label>
                 <input
@@ -989,12 +930,13 @@ export const NewOrder: React.FC = () => {
                   value={newCustName}
                   onChange={(e) => setNewCustName(e.target.value)}
                   placeholder={isTamil ? 'எ.கா. ராஜா' : 'e.g. Raja'}
-                  className="w-full px-3.5 py-2.5 bg-[#F9FCFA] border-2 border-[#C9DFCF] rounded-xl text-sm font-bold text-slate-900"
+                  className="w-full px-3.5 py-2.5 border-2 rounded-xl text-sm font-bold focus:outline-hidden"
+                  style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
                 />
               </div>
 
               <div>
-                <label className="block font-black text-slate-700 mb-1">
+                <label className="block font-black mb-1" style={{ color: '#4A4740' }}>
                   {isTamil ? 'கைபேசி எண் *' : 'Phone Number *'}
                 </label>
                 <input
@@ -1003,12 +945,13 @@ export const NewOrder: React.FC = () => {
                   value={newCustPhone}
                   onChange={(e) => setNewCustPhone(e.target.value)}
                   placeholder="98421 88990"
-                  className="w-full px-3.5 py-2.5 bg-[#F9FCFA] border-2 border-[#C9DFCF] rounded-xl text-sm font-bold text-slate-900"
+                  className="w-full px-3.5 py-2.5 border-2 rounded-xl text-sm font-bold focus:outline-hidden"
+                  style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
                 />
               </div>
 
               <div>
-                <label className="block font-black text-slate-700 mb-1">
+                <label className="block font-black mb-1" style={{ color: '#4A4740' }}>
                   {isTamil ? 'முகவரி / ஊர்' : 'Address / Town'}
                 </label>
                 <input
@@ -1016,21 +959,24 @@ export const NewOrder: React.FC = () => {
                   value={newCustAddress}
                   onChange={(e) => setNewCustAddress(e.target.value)}
                   placeholder={isTamil ? 'காங்கேயம், திருப்பூர்' : 'Kangeyam, Tirupur'}
-                  className="w-full px-3.5 py-2.5 bg-[#F9FCFA] border-2 border-[#C9DFCF] rounded-xl text-sm font-semibold text-slate-900"
+                  className="w-full px-3.5 py-2.5 border-2 rounded-xl text-sm font-semibold focus:outline-hidden"
+                  style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
                 />
               </div>
 
-              <div className="flex justify-end space-x-2 pt-3 border-t border-slate-100">
+              <div className="flex justify-end space-x-2 pt-3 border-t" style={{ borderColor: '#EEEAE0' }}>
                 <button
                   type="button"
                   onClick={() => setShowAddCustomer(false)}
-                  className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl cursor-pointer"
+                  className="px-4 py-2.5 font-bold rounded-xl cursor-pointer"
+                  style={{ background: '#F7F5EF', color: '#4A4740' }}
                 >
                   {isTamil ? 'ரத்து' : 'Cancel'}
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 bg-[#284B35] hover:bg-[#1E3827] text-white font-black rounded-xl cursor-pointer shadow-md"
+                  className="px-5 py-2.5 font-black rounded-xl cursor-pointer shadow-md"
+                  style={{ background: '#2D6A4F', color: 'white' }}
                 >
                   {isTamil ? 'சேமி' : 'Save Customer'}
                 </button>
@@ -1042,26 +988,27 @@ export const NewOrder: React.FC = () => {
 
       {/* PASTE WHATSAPP ORDER MODAL */}
       {showWhatsAppOrderModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl space-y-5 border border-[#C9DFCF]">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(28, 26, 21, 0.6)', backdropFilter: 'blur(4px)' }}>
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl space-y-5 border" style={{ borderColor: '#EEEAE0' }}>
+            <div className="flex items-center justify-between pb-3 border-b" style={{ borderColor: '#EEEAE0' }}>
               <div className="flex items-center space-x-2.5">
-                <div className="w-8 h-8 rounded-xl bg-[#E4EFE7] text-[#284B35] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: '#EBF5EE', color: '#2D6A4F' }}>
                   <ClipboardPaste className="w-4 h-4" />
                 </div>
-                <h3 className="font-black text-base text-slate-900">
+                <h3 className="font-black text-base" style={{ color: '#1C1A15' }}>
                   {isTamil ? 'வாட்ஸ்அப் ஆர்டர் ஒட்டுக' : 'Paste WhatsApp Order'}
                 </h3>
               </div>
               <button
                 onClick={() => setShowWhatsAppOrderModal(false)}
-                className="p-1 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
+                className="p-1 rounded-lg cursor-pointer"
+                style={{ color: '#8C8880' }}
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <p className="text-xs text-slate-600 font-medium leading-relaxed">
+            <p className="text-xs font-medium leading-relaxed" style={{ color: '#4A4740' }}>
               {isTamil
                 ? 'வாடிக்கையாளர் வாட்ஸ்அப்பில் அனுப்பிய ஆர்டர் உரையை அப்படியே இங்கே ஒட்டவும். தமிழ் மற்றும் ஆங்கிலத்தில் தானாகவே பில்லில் சேர்க்கப்படும்.'
                 : 'Paste customer WhatsApp order text here. Items will be extracted and auto-added to the bill.'}
@@ -1076,7 +1023,8 @@ export const NewOrder: React.FC = () => {
                   ? `எடுத்துக்காட்டு:\nஇட்லி பொடி 250 கிராம் 200\nநாட்டு சர்க்கரை 2 கிலோ 180\nமரச்செக்கு நல்லெண்ணெய் 1 லிட்டர் 380`
                   : `Example:\nஇட்லி பொடி 250 கிராம் 200\nநாட்டு சர்க்கரை 2 கிலோ 180`
               }
-              className="w-full p-4 bg-[#F9FCFA] border-2 border-[#C9DFCF] focus:border-[#284B35] focus:bg-white rounded-2xl text-xs font-semibold text-slate-900 focus:outline-hidden"
+              className="w-full p-4 border-2 rounded-2xl text-xs font-semibold focus:outline-hidden"
+              style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
             />
 
             <div className="flex justify-between items-center pt-2">
@@ -1087,7 +1035,8 @@ export const NewOrder: React.FC = () => {
                     `இட்லி பொடி 250 கிராம் 200\nநாட்டு சர்க்கரை 2 கிலோ 180\nமரச்செக்கு நல்லெண்ணெய் 1 லிட்டர் 380`
                   )
                 }
-                className="text-xs font-bold text-[#284B35] hover:underline cursor-pointer"
+                className="text-xs font-bold hover:underline cursor-pointer"
+                style={{ color: '#2D6A4F' }}
               >
                 {isTamil ? 'மாதிரி உரை (Sample)' : 'Sample text'}
               </button>
@@ -1096,7 +1045,8 @@ export const NewOrder: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowWhatsAppOrderModal(false)}
-                  className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs cursor-pointer"
+                  className="px-4 py-2.5 font-bold rounded-xl text-xs cursor-pointer"
+                  style={{ background: '#F7F5EF', color: '#4A4740' }}
                 >
                   {isTamil ? 'ரத்து' : 'Cancel'}
                 </button>
@@ -1105,16 +1055,17 @@ export const NewOrder: React.FC = () => {
                   type="button"
                   disabled={parsingWhatsApp || !whatsAppText.trim()}
                   onClick={handleParseAndAddWhatsAppOrder}
-                  className="px-5 py-2.5 bg-[#284B35] hover:bg-[#1E3827] text-white font-black rounded-xl text-xs shadow-md cursor-pointer disabled:opacity-50 flex items-center space-x-1.5"
+                  className="px-5 py-2.5 font-black rounded-xl text-xs shadow-md cursor-pointer disabled:opacity-50 flex items-center space-x-1.5"
+                  style={{ background: '#2D6A4F', color: 'white' }}
                 >
                   {parsingWhatsApp ? (
                     <>
-                      <RefreshCw className="w-4 h-4 animate-spin text-[#F5C242]" />
+                      <RefreshCw className="w-4 h-4 animate-spin" style={{ color: '#C68B3A' }} />
                       <span>{isTamil ? 'பிரித்தெடுக்கப்படுகிறது...' : 'Parsing...'}</span>
                     </>
                   ) : (
                     <>
-                      <Plus className="w-4 h-4 text-[#F5C242]" />
+                      <Plus className="w-4 h-4" style={{ color: '#C68B3A' }} />
                       <span>{isTamil ? 'பில்லில் சேர்க்க' : 'Add to Bill'}</span>
                     </>
                   )}

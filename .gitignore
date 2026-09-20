@@ -1,4 +1,4 @@
-﻿# Python
+# Python
 venv/
 .venv/
 env/
@@ -20,6 +20,8 @@ backend/.pytest_cache/
 node_modules/
 frontend/node_modules/
 frontend/dist/
+frontend/test-results/
+playwright-report/
 dist/
 *.log
 npm-debug.log*
@@ -29,4 +31,5 @@ npm-debug.log*
 .DS_Store
 .idea/
 .vscode/
+.agents/
 *.swp

@@ -47,33 +47,36 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 z-40 bg-[#1E3A27]/60 backdrop-blur-xs lg:hidden"
+          className="fixed inset-0 z-40 backdrop-blur-xs lg:hidden"
+          style={{ background: 'rgba(27, 58, 42, 0.6)' }}
         />
       )}
 
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 w-68 bg-[#EBF3ED] dark:bg-[#152B1D] text-[#1E3A27] dark:text-[#F1F7F3] flex flex-col border-r border-[#C9DFCF] dark:border-[#1F422E] transition-transform duration-200 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-50 w-64 flex flex-col border-r transition-transform duration-200 ease-in-out lg:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
+        style={{ background: '#13281C', color: 'rgba(255,255,255,0.85)', borderColor: 'rgba(255,255,255,0.08)' }}
       >
         {/* Brand Header */}
-        <div className="h-18 flex items-center justify-between px-6 border-b border-[#C9DFCF] dark:border-[#1F422E] bg-white/70 dark:bg-[#112419]/70">
+        <div className="h-18 flex items-center justify-between px-6 border-b" style={{ borderColor: 'rgba(255,255,255,0.10)' }}>
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#284B35] flex items-center justify-center text-white shadow-sm shadow-[#284B35]/20">
-              <Leaf className="w-5 h-5 text-[#F5C242]" />
+            <div className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-sm" style={{ background: '#2D6A4F', color: 'white' }}>
+              <Leaf className="w-5 h-5" style={{ color: '#C68B3A' }} />
             </div>
             <div>
-              <span className="font-black text-sm text-[#1E3A27] dark:text-[#F1F7F3] block leading-tight">
+              <span className="font-black text-sm block leading-tight" style={{ color: 'rgba(255,255,255,0.85)' }}>
                 GreenLife Foods
               </span>
-              <span className="text-[11px] font-bold text-[#4B8359] dark:text-[#A8CBB1]">
+              <span className="text-[11px] font-bold" style={{ color: '#B7D9C4' }}>
                 {isTamil ? 'இயற்கை அங்காடி' : 'Natural Foods Store'}
               </span>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="lg:hidden p-2 text-[#284B35] hover:bg-[#C9DFCF] rounded-xl cursor-pointer"
+            className="lg:hidden p-2 rounded-xl cursor-pointer"
+            style={{ color: 'rgba(255,255,255,0.85)' }}
           >
             <X className="w-5 h-5" />
           </button>
@@ -83,7 +86,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         <nav className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
           {/* Main tasks section */}
           <div>
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#4B8359] dark:text-[#A8CBB1] px-3 mb-2 block">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider px-3 mb-2 block" style={{ color: 'rgba(255,255,255,0.40)' }}>
               {isTamil ? 'முக்கிய வேலைகள்' : 'MAIN ACTIONS'}
             </span>
             <div className="space-y-1.5">
@@ -98,12 +101,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                       className={({ isActive }) =>
                         `flex items-center space-x-3 px-4 py-3 rounded-2xl text-sm font-black transition-all ${
                           isActive
-                            ? 'bg-[#284B35] text-white shadow-md shadow-[#284B35]/25 scale-[1.02]'
-                            : 'bg-white dark:bg-[#1E3A27] text-[#284B35] dark:text-[#F1F7F3] border-2 border-[#284B35] hover:bg-[#284B35] hover:text-white shadow-xs'
+                            ? 'scale-[1.02]'
+                            : 'shadow-xs hover:opacity-90'
                         }`
                       }
+                      style={({ isActive }) => ({
+                        background: isActive ? '#C68B3A' : '#C68B3A',
+                        color: isActive ? '#1C1A15' : '#1C1A15',
+                        border: 'none',
+                        fontWeight: 'bold'
+                      })}
                     >
-                      <div className="w-6 h-6 rounded-full bg-[#F5C242] text-[#1E3A27] flex items-center justify-center font-black text-xs flex-shrink-0">
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center font-black text-xs flex-shrink-0" style={{ background: 'rgba(0,0,0,0.1)', color: 'inherit' }}>
                         +
                       </div>
                       <span className="truncate">{item.label}</span>
@@ -116,13 +125,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                     key={item.to}
                     to={item.to}
                     onClick={() => onClose()}
-                    className={({ isActive }) =>
-                      `flex items-center space-x-3.5 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${
-                        isActive
-                          ? 'bg-[#284B35] text-white shadow-sm shadow-[#284B35]/20 font-black'
-                          : 'text-[#284B35] dark:text-[#CCE1D2] hover:bg-white/80 dark:hover:bg-[#1E3A27]'
-                      }`
-                    }
+                    className="flex items-center space-x-3.5 px-4 py-3 rounded-2xl text-sm font-bold transition-all"
+                    style={({ isActive }) => ({
+                      background: isActive ? '#2D6A4F' : 'transparent',
+                      color: isActive ? 'white' : 'rgba(255,255,255,0.70)'
+                    })}
                   >
                     <Icon className="w-5 h-5 flex-shrink-0" />
                     <span className="truncate">{item.label}</span>
@@ -134,7 +141,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
           {/* More options section */}
           <div>
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#4B8359] dark:text-[#A8CBB1] px-3 mb-2 block">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider px-3 mb-2 block" style={{ color: 'rgba(255,255,255,0.40)' }}>
               {isTamil ? 'கூடுதல் விவரங்கள்' : 'MORE OPTIONS'}
             </span>
             <div className="space-y-1">
@@ -147,13 +154,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                     key={item.to}
                     to={item.to}
                     onClick={() => onClose()}
-                    className={({ isActive }) =>
-                      `flex items-center space-x-3.5 px-4 py-2.5 rounded-2xl text-sm font-bold transition-all ${
-                        isActive
-                          ? 'bg-[#284B35] text-white shadow-sm shadow-[#284B35]/20 font-black'
-                          : 'text-[#3A6345] dark:text-[#A8CBB1] hover:bg-white/80 dark:hover:bg-[#1E3A27]'
-                      }`
-                    }
+                    className="flex items-center space-x-3.5 px-4 py-2.5 rounded-2xl text-sm font-bold transition-all"
+                    style={({ isActive }) => ({
+                      background: isActive ? '#2D6A4F' : 'transparent',
+                      color: isActive ? 'white' : 'rgba(255,255,255,0.70)'
+                    })}
                   >
                     <Icon className="w-5 h-5 flex-shrink-0" />
                     <span className="truncate">{item.label}</span>
@@ -165,12 +170,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         </nav>
 
         {/* Footer info badge */}
-        <div className="p-4 border-t border-[#C9DFCF] dark:border-[#1F422E] bg-white/60 dark:bg-[#112419]/60">
-          <div className="p-3 rounded-2xl bg-white dark:bg-[#1E3A27] border border-[#C9DFCF] dark:border-[#2D5A3D] space-y-1 text-center">
-            <span className="text-xs font-black text-[#284B35] dark:text-[#F1F7F3] block">
+        <div className="p-4 border-t" style={{ borderColor: 'rgba(255,255,255,0.10)' }}>
+          <div className="p-3 rounded-2xl space-y-1 text-center" style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)' }}>
+            <span className="text-xs font-black block" style={{ color: 'rgba(255,255,255,0.85)' }}>
               {isTamil ? 'கிரீன்லைஃப் இயற்கை பில்லிங்' : 'GreenLife Store System'}
             </span>
-            <p className="text-[11px] text-[#4B8359] dark:text-[#A8CBB1] font-semibold">
+            <p className="text-[11px] font-semibold" style={{ color: 'rgba(255,255,255,0.45)' }}>
               {isTamil ? 'எளிய கடை கணக்கு' : 'Easy Retail Billing'}
             </p>
           </div>

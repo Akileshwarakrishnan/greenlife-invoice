@@ -38,7 +38,7 @@ export const Profile: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-6 max-w-5xl mx-auto" style={{ background: 'transparent' }}>
       <PageHeader
         title={t('nav.profile', 'User Account & Security Audit')}
         subtitle="Manage personal access credentials, role-based capabilities, and review immutable activity logs."
@@ -46,8 +46,8 @@ export const Profile: React.FC = () => {
       />
 
       {/* User Profile Card */}
-      <div className="bg-white dark:bg-[#082216] p-6 sm:p-7 rounded-2xl border border-emerald-100 dark:border-emerald-900/40 shadow-xs flex flex-col sm:flex-row items-center sm:items-start gap-6">
-        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-800 text-white flex items-center justify-center font-bold text-2xl shadow-md shadow-emerald-600/20 flex-shrink-0">
+      <div className="p-6 sm:p-7 rounded-2xl border shadow-xs flex flex-col sm:flex-row items-center sm:items-start gap-6" style={{ background: 'white', borderColor: '#EEEAE0' }}>
+        <div className="w-20 h-20 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-md flex-shrink-0" style={{ background: '#2D6A4F', color: 'white' }}>
           {user?.full_name?.charAt(0) || 'U'}
         </div>
 
@@ -55,27 +55,27 @@ export const Profile: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <div className="flex items-center justify-center sm:justify-start space-x-2">
-                <h2 className="text-xl font-bold text-slate-900 dark:text-emerald-50">{user?.full_name}</h2>
-                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <h2 className="text-xl font-bold" style={{ color: '#1C1A15' }}>{user?.full_name}</h2>
+                <span className="w-2 h-2 rounded-full" style={{ background: '#2D6A4F' }}></span>
               </div>
-              <div className="flex items-center justify-center sm:justify-start space-x-2 text-xs text-slate-500 dark:text-emerald-300/70 mt-1">
-                <Mail className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <div className="flex items-center justify-center sm:justify-start space-x-2 text-xs mt-1" style={{ color: '#8C8880' }}>
+                <Mail className="w-3.5 h-3.5" style={{ color: '#2D6A4F' }} />
                 <span>{user?.email}</span>
               </div>
             </div>
 
-            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 self-center sm:self-auto capitalize">
+            <span className="px-3 py-1 rounded-full text-xs font-semibold border self-center sm:self-auto capitalize" style={{ background: '#EBF5EE', borderColor: '#B7D9C4', color: '#2D6A4F' }}>
               {user?.role} Privileges
             </span>
           </div>
 
-          <div className="pt-4 border-t border-emerald-100 dark:border-emerald-900/40 flex flex-wrap items-center justify-center sm:justify-start gap-4 text-xs text-slate-500 dark:text-emerald-300/70">
+          <div className="pt-4 border-t flex flex-wrap items-center justify-center sm:justify-start gap-4 text-xs" style={{ borderColor: '#EEEAE0', color: '#8C8880' }}>
             <div className="flex items-center space-x-1.5">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              <ShieldCheck className="w-4 h-4" style={{ color: '#2D6A4F' }} />
               <span>Auth Schema: JWT Bearer Token</span>
             </div>
             <div className="flex items-center space-x-1.5">
-              <Calendar className="w-4 h-4 text-slate-400" />
+              <Calendar className="w-4 h-4" style={{ color: '#8C8880' }} />
               <span>
                 Account Created:{' '}
                 {user?.created_at
@@ -92,25 +92,25 @@ export const Profile: React.FC = () => {
       </div>
 
       {/* Audit Log Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+      <div className="rounded-2xl border shadow-xs overflow-hidden" style={{ background: 'white', borderColor: '#EEEAE0' }}>
+        <div className="p-5 border-b flex items-center justify-between" style={{ borderColor: '#EEEAE0' }}>
           <div className="flex items-center space-x-2.5">
-            <div className="p-2 rounded-xl bg-slate-100 text-slate-600">
+            <div className="p-2 rounded-xl" style={{ background: '#F7F5EF', color: '#4A4740' }}>
               <History className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="font-bold text-sm text-slate-900">Security & Operational Audit Log</h3>
-              <p className="text-xs text-slate-500">Immutable chronological record of administrative actions</p>
+              <h3 className="font-bold text-sm" style={{ color: '#1C1A15' }}>Security & Operational Audit Log</h3>
+              <p className="text-xs" style={{ color: '#8C8880' }}>Immutable chronological record of administrative actions</p>
             </div>
           </div>
-          <span className="text-xs font-semibold text-slate-500 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/60">
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-lg border" style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#8C8880' }}>
             {auditLogs.length} events
           </span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50/75 text-slate-500 font-semibold uppercase tracking-wider text-[11px] border-b border-slate-100">
+            <thead className="font-semibold uppercase tracking-wider text-[11px] border-b" style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#8C8880' }}>
               <tr>
                 <th className="px-5 py-3.5">Timestamp (IST)</th>
                 <th className="px-5 py-3.5">Actor</th>
@@ -119,33 +119,33 @@ export const Profile: React.FC = () => {
                 <th className="px-5 py-3.5">Details</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-700">
+            <tbody className="divide-y" style={{ borderColor: '#EEEAE0', color: '#4A4740' }}>
               {loadingLogs ? (
                 <tr>
-                  <td colSpan={5} className="px-5 py-8 text-center text-slate-400">
+                  <td colSpan={5} className="px-5 py-8 text-center" style={{ color: '#8C8880' }}>
                     Loading security audit trail...
                   </td>
                 </tr>
               ) : auditLogs.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-5 py-8 text-center text-slate-400">
+                  <td colSpan={5} className="px-5 py-8 text-center" style={{ color: '#8C8880' }}>
                     No security audit records logged yet.
                   </td>
                 </tr>
               ) : (
                 auditLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="px-5 py-3.5 text-slate-500 whitespace-nowrap font-mono text-[11px]">
+                  <tr key={log.id} onMouseEnter={(e) => e.currentTarget.style.background = '#F7F5EF'} onMouseLeave={(e) => e.currentTarget.style.background = 'white'} style={{ background: 'white' }}>
+                    <td className="px-5 py-3.5 whitespace-nowrap font-mono text-[11px]" style={{ color: '#8C8880' }}>
                       {new Date(log.timestamp).toLocaleString('en-IN')}
                     </td>
-                    <td className="px-5 py-3.5 font-medium text-slate-900">{log.user_email || 'System Daemon'}</td>
+                    <td className="px-5 py-3.5 font-medium" style={{ color: '#1C1A15' }}>{log.user_email || 'System Daemon'}</td>
                     <td className="px-5 py-3.5">
-                      <span className="px-2 py-0.5 rounded-md bg-slate-100 font-mono font-bold text-[10px] text-slate-700 border border-slate-200/60">
+                      <span className="px-2 py-0.5 rounded-md font-mono font-bold text-[10px] border" style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#4A4740' }}>
                         {log.action}
                       </span>
                     </td>
-                    <td className="px-5 py-3.5 text-slate-500 font-medium">{log.entity}</td>
-                    <td className="px-5 py-3.5 text-slate-600 max-w-sm truncate">{log.details}</td>
+                    <td className="px-5 py-3.5 font-medium" style={{ color: '#8C8880' }}>{log.entity}</td>
+                    <td className="px-5 py-3.5 max-w-sm truncate">{log.details}</td>
                   </tr>
                 ))
               )}
