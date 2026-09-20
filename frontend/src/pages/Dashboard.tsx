@@ -111,8 +111,147 @@ export const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Top Welcome Banner */}
-      <div className="rounded-3xl p-6 sm:p-8 shadow-md relative overflow-hidden border" style={{ background: '#1B3A2A', color: 'white', borderColor: 'rgba(255,255,255,0.10)' }}>
+      {/* MOBILE LEAFORA BOTANICAL HERO CARD (< lg only) */}
+      <div
+        className="lg:hidden relative overflow-hidden rounded-3xl p-6 border border-white/15 shadow-2xl"
+        style={{ background: 'radial-gradient(circle at 75% 20%, #1A3E2A 0%, #0E2317 60%, #06110B 100%)' }}
+      >
+        <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-[#52B788]/20 blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 space-y-3">
+          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[11px] font-bold text-[#A3C9A8] tracking-wider uppercase">
+            <Sparkles className="w-3 h-3 text-[#E2A04A]" />
+            <span>{isTamil ? 'இயற்கை அங்காடி' : 'Pure Botanical Store'}</span>
+          </div>
+
+          <h1 className="text-2xl font-bold text-white tracking-tight leading-tight" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
+            {isTamil ? 'இயற்கை வழி வாழ்வியல் இல்லம்' : 'Bring Natural Living Home'}
+          </h1>
+
+          <p className="text-xs text-white/70 font-medium leading-relaxed">
+            {isTamil
+              ? 'பாரம்பரிய இயற்கை உணவு பொருட்கள் & துரித பில்லிங் முறை'
+              : 'Traditional organic cold-pressed oils, millets & fast POS billing'}
+          </p>
+
+          <div className="pt-2 flex items-center space-x-3">
+            <Link
+              to="/orders/new"
+              className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-full text-xs font-black shadow-lg shadow-[#2D6A4F]/40 active:scale-95 transition-transform"
+              style={{ background: 'linear-gradient(135deg, #52B788 0%, #2D6A4F 100%)', color: 'white' }}
+            >
+              <PlusCircle className="w-4 h-4" />
+              <span>{isTamil ? 'புதிய பில் போடுங்க' : 'Make a Bill'}</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+
+            <Link
+              to="/products"
+              className="inline-flex items-center space-x-1.5 px-4 py-2.5 rounded-full text-xs font-bold bg-white/10 backdrop-blur-md border border-white/15 text-white active:scale-95 transition-transform"
+            >
+              <Package className="w-3.5 h-3.5 text-[#A3C9A8]" />
+              <span>{isTamil ? 'பொருட்கள்' : 'Catalog'}</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* MOBILE CATEGORY PILLS HORIZONTAL SCROLL (< lg only) */}
+      <div className="lg:hidden -mx-4 px-4 overflow-x-auto no-scrollbar flex items-center space-x-2 pb-1">
+        {[
+          { label: isTamil ? 'எல்லாமே' : 'All', link: '/' },
+          { label: isTamil ? 'செக்கு எண்ணெய்' : 'Cold-Pressed Oils', link: '/products' },
+          { label: isTamil ? 'பாரம்பரிய சிறுதானியங்கள்' : 'Organic Millets', link: '/products' },
+          { label: isTamil ? 'நாட்டு சர்க்கரை / தேன்' : 'Raw Honey & Jaggery', link: '/products' },
+          { label: isTamil ? 'இயற்கை மசாலா' : 'Herbal Spices', link: '/products' },
+        ].map((cat, i) => (
+          <Link
+            key={i}
+            to={cat.link}
+            className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold transition-all border ${
+              i === 0
+                ? 'bg-gradient-to-r from-[#2D6A4F] to-[#1E4D37] text-white border-[#52B788]/40 shadow-sm'
+                : 'bg-[#112318]/70 backdrop-blur-md text-white/80 border-white/10 hover:bg-[#1E3A28]'
+            }`}
+          >
+            {cat.label}
+          </Link>
+        ))}
+      </div>
+
+      {/* MOBILE 2x2 COMPACT STATS GRID (< lg only) */}
+      <div className="lg:hidden grid grid-cols-2 gap-3">
+        <div className="p-4 rounded-2xl bg-[#112419]/80 backdrop-blur-xl border border-white/10 shadow-md">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold text-white/70 uppercase">
+              {isTamil ? 'இன்றைய வசூல்' : 'Today'}
+            </span>
+            <div className="w-7 h-7 rounded-lg bg-[#52B788]/20 flex items-center justify-center text-[#52B788]">
+              <IndianRupee className="w-3.5 h-3.5" />
+            </div>
+          </div>
+          <p className="text-xl font-black text-white">
+            ₹{((stats?.today_revenue ?? stats?.this_month_revenue) || 0).toLocaleString('en-IN')}
+          </p>
+          <span className="text-[10px] text-white/50 block mt-0.5">
+            {isTamil ? `மாதம்: ₹${(stats?.this_month_revenue || 0).toLocaleString('en-IN')}` : `Month Total`}
+          </span>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-[#112419]/80 backdrop-blur-xl border border-white/10 shadow-md">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold text-white/70 uppercase">
+              {isTamil ? 'பில்கள்' : 'Bills'}
+            </span>
+            <div className="w-7 h-7 rounded-lg bg-[#52B788]/20 flex items-center justify-center text-[#52B788]">
+              <FileCheck className="w-3.5 h-3.5" />
+            </div>
+          </div>
+          <p className="text-xl font-black text-white">
+            {stats?.total_invoices || 0}
+          </p>
+          <span className="text-[10px] text-[#A3C9A8] block mt-0.5">
+            {stats?.paid_invoices || 0} {isTamil ? 'முழு பணம்' : 'paid'}
+          </span>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-[#112419]/80 backdrop-blur-xl border border-white/10 shadow-md">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold text-[#E2A04A] uppercase">
+              {isTamil ? 'பாக்கி பணம்' : 'Dues'}
+            </span>
+            <div className="w-7 h-7 rounded-lg bg-[#C68B3A]/20 flex items-center justify-center text-[#E2A04A]">
+              <Clock className="w-3.5 h-3.5" />
+            </div>
+          </div>
+          <p className="text-xl font-black text-[#E2A04A]">
+            ₹{(stats?.pending_payments || 0).toLocaleString('en-IN')}
+          </p>
+          <span className="text-[10px] text-white/50 block mt-0.5">
+            {isTamil ? 'வசூலிக்க வேண்டியவை' : 'Pending'}
+          </span>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-[#112419]/80 backdrop-blur-xl border border-white/10 shadow-md">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold text-white/70 uppercase">
+              {isTamil ? 'வாடிக்கையாளர்' : 'Customers'}
+            </span>
+            <div className="w-7 h-7 rounded-lg bg-[#52B788]/20 flex items-center justify-center text-[#52B788]">
+              <Users className="w-3.5 h-3.5" />
+            </div>
+          </div>
+          <p className="text-xl font-black text-white">
+            {stats?.total_customers || 0}
+          </p>
+          <span className="text-[10px] text-white/50 block mt-0.5">
+            {isTamil ? 'பதிவு செய்தவர்கள்' : 'Total registered'}
+          </span>
+        </div>
+      </div>
+
+      {/* Top Welcome Banner (DESKTOP ONLY) */}
+      <div className="hidden lg:block rounded-3xl p-6 sm:p-8 shadow-md relative overflow-hidden border" style={{ background: '#1B3A2A', color: 'white', borderColor: 'rgba(255,255,255,0.10)' }}>
         <div className="absolute -right-10 -bottom-10 w-72 h-72 rounded-full blur-2xl opacity-50 pointer-events-none" style={{ background: '#2D6A4F' }}></div>
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -151,8 +290,8 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* 3 Chunky Store Action Shortcuts */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* 3 Chunky Store Action Shortcuts (DESKTOP ONLY) */}
+      <div className="hidden lg:grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Link
           to="/orders/new"
           className="group rounded-3xl p-5 border-2 hover:shadow-md transition-all flex items-center space-x-4 cursor-pointer"
@@ -217,8 +356,8 @@ export const Dashboard: React.FC = () => {
         </Link>
       </div>
 
-      {/* 4 Big Friendly Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* 4 Big Friendly Metric Cards (DESKTOP ONLY) */}
+      <div className="hidden lg:grid lg:grid-cols-4 gap-4">
         <StatCard
           title={isTamil ? 'இன்றைய வசூல் பணம்' : "Today's Collections"}
           value={`₹${((stats?.today_revenue ?? stats?.this_month_revenue) || 0).toLocaleString('en-IN')}`}

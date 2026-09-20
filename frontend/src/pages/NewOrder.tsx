@@ -906,6 +906,27 @@ export const NewOrder: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {/* MOBILE FLOATING STICKY CHECKOUT DOCK (< lg only) */}
+        <div className="lg:hidden fixed bottom-20 left-4 right-4 z-40 bg-[#0E2016]/95 backdrop-blur-2xl border border-white/20 rounded-2xl p-3.5 shadow-2xl flex items-center justify-between">
+          <div>
+            <span className="text-[10px] uppercase font-bold text-white/60 block">
+              {isTamil ? 'மொத்த பில் தொகை' : 'Grand Total'}
+            </span>
+            <span className="text-xl font-black text-[#E2A04A]">
+              ₹{grandTotal.toLocaleString('en-IN')}
+            </span>
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-5 py-2.5 rounded-xl font-black text-xs flex items-center space-x-2 shadow-lg active:scale-95 transition-transform"
+            style={{ background: 'linear-gradient(135deg, #52B788 0%, #2D6A4F 100%)', color: 'white' }}
+          >
+            <Check className="w-4 h-4" />
+            <span>{loading ? (isTamil ? 'தயாராகிறது...' : 'Generating...') : (isTamil ? 'பில் சேமி & பிரிண்ட்' : 'Save & Print')}</span>
+          </button>
+        </div>
       </form>
 
       {/* Quick Add Customer Modal */}

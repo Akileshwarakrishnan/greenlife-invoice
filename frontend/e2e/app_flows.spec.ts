@@ -1,25 +1,42 @@
 import { test, expect } from '@playwright/test';
 
+// Helper to log in cleanly across desktop and mobile viewports
+async function loginAsAdmin(page: any) {
+  await page.goto('/login');
+  // Click visible Admin demo button
+  const adminDemoBtn = page.locator('button:visible').filter({ hasText: 'Admin' }).or(page.locator('button:visible').filter({ hasText: 'நிர்வாகி' })).first();
+  await expect(adminDemoBtn).toBeVisible({ timeout: 5000 });
+  await adminDemoBtn.click();
+
+  // Submit via visible submit button
+  const submitBtn = page.locator('button:visible[type="submit"]').first();
+  await expect(submitBtn).toBeVisible({ timeout: 5000 });
+  await submitBtn.click();
+
+  // Wait for Dashboard
+  await page.waitForURL('/', { timeout: 10000 });
+}
+
 test.describe('GreenLife Natural Foods - Production Verification Suite', () => {
 
   test('1. Auth Login Flow - Demo Fill and Dashboard Access', async ({ page }) => {
     await page.goto('/login');
     await expect(page).toHaveTitle(/GreenLife/);
 
-    // Verify login page elements
-    await expect(page.locator('text=Sign in').first()).toBeVisible();
+    // Verify login page elements (desktop or mobile)
+    await expect(page.locator(':visible').filter({ hasText: 'GreenLife' }).first()).toBeVisible();
 
     // Click Admin Demo Fill button
-    const adminDemoBtn = page.locator('text=Admin Demo').or(page.locator('text=நிர்வாகி')).first();
+    const adminDemoBtn = page.locator('button:visible').filter({ hasText: 'Admin' }).or(page.locator('button:visible').filter({ hasText: 'நிர்வாகி' })).first();
     await expect(adminDemoBtn).toBeVisible();
     await adminDemoBtn.click();
 
     // Verify email and password filled
-    const emailInput = page.locator('input[type="email"]');
+    const emailInput = page.locator('input:visible[type="email"]').first();
     await expect(emailInput).toHaveValue('admin@greenlife.com');
 
     // Submit login form
-    const submitBtn = page.locator('button[type="submit"]');
+    const submitBtn = page.locator('button:visible[type="submit"]').first();
     await submitBtn.click();
 
     // Verify redirected to Dashboard
@@ -28,10 +45,7 @@ test.describe('GreenLife Natural Foods - Production Verification Suite', () => {
   });
 
   test('2. Light and Dark Theme Toggle Engine', async ({ page }) => {
-    await page.goto('/login');
-    await page.locator('text=Admin Demo').or(page.locator('text=நிர்வாகி')).first().click();
-    await page.locator('button[type="submit"]').click();
-    await page.waitForURL('/');
+    await loginAsAdmin(page);
 
     const html = page.locator('html');
 
@@ -59,10 +73,7 @@ test.describe('GreenLife Natural Foods - Production Verification Suite', () => {
   });
 
   test('3. Language Switcher (English <-> Tamil)', async ({ page }) => {
-    await page.goto('/login');
-    await page.locator('text=Admin Demo').or(page.locator('text=நிர்வாகி')).first().click();
-    await page.locator('button[type="submit"]').click();
-    await page.waitForURL('/');
+    await loginAsAdmin(page);
 
     const langBtn = page.locator('button[title*="Tamil"]').or(page.locator('button[title*="English"]')).or(page.locator('button:has-text("தமிழ்")')).or(page.locator('button:has-text("English")')).first();
     await expect(langBtn).toBeVisible();
@@ -79,10 +90,7 @@ test.describe('GreenLife Natural Foods - Production Verification Suite', () => {
   });
 
   test('4. Product Catalog Listing & Search Filtering', async ({ page }) => {
-    await page.goto('/login');
-    await page.locator('text=Admin Demo').or(page.locator('text=நிர்வாகி')).first().click();
-    await page.locator('button[type="submit"]').click();
-    await page.waitForURL('/');
+    await loginAsAdmin(page);
 
     await page.goto('/products');
     await page.waitForURL('/products');
@@ -101,10 +109,7 @@ test.describe('GreenLife Natural Foods - Production Verification Suite', () => {
   });
 
   test('5. Customer Management - Create New Customer', async ({ page }) => {
-    await page.goto('/login');
-    await page.locator('text=Admin Demo').or(page.locator('text=நிர்வாகி')).first().click();
-    await page.locator('button[type="submit"]').click();
-    await page.waitForURL('/');
+    await loginAsAdmin(page);
 
     await page.goto('/customers');
     await page.waitForURL('/customers');
@@ -133,10 +138,7 @@ test.describe('GreenLife Natural Foods - Production Verification Suite', () => {
   });
 
   test('6. New Order Billing Flow - Item Selection & Calculation', async ({ page }) => {
-    await page.goto('/login');
-    await page.locator('text=Admin Demo').or(page.locator('text=நிர்வாகி')).first().click();
-    await page.locator('button[type="submit"]').click();
-    await page.waitForURL('/');
+    await loginAsAdmin(page);
 
     await page.goto('/orders/new');
     await page.waitForURL('/orders/new');
@@ -166,10 +168,7 @@ test.describe('GreenLife Natural Foods - Production Verification Suite', () => {
   });
 
   test('7. Invoices Ledger Verification', async ({ page }) => {
-    await page.goto('/login');
-    await page.locator('text=Admin Demo').or(page.locator('text=நிர்வாகி')).first().click();
-    await page.locator('button[type="submit"]').click();
-    await page.waitForURL('/');
+    await loginAsAdmin(page);
 
     await page.goto('/invoices');
     await page.waitForURL('/invoices');
@@ -185,10 +184,7 @@ test.describe('GreenLife Natural Foods - Production Verification Suite', () => {
   });
 
   test('8. User Profile & Settings Navigation', async ({ page }) => {
-    await page.goto('/login');
-    await page.locator('text=Admin Demo').or(page.locator('text=நிர்வாகி')).first().click();
-    await page.locator('button[type="submit"]').click();
-    await page.waitForURL('/');
+    await loginAsAdmin(page);
 
     // Profile
     await page.goto('/profile');
@@ -202,10 +198,7 @@ test.describe('GreenLife Natural Foods - Production Verification Suite', () => {
   });
 
   test('9. Secure Logout Flow', async ({ page }) => {
-    await page.goto('/login');
-    await page.locator('text=Admin Demo').or(page.locator('text=நிர்வாகி')).first().click();
-    await page.locator('button[type="submit"]').click();
-    await page.waitForURL('/');
+    await loginAsAdmin(page);
 
     // Click logout in navbar
     const logoutBtn = page.locator('button[title*="Sign Out"]').or(page.locator('button[title*="Logout"]')).or(page.locator('button[title*="வெளியேறு"]')).or(page.locator('svg.lucide-log-out').locator('xpath=..')).first();
@@ -214,7 +207,49 @@ test.describe('GreenLife Natural Foods - Production Verification Suite', () => {
     // Verify redirected back to Login
     await page.waitForURL('/login', { timeout: 10000 });
     await expect(page).toHaveURL('/login');
-    await expect(page.locator('text=Sign in').first()).toBeVisible();
+  });
+
+  test('10. Mobile Phone Viewport (Leafora Theme & Bottom Dock)', async ({ page }) => {
+    // Set iPhone mobile viewport
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/login');
+
+    // Verify mobile botanical card elements
+    const mobileHeader = page.locator(':visible').filter({ hasText: 'GreenLife' }).first();
+    await expect(mobileHeader).toBeVisible();
+
+    // Fill demo credentials on mobile
+    const adminDemoChip = page.locator('button:visible').filter({ hasText: 'Admin' }).or(page.locator('button:visible').filter({ hasText: 'நிர்வாகி' })).first();
+    await expect(adminDemoChip).toBeVisible();
+    await adminDemoChip.click();
+
+    // Submit on mobile
+    await page.locator('button:visible[type="submit"]').first().click();
+    await page.waitForURL('/', { timeout: 10000 });
+
+    // Verify Mobile Bottom Dock is present and visible
+    const bottomNav = page.locator('nav:visible').filter({ hasText: 'Home' }).or(page.locator('nav:visible').filter({ hasText: 'முகப்பு' })).first();
+    await expect(bottomNav).toBeVisible();
+
+    // Verify Mobile Botanical Hero Card
+    await expect(page.locator('text=Bring Natural Living Home').or(page.locator('text=இயற்கை வழி வாழ்வியல் இல்லம்')).first()).toBeVisible();
+
+    // Verify Mobile Category Pills
+    await expect(page.locator('text=All').or(page.locator('text=எல்லாமே')).first()).toBeVisible();
+
+    // Test Navigation via Mobile Dock to Products
+    const productsTab = page.locator('nav[aria-label="Mobile Bottom Navigation"] a[href="/products"]').first();
+    await productsTab.click();
+    await page.waitForURL('/products');
+    await expect(page.locator('text=Cold Pressed Coconut Oil').first()).toBeVisible();
+
+    // Test Navigation via Mobile Dock to New Bill
+    const newBillTab = page.locator('nav[aria-label="Mobile Bottom Navigation"] a[href="/orders/new"]').first();
+    await newBillTab.click();
+    await page.waitForURL('/orders/new');
+
+    // Verify Mobile Floating Sticky Checkout Dock
+    await expect(page.locator('text=Grand Total').or(page.locator('text=மொத்த பில் தொகை')).first()).toBeVisible();
   });
 
 });

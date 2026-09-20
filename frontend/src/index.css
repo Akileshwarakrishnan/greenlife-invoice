@@ -188,6 +188,10 @@ html.dark .divide-y > div:hover {
 ::-webkit-scrollbar-thumb { background: #B7D9C4; border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: #2D6A4F; }
 
+/* Hide scrollbar for category pills carousel */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
 @media print {
   .no-print { display: none !important; }
   .print-only { display: block !important; }

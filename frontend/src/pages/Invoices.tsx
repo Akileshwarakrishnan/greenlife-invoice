@@ -191,7 +191,7 @@ export const Invoices: React.FC = () => {
             {filteredInvoices.map((inv) => (
               <div
                 key={inv.id}
-                className="p-5 sm:p-6 transition-colors flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white dark:bg-[#15271B] hover:bg-[#F7F5EF] dark:hover:bg-[#1C3324]"
+                className="p-5 sm:p-6 transition-colors flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white dark:bg-[#15271B] max-lg:bg-[#112419]/90 max-lg:backdrop-blur-md max-lg:border max-lg:border-white/10 max-lg:rounded-2xl max-lg:mb-3 hover:bg-[#F7F5EF] dark:hover:bg-[#1C3324]"
               >
                 {/* Bill & Customer Info */}
                 <div className="flex items-start space-x-4">
