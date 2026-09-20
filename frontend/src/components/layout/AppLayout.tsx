@@ -27,19 +27,19 @@ export const AppLayout: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] dark:bg-[#0D1B11] text-[#1C1A15] dark:text-[#F4F7F4] flex transition-colors duration-200 relative">
+    <div className="min-h-screen bg-[#F7F5EF] dark:bg-[#0D1B11] text-[#1C1A15] dark:text-[#F4F7F4] flex transition-colors duration-200 relative overflow-x-hidden w-full max-w-full">
       {/* Desktop Sidebar Navigation (hidden on mobile) */}
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Main Workspace Area: lg:pl-64 aligns perfectly with Sidebar w-64 */}
-      <div className="flex-1 lg:pl-64 flex flex-col min-h-screen w-full min-w-0">
+      <div className="flex-1 lg:pl-64 flex flex-col min-h-screen w-full min-w-0 max-w-full overflow-x-hidden">
         <Navbar
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
           onOpenAiAssistant={() => setAiAssistantOpen(true)}
         />
 
         {/* Safe bottom padding on mobile so content is not obscured by MobileBottomNav */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-28 lg:pb-8 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-28 lg:pb-8 max-w-7xl w-full mx-auto overflow-x-hidden">
           <Outlet />
         </main>
       </div>

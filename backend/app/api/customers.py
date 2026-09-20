@@ -38,8 +38,12 @@ def create_customer(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ) -> Any:
-    count = db.query(Customer).count() + 1
-    code = f"CUST-{count:04d}"
+    last_cust = db.query(Customer).order_by(Customer.id.desc()).first()
+    next_id = (last_cust.id + 1) if last_cust else 1
+    code = f"CUST-{next_id:04d}"
+    while db.query(Customer).filter(Customer.customer_code == code).first():
+        next_id += 1
+        code = f"CUST-{next_id:04d}"
 
     customer = Customer(
         customer_code=code,

@@ -157,7 +157,7 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* MOBILE CATEGORY PILLS HORIZONTAL SCROLL (< lg only) */}
-      <div className="lg:hidden -mx-4 px-4 overflow-x-auto no-scrollbar flex items-center space-x-2 pb-1">
+      <div className="lg:hidden w-full overflow-x-auto no-scrollbar flex items-center space-x-2 pb-1">
         {[
           { label: isTamil ? 'எல்லாமே' : 'All', link: '/' },
           { label: isTamil ? 'செக்கு எண்ணெய்' : 'Cold-Pressed Oils', link: '/products' },
