@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import {
@@ -13,7 +13,9 @@ import {
   PlusCircle,
   X,
   BookOpen,
-  Leaf
+  Leaf,
+  LogOut,
+  Truck
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -22,14 +24,16 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
-  const { isAdmin } = useAuth();
+  const { isAdmin, logout } = useAuth();
   const { t, language } = useLanguage();
+  const navigate = useNavigate();
   const isTamil = language === 'ta';
 
   const primaryItems = [
     { label: t('nav.dashboard'), to: '/', icon: LayoutDashboard },
     { label: t('nav.new_order'), to: '/orders/new', icon: PlusCircle, isSpecial: true },
     { label: t('nav.invoices'), to: '/invoices', icon: FileText },
+    { label: isTamil ? 'கொள்முதல்' : 'Purchases', to: '/purchases', icon: Truck },
     { label: t('nav.customers'), to: '/customers', icon: Users },
     { label: t('nav.products'), to: '/products', icon: Package },
   ];
@@ -169,8 +173,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </div>
         </nav>
 
-        {/* Footer info badge */}
-        <div className="p-4 border-t" style={{ borderColor: 'rgba(255,255,255,0.10)' }}>
+        {/* Footer info badge & Logout button */}
+        <div className="p-4 border-t space-y-3" style={{ borderColor: 'rgba(255,255,255,0.10)' }}>
+          <button
+            onClick={() => {
+              onClose();
+              logout();
+              navigate('/login');
+            }}
+            className="w-full flex items-center justify-center space-x-2.5 px-4 py-3 rounded-2xl text-xs font-black transition-all active:scale-95 cursor-pointer"
+            style={{
+              background: 'rgba(239, 68, 68, 0.18)',
+              color: '#FCA5A5',
+              border: '1px solid rgba(239, 68, 68, 0.35)',
+            }}
+          >
+            <LogOut className="w-4 h-4 text-[#FCA5A5]" />
+            <span>{isTamil ? 'வெளியேறு (Logout)' : 'Sign Out / Logout'}</span>
+          </button>
+
           <div className="p-3 rounded-2xl space-y-1 text-center" style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)' }}>
             <span className="text-xs font-black block" style={{ color: 'rgba(255,255,255,0.85)' }}>
               {isTamil ? 'கிரீன்லைஃப் இயற்கை பில்லிங்' : 'GreenLife Store System'}

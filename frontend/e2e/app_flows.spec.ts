@@ -252,4 +252,67 @@ test.describe('GreenLife Natural Foods - Production Verification Suite', () => {
     await expect(page.locator('text=Grand Total').or(page.locator('text=மொத்த பில் தொகை')).first()).toBeVisible();
   });
 
+  test('11. Outside Stock Purchases & Inward Bills Flow', async ({ page }) => {
+    await loginAsAdmin(page);
+
+    await page.goto('/purchases');
+    await expect(page).toHaveURL('/purchases');
+
+    // Verify Purchases Header & KPI cards
+    await expect(page.locator('text=Stock Purchases').or(page.locator('text=சரக்கு கொள்முதல்')).first()).toBeVisible();
+    await expect(page.locator('text=Total Purchases').or(page.locator('text=மொத்த கொள்முதல்')).first()).toBeVisible();
+
+    // Open Record Inward Bill modal
+    const addBtn = page.locator('button:visible').filter({ hasText: 'Record Inward Bill' }).or(page.locator('button:visible').filter({ hasText: 'புதிய கொள்முதல் சேர்' })).first();
+    await expect(addBtn).toBeVisible();
+    await addBtn.click();
+
+    // Verify modal is open
+    await expect(page.locator('input[placeholder*="Copra Mill"]').or(page.locator('input[placeholder*="ஆர்கானிக் மில்"]')).first()).toBeVisible();
+  });
+
+  test('12. Annual Income Tax Ledger & CA Dossier Tab', async ({ page }) => {
+    await loginAsAdmin(page);
+
+    await page.goto('/reports');
+    await expect(page).toHaveURL('/reports');
+
+    // Click Annual Income Tax (FY) Tab
+    const taxTab = page.locator('button:visible').filter({ hasText: 'Annual Income Tax' }).or(page.locator('button:visible').filter({ hasText: 'வருமான வரி' })).first();
+    await expect(taxTab).toBeVisible();
+    await taxTab.click();
+
+    // Verify Annual Tax computations
+    await expect(page.locator('text=Gross Sales Turnover').or(page.locator('text=மொத்த விற்பனை')).first()).toBeVisible();
+    await expect(page.locator('text=Taxable Net Income').or(page.locator('text=வரிக்குரிய நிகர லாபம்')).first()).toBeVisible();
+
+    // Verify CA Export CSV button
+    await expect(page.locator('a:visible').filter({ hasText: 'CA' }).first()).toBeVisible();
+  });
+
+  test('13. Smart WhatsApp Arithmetic Parsing Exact User Prompt', async ({ page }) => {
+    await loginAsAdmin(page);
+
+    await page.goto('/orders/new');
+    await expect(page).toHaveURL('/orders/new');
+
+    // Click Paste WhatsApp Order button
+    const pasteBtn = page.locator('button:visible').filter({ hasText: 'Paste WhatsApp' }).or(page.locator('button:visible').filter({ hasText: 'வாட்ஸ்அப் ஆர்டர் ஒட்டுக' })).first();
+    await expect(pasteBtn).toBeVisible();
+    await pasteBtn.click();
+
+    // Paste user's exact line
+    const textarea = page.locator('textarea:visible').first();
+    await expect(textarea).toBeVisible();
+    await textarea.fill('கடலை எண்ணெய் – 2 லிட்டர் × ₹285 = ₹570');
+
+    // Click Add to Bill
+    const parseSubmitBtn = page.locator('button:visible').filter({ hasText: 'Add to Bill' }).or(page.locator('button:visible').filter({ hasText: 'பில்லில் சேர்க்க' })).first();
+    await parseSubmitBtn.click();
+
+    // Verify item was parsed into cart with correct isolated name and unit price
+    await expect(page.locator('text=Cold Pressed Groundnut Oil').or(page.locator('text=கடலை எண்ணெய்')).first()).toBeVisible({ timeout: 6000 });
+  });
+
 });
+

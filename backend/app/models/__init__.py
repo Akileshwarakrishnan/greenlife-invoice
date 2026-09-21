@@ -9,6 +9,7 @@ from app.models.notification import Notification
 from app.models.workflow_log import WorkflowLog
 from app.models.ai_extraction import AiExtraction
 from app.models.audit_log import AuditLog
+from app.models.purchase import Purchase, PurchaseItem, PurchasePaymentStatus
 
 __all__ = [
     "Base",
@@ -29,5 +30,8 @@ __all__ = [
     "Notification",
     "WorkflowLog",
     "AiExtraction",
-    "AuditLog"
+    "AuditLog",
+    "Purchase",
+    "PurchaseItem",
+    "PurchasePaymentStatus"
 ]

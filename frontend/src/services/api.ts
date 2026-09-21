@@ -88,6 +88,15 @@ export const paymentApi = {
   create: (data: any) => api.post<Payment>('/payments', data),
 };
 
+export const purchaseApi = {
+  list: (params?: { search?: string; category?: string; payment_status?: string; start_date?: string; end_date?: string; skip?: number; limit?: number }) =>
+    api.get<any[]>('/purchases', { params }),
+  get: (id: number) => api.get<any>(`/purchases/${id}`),
+  create: (data: any) => api.post<any>('/purchases', data),
+  delete: (id: number) => api.delete(`/purchases/${id}`),
+  getStats: () => api.get<{ total_bills: number; total_amount: number; total_paid: number; total_due: number }>('/purchases/stats'),
+};
+
 export const reportApi = {
   getDashboardStats: () => api.get<DashboardStats>('/reports/dashboard-stats'),
   getRevenueChart: (period: 'daily' | 'weekly' | 'monthly') => api.get<any[]>('/reports/revenue-chart', { params: { period } }),
@@ -96,6 +105,9 @@ export const reportApi = {
   getCustomers: () => api.get<any[]>('/reports/customers'),
   getPayments: () => api.get<any[]>('/reports/payments'),
   getExportCsvUrl: () => `${API_BASE}/reports/export/csv`,
+  getAnnualTax: (financial_year?: string) => api.get<any>('/reports/annual-tax', { params: { financial_year } }),
+  getAnnualTaxExportCsvUrl: (financial_year?: string) =>
+    `${API_BASE}/reports/annual-tax/export-csv${financial_year ? '?financial_year=' + encodeURIComponent(financial_year) : ''}`,
 };
 
 export const aiApi = {

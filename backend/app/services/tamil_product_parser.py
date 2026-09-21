@@ -309,6 +309,71 @@ def parse_single_product_line(line: str) -> Optional[Dict[str, Any]]:
     if not cleaned:
         return None
 
+    # 0. High-Priority Check: Arithmetic / Compound WhatsApp order pattern
+    # Example: "கடலை எண்ணெய் – 2 லிட்டர் × ₹285 = ₹570"
+    # Example: "இட்லி பொடி - 1 பாக்கெட் * 200 = 200"
+    # Example: "நாட்டு சர்க்கரை 2 kg x ₹90 = ₹180"
+    arith_pattern = re.compile(
+        r'^(?P<name>.+?)\s*[\-\–—:]?\s*(?P<qty>\d+(?:\.\d+)?)\s*(?P<unit>[^\d\s×x\*=]+)?\s*[×x\*X]\s*(?:ரூ\.?|ரூபாய்|rs\.?|inr|₹)?\s*(?P<unit_price>\d+(?:\.\d+)?)(?:\s*=\s*(?:ரூ\.?|ரூபாய்|rs\.?|inr|₹)?\s*(?P<total>\d+(?:\.\d+)?))?\s*$',
+        re.IGNORECASE
+    )
+    arith_match = arith_pattern.match(cleaned)
+    if arith_match:
+        name_part = arith_match.group("name").strip()
+        qty_val = float(arith_match.group("qty"))
+        unit_str = (arith_match.group("unit") or "").strip().lower()
+        unit_price = float(arith_match.group("unit_price"))
+
+        # Standardize unit and extracted quantity
+        unit = "kg"
+        extracted_qty = qty_val
+        if any(u in unit_str for u in ["கிலோ", "kg", "kilo"]):
+            unit = "kg"
+            extracted_qty = qty_val
+        elif any(u in unit_str for u in ["கிராம்", "கிரா", "gm", "g"]):
+            unit = f"{int(qty_val)}g"
+            extracted_qty = 1.0
+        elif any(u in unit_str for u in ["லிட்டர்", "லி", "ltr", "liter", "l"]):
+            unit = "liter"
+            extracted_qty = qty_val
+        elif any(u in unit_str for u in ["மிலி", "மில்லி", "ml"]):
+            unit = f"{int(qty_val)}ml"
+            extracted_qty = 1.0
+        elif any(u in unit_str for u in ["பாக்கெட்", "packet", "pack", "pkt"]):
+            unit = "packet"
+            extracted_qty = qty_val
+        elif any(u in unit_str for u in ["பாட்டில்", "bottle"]):
+            unit = "bottle"
+            extracted_qty = qty_val
+        elif any(u in unit_str for u in ["டின்", "tin"]):
+            unit = "tin"
+            extracted_qty = qty_val
+        else:
+            unit = "piece"
+            extracted_qty = qty_val
+
+        # Clean product name from punctuation
+        cleaned_name = re.sub(r'[\-–—:,/\\|]', ' ', name_part).strip()
+        cleaned_name = re.sub(r'\s+', ' ', cleaned_name)
+
+        if cleaned_name:
+            name_ta, name_en, display_name = translate_product_name(cleaned_name)
+            category = classify_category(name_ta or cleaned_name, name_en)
+
+            return {
+                "raw_text": raw,
+                "name": display_name,
+                "name_ta": name_ta or cleaned_name,
+                "name_en": name_en or cleaned_name,
+                "category": category,
+                "unit": unit,
+                "price": unit_price,
+                "stock_quantity": 100.0,
+                "quantity": extracted_qty,
+                "tax_percentage": 0.0,
+                "description": f"Pure Natural {name_en or cleaned_name}"
+            }
+
     # 1. Extract Price
     # Matches patterns at the end: "ரூ.200", "₹200", "200/-", "200 rs", " 200", "ரூபாய் 200"
     price = 0.0

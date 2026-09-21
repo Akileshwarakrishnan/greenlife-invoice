@@ -100,3 +100,18 @@ def test_api_parse_text_and_batch_create():
     assert created[0]["name_ta"] == "இட்லி பொடி"
     assert created[0]["price"] == 200.0
     assert created[0]["unit"] == "250g"
+
+def test_parse_arithmetic_whatsapp_order_exact_user_request():
+    # User's exact prompt: "கடலை எண்ணெய் – 2 லிட்டர் × ₹285 = ₹570"
+    raw = "கடலை எண்ணெய் – 2 லிட்டர் × ₹285 = ₹570"
+    res = parse_single_product_line(raw)
+    assert res is not None
+    assert "கடலை எண்ணெய்" in res["name_ta"]
+    assert "Cold Pressed Groundnut Oil" in res["name_en"]
+    assert res["unit"] == "liter"
+    assert res["price"] == 285.0
+    assert res["quantity"] == 2.0
+    assert "Cold Pressed Oils" in res["category"]
+    # Total calculation verification
+    assert res["quantity"] * res["price"] == 570.0
+

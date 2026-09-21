@@ -235,3 +235,35 @@ export interface SystemSettings {
     ai_api_key_configured: boolean;
   };
 }
+
+export interface PurchaseItem {
+  id?: number;
+  item_name: string;
+  product_id?: number;
+  quantity: number;
+  unit: string;
+  unit_price: number;
+  total_amount: number;
+  auto_update_stock?: boolean;
+}
+
+export interface Purchase {
+  id: number;
+  vendor_name: string;
+  vendor_bill_number?: string;
+  vendor_phone?: string;
+  vendor_gstin?: string;
+  purchase_date: string;
+  category: string;
+  subtotal: number;
+  tax_amount: number;
+  grand_total: number;
+  amount_paid: number;
+  balance_due: number;
+  payment_status: 'paid' | 'partially_paid' | 'pending';
+  payment_method: string;
+  notes?: string;
+  created_at: string;
+  items: PurchaseItem[];
+}
+

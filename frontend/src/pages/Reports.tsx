@@ -11,21 +11,39 @@ import {
   CreditCard,
   Printer,
   TrendingUp,
-  ArrowUpRight
+  ArrowUpRight,
+  ReceiptText,
+  Truck,
+  ShieldAlert,
+  FileSpreadsheet,
+  CheckCircle2
 } from 'lucide-react';
 
 export const Reports: React.FC = () => {
-  const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState<'sales' | 'products' | 'customers' | 'payments'>('sales');
+  const { t, language } = useLanguage();
+  const isTamil = language === 'ta';
+
+  const [activeTab, setActiveTab] = useState<'sales' | 'products' | 'customers' | 'payments' | 'tax'>('sales');
   const [salesData, setSalesData] = useState<any[]>([]);
   const [productsData, setProductsData] = useState<any[]>([]);
   const [customersData, setCustomersData] = useState<any[]>([]);
   const [paymentsData, setPaymentsData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Annual Income Tax State
+  const [selectedFy, setSelectedFy] = useState<string>('2025-2026');
+  const [taxReport, setTaxReport] = useState<any>(null);
+  const [loadingTax, setLoadingTax] = useState<boolean>(false);
+
   useEffect(() => {
     loadReports();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'tax') {
+      loadTaxReport(selectedFy);
+    }
+  }, [activeTab, selectedFy]);
 
   const loadReports = async () => {
     try {
@@ -47,19 +65,36 @@ export const Reports: React.FC = () => {
     }
   };
 
+  const loadTaxReport = async (fy: string) => {
+    try {
+      setLoadingTax(true);
+      const res = await reportApi.getAnnualTax(fy);
+      setTaxReport(res.data);
+    } catch (err) {
+      console.error('Failed to load annual tax report:', err);
+    } finally {
+      setLoadingTax(false);
+    }
+  };
+
   const tabs = [
-    { id: 'sales', label: 'Sales Ledger', icon: Calendar },
-    { id: 'products', label: 'Product Volume', icon: Package },
-    { id: 'customers', label: 'Customer Insights', icon: Users },
-    { id: 'payments', label: 'Payment Distribution', icon: CreditCard },
+    { id: 'sales', label: isTamil ? 'விற்பனை கணக்கு' : 'Sales Ledger', icon: Calendar },
+    { id: 'tax', label: isTamil ? 'வருமான வரி & ஆடிட்டிங்' : 'Annual Income Tax (FY)', icon: ReceiptText },
+    { id: 'products', label: isTamil ? 'சரக்கு அளவு' : 'Product Volume', icon: Package },
+    { id: 'customers', label: isTamil ? 'வாடிக்கையாளர்' : 'Customer Insights', icon: Users },
+    { id: 'payments', label: isTamil ? 'பணம் வரவு' : 'Payment Distribution', icon: CreditCard },
   ];
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto" style={{ background: 'transparent' }}>
       <PageHeader
-        title={t('nav.reports', 'Business Analytics & Reports')}
-        subtitle="Financial ledgers, product velocity metrics, customer lifetime value, and payment breakdowns."
-        badge="Financial Intelligence"
+        title={isTamil ? 'வணிக பகுப்பாய்வு & வரி அறிக்கைகள்' : 'Business Analytics & Reports'}
+        subtitle={
+          isTamil
+            ? 'ஆண்டு வருமான வரி அறிக்கை, விற்பனை வரவு மற்றும் கொள்முதல் செலவு கணக்குகள்'
+            : 'Financial ledgers, CA income tax filings, product velocity, and payment breakdowns.'
+        }
+        badge={isTamil ? 'நிதி நுண்ணறிவு' : 'Financial Intelligence'}
         actions={
           <>
             <button
@@ -72,14 +107,18 @@ export const Reports: React.FC = () => {
             </button>
 
             <a
-              href={reportApi.getExportCsvUrl()}
+              href={activeTab === 'tax' ? reportApi.getAnnualTaxExportCsvUrl(selectedFy) : reportApi.getExportCsvUrl()}
               target="_blank"
               rel="noreferrer"
               className="flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all cursor-pointer"
               style={{ background: '#2D6A4F', color: 'white' }}
             >
               <Download className="w-4 h-4" />
-              <span>{t('action.export_csv', 'Export CSV')}</span>
+              <span>
+                {activeTab === 'tax'
+                  ? (isTamil ? 'CA வருமான வரி எக்செல் (.CSV)' : 'Download CA Tax Ledger')
+                  : t('action.export_csv', 'Export CSV')}
+              </span>
             </a>
           </>
         }
@@ -173,7 +212,219 @@ export const Reports: React.FC = () => {
             </div>
           )}
 
-          {/* Tab 2: Products Report */}
+          {/* Tab 2: Annual Income Tax Report (FY) */}
+          {activeTab === 'tax' && (
+            <div className="space-y-6">
+              {/* Financial Year Selector & Executive Banner */}
+              <div
+                className="p-5 sm:p-6 rounded-3xl border shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4"
+                style={{ background: 'white', borderColor: '#EEEAE0' }}
+              >
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <h3 className="text-base font-black" style={{ color: '#1C1A15', fontFamily: 'Georgia, serif' }}>
+                      {isTamil ? 'ஆண்டு வருமான வரி & ஆடிட்டிங் கணக்கு' : 'Annual Income Tax Ledger & CA Dossier'}
+                    </h3>
+                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold border" style={{ background: '#EBF5EE', borderColor: '#B7D9C4', color: '#2D6A4F' }}>
+                      {taxReport?.financial_year || selectedFy}
+                    </span>
+                  </div>
+                  <p className="text-xs mt-1" style={{ color: '#8C8880' }}>
+                    {isTamil
+                      ? 'ஏப்ரல் 1 முதல் மார்ச் 31 வரையிலான விற்பனை வரவு மற்றும் கொள்முதல் செலவு கணக்கீடுகள்'
+                      : `Financial Period: ${taxReport?.period_start || 'April 1'} to ${taxReport?.period_end || 'March 31'} (Sales vs Stock Purchases)`}
+                  </p>
+                </div>
+
+                <div className="flex items-center space-x-3 w-full sm:w-auto">
+                  <label className="text-xs font-bold whitespace-nowrap" style={{ color: '#4A4740' }}>
+                    {isTamil ? 'நிதி ஆண்டு (FY):' : 'Select FY:'}
+                  </label>
+                  <select
+                    value={selectedFy}
+                    onChange={(e) => setSelectedFy(e.target.value)}
+                    className="px-3.5 py-2 border rounded-xl text-xs font-bold focus:outline-hidden"
+                    style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
+                  >
+                    <option value="2026-2027">FY 2026–2027 (Current)</option>
+                    <option value="2025-2026">FY 2025–2026</option>
+                    <option value="2024-2025">FY 2024–2025</option>
+                    <option value="2023-2024">FY 2023–2024</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* 4 TAX COMPUTATION KPI CARDS */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div className="p-4 sm:p-5 rounded-2xl border shadow-xs" style={{ background: 'white', borderColor: '#EEEAE0' }}>
+                  <div className="flex items-center justify-between text-xs" style={{ color: '#8C8880' }}>
+                    <span>{isTamil ? 'மொத்த விற்பனை (Turnover)' : 'Gross Sales Turnover'}</span>
+                    <div className="p-2 rounded-xl" style={{ background: '#EBF5EE', color: '#2D6A4F' }}>
+                      <Calendar className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div className="mt-2 text-xl sm:text-2xl font-black" style={{ color: '#1C1A15', fontFamily: 'Georgia, serif' }}>
+                    ₹{Number(taxReport?.tax_summary?.gross_turnover || 0).toLocaleString('en-IN')}
+                  </div>
+                  <p className="text-[11px] mt-1" style={{ color: '#8C8880' }}>
+                    {taxReport?.sales?.count || 0} {isTamil ? 'விற்பனை பில்கள்' : 'Customer bills'}
+                  </p>
+                </div>
+
+                <div className="p-4 sm:p-5 rounded-2xl border shadow-xs" style={{ background: 'white', borderColor: '#EEEAE0' }}>
+                  <div className="flex items-center justify-between text-xs" style={{ color: '#8C8880' }}>
+                    <span>{isTamil ? 'கொள்முதல் செலவு (COGS)' : 'Stock Purchases (COGS)'}</span>
+                    <div className="p-2 rounded-xl" style={{ background: '#FDF3E3', color: '#C68B3A' }}>
+                      <Truck className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div className="mt-2 text-xl sm:text-2xl font-black" style={{ color: '#C68B3A', fontFamily: 'Georgia, serif' }}>
+                    ₹{Number(taxReport?.tax_summary?.deductible_stock_purchases || 0).toLocaleString('en-IN')}
+                  </div>
+                  <p className="text-[11px] mt-1" style={{ color: '#C68B3A' }}>
+                    {taxReport?.purchases?.count || 0} {isTamil ? 'சரக்கு வரவு பில்கள்' : 'Inward stock bills'}
+                  </p>
+                </div>
+
+                <div className="p-4 sm:p-5 rounded-2xl border shadow-xs" style={{ background: 'white', borderColor: '#EEEAE0' }}>
+                  <div className="flex items-center justify-between text-xs" style={{ color: '#8C8880' }}>
+                    <span>{isTamil ? 'வரிக்குரிய நிகர லாபம்' : 'Taxable Net Income'}</span>
+                    <div className="p-2 rounded-xl" style={{ background: '#EBF5EE', color: '#2D6A4F' }}>
+                      <TrendingUp className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div
+                    className="mt-2 text-xl sm:text-2xl font-black"
+                    style={{
+                      color: Number(taxReport?.tax_summary?.taxable_net_profit || 0) >= 0 ? '#2D6A4F' : '#B42318',
+                      fontFamily: 'Georgia, serif',
+                    }}
+                  >
+                    ₹{Number(taxReport?.tax_summary?.taxable_net_profit || 0).toLocaleString('en-IN')}
+                  </div>
+                  <p className="text-[11px] mt-1" style={{ color: '#2D6A4F' }}>
+                    {isTamil ? 'விற்பனை கழித்தல் கொள்முதல்' : 'Turnover minus Stock Cost'}
+                  </p>
+                </div>
+
+                <div className="p-4 sm:p-5 rounded-2xl border shadow-xs" style={{ background: 'white', borderColor: '#EEEAE0' }}>
+                  <div className="flex items-center justify-between text-xs" style={{ color: '#8C8880' }}>
+                    <span>{isTamil ? 'ஜிஎஸ்டி வரி விவரம்' : 'Net GST Liability'}</span>
+                    <div className="p-2 rounded-xl" style={{ background: '#F7F5EF', color: '#4A4740' }}>
+                      <FileSpreadsheet className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div className="mt-2 text-xl sm:text-2xl font-black" style={{ color: '#1C1A15', fontFamily: 'Georgia, serif' }}>
+                    ₹{Number(taxReport?.tax_summary?.net_gst_payable || 0).toLocaleString('en-IN')}
+                  </div>
+                  <p className="text-[11px] mt-1" style={{ color: '#8C8880' }}>
+                    Output: ₹{Number(taxReport?.tax_summary?.gst_output_collected || 0).toFixed(0)} | Input: ₹{Number(taxReport?.tax_summary?.gst_input_tax_credit || 0).toFixed(0)}
+                  </p>
+                </div>
+              </div>
+
+              {/* DUAL AUDIT LEDGER GRIDS */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Sales Bills Summary */}
+                <div className="rounded-2xl border shadow-xs overflow-hidden" style={{ background: 'white', borderColor: '#EEEAE0' }}>
+                  <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: '#EEEAE0' }}>
+                    <div>
+                      <h4 className="font-bold text-xs" style={{ color: '#1C1A15' }}>
+                        {isTamil ? 'விற்பனை பில்கள் (Customer Sales Bills)' : 'Sales Revenue Bills'}
+                      </h4>
+                      <p className="text-[11px]" style={{ color: '#8C8880' }}>
+                        {isTamil ? 'வாடிக்கையாளர்களுக்கு வழங்கப்பட்ட ரசீதுகள்' : 'Recent customer invoices in this financial year'}
+                      </p>
+                    </div>
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-md border" style={{ background: '#EBF5EE', borderColor: '#B7D9C4', color: '#2D6A4F' }}>
+                      {taxReport?.sales?.count || 0} {isTamil ? 'பில்கள்' : 'bills'}
+                    </span>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="font-semibold text-[11px] uppercase border-b" style={{ background: '#F7F5EF', color: '#4A4740', borderColor: '#EEEAE0' }}>
+                        <tr>
+                          <th className="px-3 py-2.5">{isTamil ? 'தேதி' : 'Date'}</th>
+                          <th className="px-3 py-2.5">{isTamil ? 'பில் எண்' : 'Bill #'}</th>
+                          <th className="px-3 py-2.5">{isTamil ? 'வாடிக்கையாளர்' : 'Customer'}</th>
+                          <th className="px-3 py-2.5 text-right">{isTamil ? 'தொகை' : 'Total'}</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y" style={{ borderColor: '#EEEAE0' }}>
+                        {(taxReport?.sales?.recent_bills || []).length === 0 ? (
+                          <tr>
+                            <td colSpan={4} className="px-3 py-6 text-center text-xs" style={{ color: '#8C8880' }}>
+                              {isTamil ? 'இந்த நிதி ஆண்டில் பில்கள் இல்லை' : 'No sales bills for this FY'}
+                            </td>
+                          </tr>
+                        ) : (
+                          taxReport.sales.recent_bills.map((b: any) => (
+                            <tr key={b.id} className="hover:bg-[#F7F5EF]">
+                              <td className="px-3 py-2 text-[11px]" style={{ color: '#8C8880' }}>{b.date}</td>
+                              <td className="px-3 py-2 font-mono font-bold text-[11px]" style={{ color: '#2D6A4F' }}>{b.invoice_number}</td>
+                              <td className="px-3 py-2 font-semibold truncate max-w-[120px]" style={{ color: '#1C1A15' }}>{b.customer_name}</td>
+                              <td className="px-3 py-2 text-right font-black" style={{ color: '#1C1A15' }}>₹{Number(b.grand_total).toLocaleString('en-IN')}</td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Stock Inward Bills Summary */}
+                <div className="rounded-2xl border shadow-xs overflow-hidden" style={{ background: 'white', borderColor: '#EEEAE0' }}>
+                  <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: '#EEEAE0' }}>
+                    <div>
+                      <h4 className="font-bold text-xs" style={{ color: '#1C1A15' }}>
+                        {isTamil ? 'சரக்கு கொள்முதல் பில்கள் (Inward Stock Bills)' : 'Stock Purchase Bills'}
+                      </h4>
+                      <p className="text-[11px]" style={{ color: '#8C8880' }}>
+                        {isTamil ? 'விவசாயிகள் மற்றும் மில்களிடம் வாங்கிய பில்கள்' : 'Supplier bills, raw seeds, and copra inward'}
+                      </p>
+                    </div>
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-md border" style={{ background: '#FDF3E3', borderColor: '#F4D2A2', color: '#C68B3A' }}>
+                      {taxReport?.purchases?.count || 0} {isTamil ? 'பில்கள்' : 'bills'}
+                    </span>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="font-semibold text-[11px] uppercase border-b" style={{ background: '#F7F5EF', color: '#4A4740', borderColor: '#EEEAE0' }}>
+                        <tr>
+                          <th className="px-3 py-2.5">{isTamil ? 'தேதி' : 'Date'}</th>
+                          <th className="px-3 py-2.5">{isTamil ? 'சப்ளையர் பில்' : 'Supplier Bill'}</th>
+                          <th className="px-3 py-2.5">{isTamil ? 'விற்பனையாளர்' : 'Vendor'}</th>
+                          <th className="px-3 py-2.5 text-right">{isTamil ? 'தொகை' : 'Total'}</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y" style={{ borderColor: '#EEEAE0' }}>
+                        {(taxReport?.purchases?.recent_bills || []).length === 0 ? (
+                          <tr>
+                            <td colSpan={4} className="px-3 py-6 text-center text-xs" style={{ color: '#8C8880' }}>
+                              {isTamil ? 'இந்த நிதி ஆண்டில் கொள்முதல் பில்கள் இல்லை' : 'No purchase bills for this FY'}
+                            </td>
+                          </tr>
+                        ) : (
+                          taxReport.purchases.recent_bills.map((p: any) => (
+                            <tr key={p.id} className="hover:bg-[#F7F5EF]">
+                              <td className="px-3 py-2 text-[11px]" style={{ color: '#8C8880' }}>{p.date}</td>
+                              <td className="px-3 py-2 font-mono font-bold text-[11px]" style={{ color: '#C68B3A' }}>{p.vendor_bill_number || '—'}</td>
+                              <td className="px-3 py-2 font-semibold truncate max-w-[120px]" style={{ color: '#1C1A15' }}>{p.vendor_name}</td>
+                              <td className="px-3 py-2 text-right font-black" style={{ color: '#C68B3A' }}>₹{Number(p.grand_total).toLocaleString('en-IN')}</td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tab 3: Products Report */}
           {activeTab === 'products' && (
             <div className="rounded-2xl border shadow-xs overflow-hidden" style={{ background: 'white', borderColor: '#EEEAE0' }}>
               <div className="p-5 border-b flex items-center justify-between" style={{ borderColor: '#EEEAE0' }}>

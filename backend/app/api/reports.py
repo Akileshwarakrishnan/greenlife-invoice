@@ -258,3 +258,208 @@ def export_sales_csv(
         media_type="text/csv",
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
+
+from app.models.purchase import Purchase
+
+def get_fy_date_range(financial_year: Optional[str] = None):
+    now = datetime.now(timezone.utc)
+    if not financial_year or "-" not in financial_year:
+        if now.month >= 4:
+            start_yr = now.year
+            end_yr = now.year + 1
+        else:
+            start_yr = now.year - 1
+            end_yr = now.year
+        fy_label = f"FY {start_yr}-{end_yr}"
+    else:
+        parts = financial_year.replace("FY", "").strip().split("-")
+        start_yr = int(parts[0].strip())
+        end_yr = int(parts[1].strip())
+        fy_label = f"FY {start_yr}-{end_yr}"
+    
+    start_date = datetime(start_yr, 4, 1, 0, 0, 0, tzinfo=timezone.utc).date()
+    end_date = datetime(end_yr, 3, 31, 23, 59, 59, tzinfo=timezone.utc).date()
+    return start_date, end_date, fy_label
+
+@router.get("/annual-tax")
+def get_annual_tax_report(
+    financial_year: Optional[str] = Query(None, description="e.g. 2025-2026"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+) -> Any:
+    start_date, end_date, fy_label = get_fy_date_range(financial_year)
+
+    # 1. Sales Invoices within FY
+    invoices = db.query(Invoice).filter(
+        Invoice.invoice_date >= start_date,
+        Invoice.invoice_date <= end_date
+    ).order_by(Invoice.invoice_date.desc()).all()
+
+    sales_count = len(invoices)
+    sales_gross = sum(i.subtotal for i in invoices)
+    sales_tax = sum(i.tax_amount for i in invoices)
+    sales_courier = sum(i.courier_charges for i in invoices)
+    sales_discount = sum(i.discount_amount for i in invoices)
+    sales_total = sum(i.grand_total for i in invoices)
+    sales_paid = sum(i.amount_paid for i in invoices)
+    sales_due = sum(i.balance_due for i in invoices)
+
+    # 2. Outside Stock Purchases within FY
+    purchases = db.query(Purchase).filter(
+        Purchase.purchase_date >= start_date,
+        Purchase.purchase_date <= end_date
+    ).order_by(Purchase.purchase_date.desc()).all()
+
+    purchases_count = len(purchases)
+    purchases_subtotal = sum(p.subtotal for p in purchases)
+    purchases_tax = sum(p.tax_amount for p in purchases)
+    purchases_total = sum(p.grand_total for p in purchases)
+    purchases_paid = sum(p.amount_paid for p in purchases)
+    purchases_due = sum(p.balance_due for p in purchases)
+
+    # 3. Taxable Net Income Calculation
+    net_taxable_profit = round(sales_total - purchases_total, 2)
+    net_gst_payable = round(max(0.0, sales_tax - purchases_tax), 2)
+
+    return {
+        "financial_year": fy_label,
+        "period_start": str(start_date),
+        "period_end": str(end_date),
+        "sales": {
+            "count": sales_count,
+            "subtotal": round(sales_gross, 2),
+            "tax_collected": round(sales_tax, 2),
+            "courier_charges": round(sales_courier, 2),
+            "discounts": round(sales_discount, 2),
+            "total_turnover": round(sales_total, 2),
+            "amount_collected": round(sales_paid, 2),
+            "outstanding_receivables": round(sales_due, 2),
+            "recent_bills": [
+                {
+                    "id": i.id,
+                    "invoice_number": i.invoice_number,
+                    "date": str(i.invoice_date),
+                    "customer_name": i.customer_name,
+                    "customer_phone": i.customer_phone,
+                    "grand_total": i.grand_total,
+                    "amount_paid": i.amount_paid,
+                    "balance_due": i.balance_due,
+                    "payment_status": i.payment_status
+                }
+                for i in invoices[:15]
+            ]
+        },
+        "purchases": {
+            "count": purchases_count,
+            "subtotal": round(purchases_subtotal, 2),
+            "tax_paid": round(purchases_tax, 2),
+            "total_expenses": round(purchases_total, 2),
+            "amount_paid": round(purchases_paid, 2),
+            "outstanding_payables": round(purchases_due, 2),
+            "recent_bills": [
+                {
+                    "id": p.id,
+                    "vendor_name": p.vendor_name,
+                    "vendor_bill_number": p.vendor_bill_number,
+                    "date": str(p.purchase_date),
+                    "category": p.category,
+                    "grand_total": p.grand_total,
+                    "amount_paid": p.amount_paid,
+                    "balance_due": p.balance_due,
+                    "payment_status": p.payment_status
+                }
+                for p in purchases[:15]
+            ]
+        },
+        "tax_summary": {
+            "gross_turnover": round(sales_total, 2),
+            "deductible_stock_purchases": round(purchases_total, 2),
+            "taxable_net_profit": net_taxable_profit,
+            "gst_output_collected": round(sales_tax, 2),
+            "gst_input_tax_credit": round(purchases_tax, 2),
+            "net_gst_payable": net_gst_payable
+        }
+    }
+
+@router.get("/annual-tax/export-csv")
+def export_annual_tax_csv(
+    financial_year: Optional[str] = Query(None, description="e.g. 2025-2026"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+) -> Response:
+    start_date, end_date, fy_label = get_fy_date_range(financial_year)
+
+    invoices = db.query(Invoice).filter(
+        Invoice.invoice_date >= start_date,
+        Invoice.invoice_date <= end_date
+    ).order_by(Invoice.invoice_date.asc()).all()
+
+    purchases = db.query(Purchase).filter(
+        Purchase.purchase_date >= start_date,
+        Purchase.purchase_date <= end_date
+    ).order_by(Purchase.purchase_date.asc()).all()
+
+    sales_total = sum(i.grand_total for i in invoices)
+    sales_tax = sum(i.tax_amount for i in invoices)
+    purchases_total = sum(p.grand_total for p in purchases)
+    purchases_tax = sum(p.tax_amount for p in purchases)
+    net_taxable_income = round(sales_total - purchases_total, 2)
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # 1. HEADER & TAX AUDIT SUMMARY
+    writer.writerow(["GREENLIFE NATURAL FOODS - ANNUAL INCOME TAX & CA FILING DOSSIER"])
+    writer.writerow(["Financial Year:", fy_label, "Period:", f"{start_date} to {end_date}"])
+    writer.writerow(["Generated At:", datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")])
+    writer.writerow([])
+    writer.writerow(["--- FINANCIAL YEAR EXECUTIVE TAX LEDGER ---"])
+    writer.writerow(["Line Item", "Amount (INR)"])
+    writer.writerow(["Gross Sales Turnover (Output Bills)", f"{sales_total:.2f}"])
+    writer.writerow(["Total Outside Stock Purchases (Inward Bills / COGS)", f"{purchases_total:.2f}"])
+    writer.writerow(["Estimated Taxable Net Profit (Income Before Taxes)", f"{net_taxable_income:.2f}"])
+    writer.writerow(["GST Output Tax Collected", f"{sales_tax:.2f}"])
+    writer.writerow(["GST Input Tax Credit (ITC Paid on Purchases)", f"{purchases_tax:.2f}"])
+    writer.writerow(["Net GST Balance", f"{max(0.0, sales_tax - purchases_tax):.2f}"])
+    writer.writerow([])
+
+    # 2. SECTION A: SALES REVENUE INVOICES
+    writer.writerow(["--- SECTION A: SALES REVENUE INVOICES (CUSTOMER BILLS) ---"])
+    writer.writerow([
+        "Invoice Date", "Invoice No", "Customer Name", "Customer Phone",
+        "Subtotal (INR)", "Tax (INR)", "Courier (INR)", "Discount (INR)",
+        "Grand Total (INR)", "Paid (INR)", "Balance Due (INR)", "Payment Method", "Status"
+    ])
+    for inv in invoices:
+        writer.writerow([
+            str(inv.invoice_date), inv.invoice_number, inv.customer_name, inv.customer_phone,
+            f"{inv.subtotal:.2f}", f"{inv.tax_amount:.2f}", f"{inv.courier_charges:.2f}",
+            f"{inv.discount_amount:.2f}", f"{inv.grand_total:.2f}", f"{inv.amount_paid:.2f}",
+            f"{inv.balance_due:.2f}", inv.payment_method, inv.payment_status
+        ])
+    writer.writerow([])
+
+    # 3. SECTION B: OUTSIDE STOCK PURCHASES
+    writer.writerow(["--- SECTION B: OUTSIDE STOCK PURCHASES (SUPPLIER & FARMER BILLS) ---"])
+    writer.writerow([
+        "Purchase Date", "Supplier Bill No", "Vendor / Farmer Name", "Vendor Phone",
+        "Category", "Subtotal (INR)", "Tax / GST Paid (INR)", "Grand Total (INR)",
+        "Paid (INR)", "Balance Due (INR)", "Payment Mode", "Status"
+    ])
+    for p in purchases:
+        writer.writerow([
+            str(p.purchase_date), p.vendor_bill_number or "N/A", p.vendor_name, p.vendor_phone or "N/A",
+            p.category, f"{p.subtotal:.2f}", f"{p.tax_amount:.2f}", f"{p.grand_total:.2f}",
+            f"{p.amount_paid:.2f}", f"{p.balance_due:.2f}", p.payment_method, p.payment_status
+        ])
+
+    csv_content = output.getvalue()
+    output.close()
+
+    filename = f"GreenLife_IncomeTax_Ledger_{fy_label.replace(' ', '_')}.csv"
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+

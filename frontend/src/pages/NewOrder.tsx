@@ -171,9 +171,58 @@ export const NewOrder: React.FC = () => {
     ]);
   };
 
+  const mergeItemsDeduplicated = (existingList: OrderItem[], incomingList: OrderItem[]): OrderItem[] => {
+    const base =
+      existingList.length === 1 && !existingList[0].product_name && Number(existingList[0].unit_price) === 0
+        ? []
+        : [...existingList];
+
+    const result = [...base];
+    for (const inc of incomingList) {
+      const matchIndex = result.findIndex(
+        (ex) =>
+          (inc.product_id && ex.product_id && ex.product_id === inc.product_id) ||
+          (ex.product_name &&
+            inc.product_name &&
+            ex.product_name.trim().toLowerCase() === inc.product_name.trim().toLowerCase())
+      );
+      if (matchIndex >= 0) {
+        const existingItem = result[matchIndex];
+        const newQty = (Number(existingItem.quantity) || 0) + (Number(inc.quantity) || 1);
+        const price = Number(inc.unit_price) || Number(existingItem.unit_price) || 0;
+        result[matchIndex] = {
+          ...existingItem,
+          quantity: newQty,
+          unit_price: price,
+          total_amount: Number((newQty * price).toFixed(2)),
+        };
+      } else {
+        result.push(inc);
+      }
+    }
+    return result;
+  };
+
   const handleProductSelect = (index: number, productId: number) => {
     const prod = products.find((p) => p.id === productId);
     if (!prod) return;
+
+    // Check if another row already has this product to avoid duplicate rows
+    const existingIndex = items.findIndex((item, i) => i !== index && item.product_id === productId);
+    if (existingIndex >= 0) {
+      const newItems = [...items];
+      const curQty = Number(newItems[existingIndex].quantity) || 1;
+      const addQty = Number(newItems[index].quantity) || 1;
+      const totalQty = curQty + addQty;
+      newItems[existingIndex].quantity = totalQty;
+      newItems[existingIndex].total_amount = Number((totalQty * prod.price).toFixed(2));
+      if (newItems.length > 1) {
+        newItems.splice(index, 1);
+      }
+      setItems(newItems);
+      return;
+    }
+
     const newItems = [...items];
     const qty = newItems[index].quantity || 1;
     const price = prod.price;
@@ -312,11 +361,8 @@ export const NewOrder: React.FC = () => {
             total_amount: lineTotal,
           };
         });
-        if (items.length === 1 && !items[0].product_name && items[0].unit_price === 0) {
-          setItems(newOrderItems);
-        } else {
-          setItems([...items, ...newOrderItems]);
-        }
+        const deduplicatedList = mergeItemsDeduplicated(items, newOrderItems);
+        setItems(deduplicatedList);
         setShowWhatsAppOrderModal(false);
         setWhatsAppText('');
       }
@@ -333,6 +379,7 @@ export const NewOrder: React.FC = () => {
 
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return; // Prevent double submission
     if (!selectedCustomerId) {
       setError(isTamil ? 'வாடிக்கையாளரைத் தேர்வு செய்யவும்.' : 'Please select a customer.');
       return;

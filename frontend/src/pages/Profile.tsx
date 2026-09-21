@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { auditApi } from '../services/api';
@@ -12,12 +13,15 @@ import {
   Calendar,
   CheckCircle,
   KeyRound,
-  ShieldCheck
+  ShieldCheck,
+  LogOut
 } from 'lucide-react';
 
 export const Profile: React.FC = () => {
-  const { user } = useAuth();
-  const { t } = useLanguage();
+  const { user, logout } = useAuth();
+  const { t, language } = useLanguage();
+  const navigate = useNavigate();
+  const isTamil = language === 'ta';
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
 
@@ -89,6 +93,40 @@ export const Profile: React.FC = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Session Management & Quick Logout */}
+      <div
+        className="p-5 sm:p-6 rounded-2xl border shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4"
+        style={{ background: 'white', borderColor: '#EEEAE0' }}
+      >
+        <div className="flex items-center space-x-3 text-center sm:text-left">
+          <div className="p-3 rounded-2xl flex-shrink-0" style={{ background: '#FEF2F2', color: '#DC2626' }}>
+            <LogOut className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="font-bold text-sm" style={{ color: '#1C1A15' }}>
+              {isTamil ? 'அமர்வு மேலாண்மை (Session Identity)' : 'Active Session & Security'}
+            </h3>
+            <p className="text-xs" style={{ color: '#8C8880' }}>
+              {isTamil ? 'பயன்பாட்டில் இருந்து பாதுகாப்பாக வெளியேறவும்' : 'Sign out from this device to protect confidential store accounts'}
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => {
+            if (window.confirm(isTamil ? 'நிச்சயமாக வெளியேற விரும்புகிறீர்களா?' : 'Are you sure you want to sign out?')) {
+              logout();
+              navigate('/login');
+            }
+          }}
+          className="w-full sm:w-auto flex items-center justify-center space-x-2 px-5 py-3 rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer"
+          style={{ background: '#DC2626', color: 'white' }}
+        >
+          <LogOut className="w-4 h-4" />
+          <span>{isTamil ? 'கணக்கிலிருந்து வெளியேறு (Sign Out)' : 'Sign Out of Store'}</span>
+        </button>
       </div>
 
       {/* Audit Log Table */}

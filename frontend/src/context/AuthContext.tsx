@@ -28,40 +28,64 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(() => {
     return localStorage.getItem('greenlife_token');
   });
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(() => {
+    const hasToken = !!localStorage.getItem('greenlife_token');
+    const hasUser = !!localStorage.getItem('greenlife_user');
+    return hasToken && !hasUser;
+  });
 
   useEffect(() => {
-    const checkAuth = async () => {
-      if (token) {
-        try {
-          const res = await authApi.getMe();
+    // Run verification only on initial mount if token exists
+    const tokenFromStorage = localStorage.getItem('greenlife_token');
+    if (!tokenFromStorage) {
+      setIsLoading(false);
+      return;
+    }
+
+    let isCancelled = false;
+    const verifyAuth = async () => {
+      try {
+        const res = await authApi.getMe();
+        if (!isCancelled) {
           setUser(res.data);
           localStorage.setItem('greenlife_user', JSON.stringify(res.data));
-        } catch (err) {
+        }
+      } catch (err: any) {
+        if (!isCancelled && err.response?.status === 401) {
           logout();
         }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
       }
-      setIsLoading(false);
     };
-    checkAuth();
-  }, [token]);
+
+    verifyAuth();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
 
   const login = async (credentials: any) => {
     const res = await authApi.login(credentials);
     const { access_token, user: loggedUser } = res.data;
-    setToken(access_token);
-    setUser(loggedUser);
     localStorage.setItem('greenlife_token', access_token);
     localStorage.setItem('greenlife_user', JSON.stringify(loggedUser));
+    setToken(access_token);
+    setUser(loggedUser);
+    setIsLoading(false);
   };
 
   const signup = async (data: any) => {
     const res = await authApi.signup(data);
     const { access_token, user: newUser } = res.data;
-    setToken(access_token);
-    setUser(newUser);
     localStorage.setItem('greenlife_token', access_token);
     localStorage.setItem('greenlife_user', JSON.stringify(newUser));
+    setToken(access_token);
+    setUser(newUser);
+    setIsLoading(false);
   };
 
   const logout = () => {

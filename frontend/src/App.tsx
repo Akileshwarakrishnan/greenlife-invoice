@@ -21,6 +21,7 @@ import { Automation } from './pages/Automation';
 import { UserManual } from './pages/UserManual';
 import { Settings } from './pages/Settings';
 import { Profile } from './pages/Profile';
+import { Purchases } from './pages/Purchases';
 
 export const App: React.FC = () => {
   return (
@@ -41,6 +42,7 @@ export const App: React.FC = () => {
                   <Route path="orders" element={<Orders />} />
                   <Route path="invoices" element={<Invoices />} />
                   <Route path="invoices/:id" element={<InvoiceDetail />} />
+                  <Route path="purchases" element={<Purchases />} />
                   <Route path="customers" element={<Customers />} />
                   <Route path="products" element={<Products />} />
                   <Route path="reports" element={<Reports />} />

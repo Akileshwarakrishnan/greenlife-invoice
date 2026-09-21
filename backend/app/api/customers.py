@@ -38,6 +38,29 @@ def create_customer(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ) -> Any:
+    # Check for duplicate customer by phone number
+    if customer_in.phone:
+        clean_phone = "".join(filter(str.isdigit, customer_in.phone))[-10:]
+        if clean_phone:
+            existing = db.query(Customer).filter(
+                Customer.phone.ilike(f"%{clean_phone}%"),
+                Customer.is_active == True
+            ).first()
+            if existing:
+                if customer_in.name and len(customer_in.name.strip()) > 1:
+                    existing.name = customer_in.name.strip()
+                if customer_in.address and len(customer_in.address.strip()) > 1:
+                    existing.address = customer_in.address.strip()
+                if customer_in.city:
+                    existing.city = customer_in.city
+                if customer_in.email:
+                    existing.email = customer_in.email
+                if customer_in.previous_balance is not None and customer_in.previous_balance > 0:
+                    existing.previous_balance = customer_in.previous_balance
+                db.commit()
+                db.refresh(existing)
+                return existing
+
     last_cust = db.query(Customer).order_by(Customer.id.desc()).first()
     next_id = (last_cust.id + 1) if last_cust else 1
     code = f"CUST-{next_id:04d}"

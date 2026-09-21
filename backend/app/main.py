@@ -101,6 +101,7 @@ from app.api.reports import router as reports_router
 from app.api.automation import router as automation_router
 from app.api.settings import router as settings_router
 from app.api.audit import router as audit_router
+from app.api.purchases import router as purchases_router
 
 app.include_router(auth_router, prefix=f"{settings.API_V1_STR}/auth", tags=["Authentication"])
 app.include_router(customers_router, prefix=f"{settings.API_V1_STR}/customers", tags=["Customers"])
@@ -108,6 +109,7 @@ app.include_router(products_router, prefix=f"{settings.API_V1_STR}/products", ta
 app.include_router(orders_router, prefix=f"{settings.API_V1_STR}/orders", tags=["Orders"])
 app.include_router(invoices_router, prefix=f"{settings.API_V1_STR}/invoices", tags=["Invoices"])
 app.include_router(payments_router, prefix=f"{settings.API_V1_STR}/payments", tags=["Payments"])
+app.include_router(purchases_router, prefix=f"{settings.API_V1_STR}/purchases", tags=["Stock Purchases"])
 app.include_router(ai_router, prefix=f"{settings.API_V1_STR}/ai", tags=["AI & Extraction"])
 app.include_router(reports_router, prefix=f"{settings.API_V1_STR}/reports", tags=["Reports & Analytics"])
 app.include_router(automation_router, prefix=f"{settings.API_V1_STR}/automation", tags=["n8n Automation"])
