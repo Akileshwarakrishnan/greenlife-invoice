@@ -93,7 +93,7 @@ export const InvoiceDetail: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto pb-12" style={{ background: 'transparent' }}>
+    <div className="space-y-6 max-w-5xl mx-auto pb-36 sm:pb-16" style={{ background: 'transparent' }}>
       <div className="no-print p-4 sm:p-5 rounded-3xl border shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4" style={{ background: 'white', borderColor: '#EEEAE0' }}>
         <div className="flex flex-wrap items-center gap-3">
           <Link

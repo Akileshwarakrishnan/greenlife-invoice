@@ -44,6 +44,50 @@ api.interceptors.response.use(
   }
 );
 
+// In-memory Client Cache for ultra-fast snappy reaction times (0ms tab switching)
+const apiCache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_TTL_MS = 60 * 1000; // 60 seconds
+
+function getCached<T>(key: string): T | null {
+  const entry = apiCache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.timestamp > CACHE_TTL_MS) {
+    apiCache.delete(key);
+    return null;
+  }
+  return entry.data as T;
+}
+
+function setCached(key: string, data: any) {
+  apiCache.set(key, { data, timestamp: Date.now() });
+}
+
+export function clearApiCache(prefix?: string) {
+  if (!prefix) {
+    apiCache.clear();
+    return;
+  }
+  for (const k of apiCache.keys()) {
+    if (k.startsWith(prefix)) {
+      apiCache.delete(k);
+    }
+  }
+}
+
+// Background Keep-Alive to prevent Render free-tier sleep & ensure 0ms cold starts
+export const initKeepAlive = () => {
+  const ping = () => {
+    api.get('/health').catch(() => {});
+  };
+  ping();
+  setInterval(ping, 8 * 60 * 1000); // Every 8 minutes
+};
+
+// Auto-run keepalive once on frontend load
+if (typeof window !== 'undefined') {
+  setTimeout(() => initKeepAlive(), 1000);
+}
+
 export const authApi = {
   login: (credentials: any) => api.post('/auth/login', credentials),
   signup: (userData: any) => api.post('/auth/signup', userData),
@@ -51,26 +95,72 @@ export const authApi = {
 };
 
 export const customerApi = {
-  list: (params?: { search?: string; skip?: number; limit?: number }) => api.get<Customer[]>('/customers', { params }),
-  create: (data: Partial<Customer>) => api.post<Customer>('/customers', data),
+  list: async (params?: { search?: string; skip?: number; limit?: number }) => {
+    const key = `customers_${JSON.stringify(params || {})}`;
+    const cached = getCached<any>(key);
+    if (cached) {
+      // Revalidate in background
+      api.get<Customer[]>('/customers', { params }).then((res) => setCached(key, res)).catch(() => {});
+      return cached;
+    }
+    const res = await api.get<Customer[]>('/customers', { params });
+    setCached(key, res);
+    return res;
+  },
+  create: async (data: Partial<Customer>) => {
+    clearApiCache('customers_');
+    return api.post<Customer>('/customers', data);
+  },
   get: (id: number) => api.get<Customer>(`/customers/${id}`),
-  update: (id: number, data: Partial<Customer>) => api.put<Customer>(`/customers/${id}`, data),
-  delete: (id: number) => api.delete(`/customers/${id}`),
+  update: async (id: number, data: Partial<Customer>) => {
+    clearApiCache('customers_');
+    return api.put<Customer>(`/customers/${id}`, data);
+  },
+  delete: async (id: number) => {
+    clearApiCache('customers_');
+    return api.delete(`/customers/${id}`);
+  },
 };
 
 export const productApi = {
-  list: (params?: { category?: string; search?: string; active_only?: boolean }) => api.get<Product[]>('/products', { params }),
-  create: (data: Partial<Product>) => api.post<Product>('/products', data),
-  createBatch: (products: Partial<Product>[]) => api.post<Product[]>('/products/batch', { products }),
+  list: async (params?: { category?: string; search?: string; active_only?: boolean }) => {
+    const key = `products_${JSON.stringify(params || {})}`;
+    const cached = getCached<any>(key);
+    if (cached) {
+      // Revalidate in background
+      api.get<Product[]>('/products', { params }).then((res) => setCached(key, res)).catch(() => {});
+      return cached;
+    }
+    const res = await api.get<Product[]>('/products', { params });
+    setCached(key, res);
+    return res;
+  },
+  create: async (data: Partial<Product>) => {
+    clearApiCache('products_');
+    return api.post<Product>('/products', data);
+  },
+  createBatch: async (products: Partial<Product>[]) => {
+    clearApiCache('products_');
+    return api.post<Product[]>('/products/batch', { products });
+  },
   parseText: (text: string) => api.post<{ count: number; items: any[] }>('/products/parse-text', { text }),
   get: (id: number) => api.get<Product>(`/products/${id}`),
-  update: (id: number, data: Partial<Product>) => api.put<Product>(`/products/${id}`, data),
-  delete: (id: number) => api.delete(`/products/${id}`),
+  update: async (id: number, data: Partial<Product>) => {
+    clearApiCache('products_');
+    return api.put<Product>(`/products/${id}`, data);
+  },
+  delete: async (id: number) => {
+    clearApiCache('products_');
+    return api.delete(`/products/${id}`);
+  },
 };
 
 export const orderApi = {
   list: (params?: { status?: string; customer_id?: number; skip?: number; limit?: number }) => api.get<Order[]>('/orders', { params }),
-  create: (data: any) => api.post<Order>('/orders', data),
+  create: async (data: any) => {
+    clearApiCache('customers_');
+    return api.post<Order>('/orders', data);
+  },
   get: (id: number) => api.get<Order>(`/orders/${id}`),
   calculate: (data: any) => api.post('/orders/calculate', data),
 };
@@ -95,6 +185,13 @@ export const purchaseApi = {
   create: (data: any) => api.post<any>('/purchases', data),
   delete: (id: number) => api.delete(`/purchases/${id}`),
   getStats: () => api.get<{ total_bills: number; total_amount: number; total_paid: number; total_due: number }>('/purchases/stats'),
+  extractBill: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post<{ success: boolean; file_name: string; data: any }>('/purchases/extract-bill', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
 };
 
 export const reportApi = {

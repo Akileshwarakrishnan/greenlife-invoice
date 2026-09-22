@@ -117,6 +117,7 @@ app.include_router(settings_router, prefix=f"{settings.API_V1_STR}/settings", ta
 app.include_router(audit_router, prefix=f"{settings.API_V1_STR}/audit", tags=["Audit Logs"])
 
 @app.get("/health")
+@app.get(f"{settings.API_V1_STR}/health")
 def health_check():
     return {
         "status": "healthy",

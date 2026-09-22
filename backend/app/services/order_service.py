@@ -82,9 +82,9 @@ def create_order(db: Session, order_in: OrderCreate) -> Order:
     if not order_in.items:
         raise HTTPException(status_code=400, detail="Order must contain at least one product")
 
-    # If previous balance is not explicitly overridden, use customer's stored balance
+    # If previous balance is not explicitly provided, use customer's stored balance
     previous_balance = order_in.previous_balance
-    if previous_balance is None or previous_balance == 0.0:
+    if previous_balance is None:
         previous_balance = customer.previous_balance or 0.0
 
     calc = calculate_order_totals(

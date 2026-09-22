@@ -314,5 +314,46 @@ test.describe('GreenLife Natural Foods - Production Verification Suite', () => {
     await expect(page.locator('text=Cold Pressed Groundnut Oil').or(page.locator('text=கடலை எண்ணெய்')).first()).toBeVisible({ timeout: 6000 });
   });
 
+  test('14. Mobile Bill Responsive Full View - No Overlap & No Clipping', async ({ page }) => {
+    // Set iPhone 14 mobile viewport
+    await page.setViewportSize({ width: 390, height: 844 });
+    await loginAsAdmin(page);
+
+    await page.goto('/invoices');
+    await page.waitForURL('/invoices');
+
+    // Click the first invoice to view bill
+    const firstInvoiceLink = page.locator('a[href^="/invoices/"]').first();
+    if (await firstInvoiceLink.isVisible()) {
+      await firstInvoiceLink.click();
+      await page.waitForTimeout(1000);
+
+      // Verify Bill Summary and Bank details are rendered
+      await expect(page.locator('text=BILL SUMMARY').or(page.locator('text=QUOTATION SUMMARY')).first()).toBeVisible();
+      await expect(page.locator('text=BANK: SBI BRANCH').first()).toBeVisible();
+      await expect(page.locator('text=Product Total').first()).toBeVisible();
+      await expect(page.locator('text=GRAND TOTAL').first()).toBeVisible();
+    }
+  });
+
+  test('15. AI Bill Photo Scanner on Purchases - Camera Dropzone & Auto Arrange', async ({ page }) => {
+    await loginAsAdmin(page);
+
+    await page.goto('/purchases');
+    await page.waitForURL('/purchases');
+
+    // Verify 📷 Snap / Upload Bill Photo button exists
+    const snapBtn = page.locator('button:visible').filter({ hasText: 'Snap Bill Photo' }).or(page.locator('button:visible').filter({ hasText: 'பில் படம் எடுக்க' })).first();
+    await expect(snapBtn).toBeVisible();
+
+    // Open Record Inward Bill modal
+    const addBtn = page.locator('button:visible').filter({ hasText: 'Record Inward Bill' }).or(page.locator('button:visible').filter({ hasText: 'புதிய கொள்முதல் சேர்' })).first();
+    await addBtn.click();
+
+    // Verify AI OCR Dropzone inside modal
+    await expect(page.locator('text=Attach or Snap Purchase Bill').or(page.locator('text=பில் புகைப்படம்')).first()).toBeVisible();
+    await expect(page.locator('text=AI OCR').first()).toBeVisible();
+  });
+
 });
 

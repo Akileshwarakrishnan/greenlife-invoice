@@ -1,6 +1,6 @@
 from typing import List, Optional, Any
 from datetime import date, datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, UploadFile, File
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
 
@@ -10,6 +10,7 @@ from app.models.product import Product
 from app.models.user import User
 from app.models.audit_log import AuditLog
 from app.schemas.purchase import PurchaseCreate, PurchaseUpdate, PurchaseOut
+from app.services.ai_service import extract_purchase_bill_from_file
 
 router = APIRouter()
 
@@ -63,6 +64,30 @@ def get_purchase_stats(
         "total_amount": float(totals.total_amount or 0.0),
         "total_paid": float(totals.total_paid or 0.0),
         "total_due": float(totals.total_due or 0.0),
+    }
+
+@router.post("/extract-bill")
+async def extract_purchase_bill(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user)
+) -> Any:
+    """
+    Accepts an uploaded vendor bill photo / image / PDF, runs AI OCR extraction,
+    and returns structured vendor info, bill details, and items table.
+    """
+    contents = await file.read()
+    file_type = file.content_type or "image/jpeg"
+    file_name = file.filename or "purchase_bill.jpg"
+
+    extracted_data = await extract_purchase_bill_from_file(
+        file_bytes=contents,
+        file_name=file_name,
+        file_type=file_type
+    )
+    return {
+        "success": True,
+        "file_name": file_name,
+        "data": extracted_data
     }
 
 @router.post("", response_model=PurchaseOut)

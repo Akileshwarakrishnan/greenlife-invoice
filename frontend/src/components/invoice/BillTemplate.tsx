@@ -13,7 +13,12 @@ export const BillTemplate: React.FC<BillTemplateProps> = ({ invoice, mode = 'bil
   const subtotal = invoice.subtotal || 0;
   const courierCharges = invoice.courier_charges || 0;
   const previousBalance = invoice.previous_balance || 0;
-  const grandTotal = invoice.grand_total || (subtotal + previousBalance + courierCharges);
+  const taxAmount = invoice.tax_amount || 0;
+  const discountAmount = invoice.discount_amount || 0;
+  const grandTotal =
+    invoice.grand_total !== undefined
+      ? invoice.grand_total
+      : Math.round((subtotal + previousBalance + courierCharges + taxAmount - discountAmount) * 100) / 100;
   const paymentMethod = (invoice.payment_method || 'cash').toLowerCase();
   
   const isWalkIn = courierCharges === 0;
@@ -22,7 +27,7 @@ export const BillTemplate: React.FC<BillTemplateProps> = ({ invoice, mode = 'bil
   const wordsAmount = numberToWordsInr(grandTotal);
 
   return (
-    <div className="print-sheet bg-white text-slate-900 border-2 border-[#284B35] rounded-3xl p-6 sm:p-10 shadow-lg print:shadow-none print:border-2 print:border-[#284B35] print:p-6 print:rounded-2xl max-w-4xl mx-auto space-y-4 font-sans leading-tight">
+    <div className="print-sheet bg-white text-slate-900 border-2 border-[#284B35] rounded-2xl sm:rounded-3xl p-3.5 sm:p-8 shadow-lg print:shadow-none print:border-2 print:border-[#284B35] print:p-6 print:rounded-2xl max-w-4xl mx-auto space-y-3.5 sm:space-y-4 font-sans leading-tight">
       {/* 1. TOP REGISTRATION ROW */}
       <div className="flex justify-between items-center text-xs font-bold text-slate-800 border-b border-transparent pb-1">
         <span>FSSAI: 22416495000038</span>
@@ -114,8 +119,8 @@ export const BillTemplate: React.FC<BillTemplateProps> = ({ invoice, mode = 'bil
       )}
 
       {/* 5. CURRENT BILL ITEMS TABLE */}
-      <div className="border border-[#284B35] overflow-hidden rounded-md">
-        <table className="w-full text-left text-xs border-collapse">
+      <div className="border border-[#284B35] overflow-x-auto rounded-md">
+        <table className="w-full min-w-[500px] sm:min-w-full text-left text-xs border-collapse">
           <thead>
             <tr className="bg-[#E4EFE7] text-[#284B35] font-black border-b border-[#284B35] text-center">
               <th className="p-2 border-r border-[#284B35] w-12">Mrp.</th>
@@ -170,71 +175,73 @@ export const BillTemplate: React.FC<BillTemplateProps> = ({ invoice, mode = 'bil
             <span>Old Bill Date : {previousBalance > 0 ? 'Previous Ledger' : '—'}</span>
           </div>
 
-          <table className="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr className="bg-[#E4EFE7] text-[#284B35] font-black border-b border-[#284B35] text-center">
-                <th className="p-1.5 border-r border-[#284B35] w-12">Mrp.</th>
-                <th className="p-1.5 border-r border-[#284B35] text-left">Particulars</th>
-                <th className="p-1.5 border-r border-[#284B35] w-28">Kg./Ltr./Unit</th>
-                <th className="p-1.5 border-r border-[#284B35] w-14">Qty</th>
-                <th className="p-1.5 border-r border-[#284B35] w-24 text-right">Rate (₹)</th>
-                <th className="p-1.5 w-28 text-right">Amount (₹)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {previousBalance > 0 ? (
-                <tr>
-                  <td className="p-1.5 border-r border-[#284B35] text-center font-bold">1</td>
-                  <td className="p-1.5 border-r border-[#284B35] font-bold text-slate-800">
-                    முந்தைய பாக்கி நிலுவை (Previous Customer Due)
-                  </td>
-                  <td className="p-1.5 border-r border-[#284B35] text-center">Account</td>
-                  <td className="p-1.5 border-r border-[#284B35] text-center font-bold">1</td>
-                  <td className="p-1.5 border-r border-[#284B35] text-right font-bold">{previousBalance.toFixed(2)}</td>
-                  <td className="p-1.5 text-right font-black">{previousBalance.toFixed(2)}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[500px] sm:min-w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-[#E4EFE7] text-[#284B35] font-black border-b border-[#284B35] text-center">
+                  <th className="p-1.5 border-r border-[#284B35] w-12">Mrp.</th>
+                  <th className="p-1.5 border-r border-[#284B35] text-left">Particulars</th>
+                  <th className="p-1.5 border-r border-[#284B35] w-28">Kg./Ltr./Unit</th>
+                  <th className="p-1.5 border-r border-[#284B35] w-14">Qty</th>
+                  <th className="p-1.5 border-r border-[#284B35] w-24 text-right">Rate (₹)</th>
+                  <th className="p-1.5 w-28 text-right">Amount (₹)</th>
                 </tr>
-              ) : (
-                <tr>
-                  <td className="p-1.5 border-r border-[#284B35] text-center text-slate-400">—</td>
-                  <td className="p-1.5 border-r border-[#284B35] text-slate-500 italic">
-                    முந்தைய பாக்கி எதுவும் இல்லை (No Old Pending Balance)
+              </thead>
+              <tbody>
+                {previousBalance > 0 ? (
+                  <tr>
+                    <td className="p-1.5 border-r border-[#284B35] text-center font-bold">1</td>
+                    <td className="p-1.5 border-r border-[#284B35] font-bold text-slate-800">
+                      முந்தைய பாக்கி நிலுவை (Previous Customer Due)
+                    </td>
+                    <td className="p-1.5 border-r border-[#284B35] text-center">Account</td>
+                    <td className="p-1.5 border-r border-[#284B35] text-center font-bold">1</td>
+                    <td className="p-1.5 border-r border-[#284B35] text-right font-bold">{previousBalance.toFixed(2)}</td>
+                    <td className="p-1.5 text-right font-black">{previousBalance.toFixed(2)}</td>
+                  </tr>
+                ) : (
+                  <tr>
+                    <td className="p-1.5 border-r border-[#284B35] text-center text-slate-400">—</td>
+                    <td className="p-1.5 border-r border-[#284B35] text-slate-500 italic">
+                      முந்தைய பாக்கி எதுவும் இல்லை (No Old Pending Balance)
+                    </td>
+                    <td className="p-1.5 border-r border-[#284B35] text-center text-slate-400">—</td>
+                    <td className="p-1.5 border-r border-[#284B35] text-center text-slate-400">—</td>
+                    <td className="p-1.5 border-r border-[#284B35] text-right font-bold">0.00</td>
+                    <td className="p-1.5 text-right font-bold">0.00</td>
+                  </tr>
+                )}
+                <tr className="border-t border-[#284B35] font-black bg-white">
+                  <td colSpan={5} className="p-1.5 text-right uppercase border-r border-[#284B35]">
+                    OLD BILL TOTAL
                   </td>
-                  <td className="p-1.5 border-r border-[#284B35] text-center text-slate-400">—</td>
-                  <td className="p-1.5 border-r border-[#284B35] text-center text-slate-400">—</td>
-                  <td className="p-1.5 border-r border-[#284B35] text-right font-bold">0.00</td>
-                  <td className="p-1.5 text-right font-bold">0.00</td>
+                  <td className="p-1.5 text-right text-xs font-black text-slate-950">
+                    {previousBalance.toFixed(2)}
+                  </td>
                 </tr>
-              )}
-              <tr className="border-t border-[#284B35] font-black bg-white">
-                <td colSpan={5} className="p-1.5 text-right uppercase border-r border-[#284B35]">
-                  OLD BILL TOTAL
-                </td>
-                <td className="p-1.5 text-right text-xs font-black text-slate-950">
-                  {previousBalance.toFixed(2)}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
       {/* 7. BOTTOM 4-BOX SECTION (DELIVERY MODE | PAYMENT MODE | COURIER DETAILS | BILL SUMMARY) */}
-      <div className="grid grid-cols-12 gap-2 text-xs">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2 text-xs print:grid-cols-12 print:gap-2">
         {/* Box 1: DELIVERY MODE */}
-        <div className="col-span-3 border border-[#284B35] rounded-md p-2 space-y-2">
+        <div className="col-span-1 sm:col-span-1 lg:col-span-3 print:col-span-3 border border-[#284B35] rounded-md p-2 space-y-2">
           <div className="font-black text-center border-b border-[#284B35] pb-1 uppercase tracking-wide text-[#284B35]">
             DELIVERY MODE
           </div>
           <div className="space-y-1.5 font-semibold text-slate-800">
-            <label className="flex items-center space-x-2">
+            <label className="flex items-center space-x-2 cursor-pointer">
               <input type="checkbox" readOnly checked={isWalkIn} className="accent-[#284B35]" />
               <span>Walk-in</span>
             </label>
-            <label className="flex items-center space-x-2">
+            <label className="flex items-center space-x-2 cursor-pointer">
               <input type="checkbox" readOnly checked={isCourier} className="accent-[#284B35]" />
               <span>Courier</span>
             </label>
-            <label className="flex items-center space-x-2">
+            <label className="flex items-center space-x-2 cursor-pointer">
               <input type="checkbox" readOnly checked={false} className="accent-[#284B35]" />
               <span>Home Delivery</span>
             </label>
@@ -242,24 +249,24 @@ export const BillTemplate: React.FC<BillTemplateProps> = ({ invoice, mode = 'bil
         </div>
 
         {/* Box 2: PAYMENT MODE */}
-        <div className="col-span-3 border border-[#284B35] rounded-md p-2 space-y-2">
+        <div className="col-span-1 sm:col-span-1 lg:col-span-3 print:col-span-3 border border-[#284B35] rounded-md p-2 space-y-2">
           <div className="font-black text-center border-b border-[#284B35] pb-1 uppercase tracking-wide text-[#284B35]">
             PAYMENT MODE
           </div>
           <div className="space-y-1.5 font-semibold text-slate-800">
-            <label className="flex items-center space-x-2">
+            <label className="flex items-center space-x-2 cursor-pointer">
               <input type="checkbox" readOnly checked={paymentMethod === 'cash'} className="accent-[#284B35]" />
               <span>Cash</span>
             </label>
-            <label className="flex items-center space-x-2">
+            <label className="flex items-center space-x-2 cursor-pointer">
               <input type="checkbox" readOnly checked={paymentMethod === 'upi'} className="accent-[#284B35]" />
               <span>UPI</span>
             </label>
-            <label className="flex items-center space-x-2">
+            <label className="flex items-center space-x-2 cursor-pointer">
               <input type="checkbox" readOnly checked={paymentMethod === 'bank_transfer'} className="accent-[#284B35]" />
               <span>Bank Transfer</span>
             </label>
-            <label className="flex items-center space-x-2">
+            <label className="flex items-center space-x-2 cursor-pointer">
               <input type="checkbox" readOnly checked={paymentMethod === 'credit'} className="accent-[#284B35]" />
               <span>Credit</span>
             </label>
@@ -267,7 +274,7 @@ export const BillTemplate: React.FC<BillTemplateProps> = ({ invoice, mode = 'bil
         </div>
 
         {/* Box 3: COURIER DETAILS */}
-        <div className="col-span-3 border border-[#284B35] rounded-md p-2 space-y-2">
+        <div className="col-span-1 sm:col-span-1 lg:col-span-3 print:col-span-3 border border-[#284B35] rounded-md p-2 space-y-2">
           <div className="font-black text-center border-b border-[#284B35] pb-1 uppercase tracking-wide text-[#284B35]">
             COURIER DETAILS
           </div>
@@ -278,7 +285,7 @@ export const BillTemplate: React.FC<BillTemplateProps> = ({ invoice, mode = 'bil
         </div>
 
         {/* Box 4: BILL SUMMARY */}
-        <div className="col-span-3 border border-[#284B35] rounded-md overflow-hidden flex flex-col justify-between">
+        <div className="col-span-1 sm:col-span-1 lg:col-span-3 print:col-span-3 border border-[#284B35] rounded-md overflow-hidden flex flex-col justify-between">
           <div className="bg-[#284B35] text-white text-center py-1 font-black text-xs uppercase tracking-wide">
             {isQuotation ? 'QUOTATION SUMMARY' : 'BILL SUMMARY'}
           </div>
@@ -288,10 +295,30 @@ export const BillTemplate: React.FC<BillTemplateProps> = ({ invoice, mode = 'bil
               <span>Product Total</span>
               <span className="font-bold">₹ {subtotal.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between p-1.5">
-              <span>Courier Charges</span>
-              <span className="font-bold">₹ {courierCharges.toFixed(2)}</span>
-            </div>
+            {taxAmount > 0 && (
+              <div className="flex justify-between p-1.5 text-slate-800">
+                <span>GST / Tax (வரி)</span>
+                <span className="font-bold text-[#284B35]">+₹ {taxAmount.toFixed(2)}</span>
+              </div>
+            )}
+            {previousBalance > 0 && (
+              <div className="flex justify-between p-1.5 text-slate-800">
+                <span>Old Due (பாக்கி)</span>
+                <span className="font-bold">+₹ {previousBalance.toFixed(2)}</span>
+              </div>
+            )}
+            {courierCharges > 0 && (
+              <div className="flex justify-between p-1.5 text-slate-800">
+                <span>Courier Charges</span>
+                <span className="font-bold">+₹ {courierCharges.toFixed(2)}</span>
+              </div>
+            )}
+            {discountAmount > 0 && (
+              <div className="flex justify-between p-1.5 text-emerald-800">
+                <span>Discount (தள்ளுபடி)</span>
+                <span className="font-bold text-emerald-700">-₹ {discountAmount.toFixed(2)}</span>
+              </div>
+            )}
             <div className="flex justify-between p-1.5 bg-[#E4EFE7] font-black text-slate-950">
               <span className="uppercase">GRAND TOTAL</span>
               <span className="text-sm font-black text-[#284B35]">₹ {grandTotal.toFixed(2)}</span>

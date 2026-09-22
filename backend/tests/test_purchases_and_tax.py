@@ -60,3 +60,25 @@ def test_create_outside_stock_purchase_and_tax_report():
     assert csv_res.status_code == 200
     assert "text/csv" in csv_res.headers["content-type"]
     assert "Erode Organic Copra Mill" in csv_res.text
+
+def test_extract_purchase_bill_image():
+    login_res = client.post("/api/auth/login", json={"email": "admin@greenlife.com", "password": "admin123"})
+    token = login_res.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Upload mock image to /api/purchases/extract-bill
+    mock_file = ("purchase_bill.jpg", b"fake-jpg-binary-content-for-ocr-test", "image/jpeg")
+    res = client.post(
+        "/api/purchases/extract-bill",
+        files={"file": mock_file},
+        headers=headers
+    )
+    assert res.status_code == 200
+    res_data = res.json()
+    assert res_data["success"] is True
+    assert "data" in res_data
+    extracted = res_data["data"]
+    assert "vendor_name" in extracted
+    assert "items" in extracted
+    assert len(extracted["items"]) > 0
+    assert "grand_total" in extracted

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { purchaseApi, productApi } from '../services/api';
 import { Purchase, Product } from '../types';
 import { PageHeader } from '../components/layout/PageHeader';
@@ -19,7 +19,10 @@ import {
   Layers,
   ArrowDownLeft,
   Building2,
-  RefreshCw
+  RefreshCw,
+  Camera,
+  Upload,
+  Sparkles
 } from 'lucide-react';
 
 export const Purchases: React.FC = () => {
@@ -35,6 +38,13 @@ export const Purchases: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [catalogProducts, setCatalogProducts] = useState<Product[]>([]);
+
+  // AI Bill Scanner State
+  const [scanningBill, setScanningBill] = useState<boolean>(false);
+  const [billImagePreview, setBillImagePreview] = useState<string | null>(null);
+  const [scanSuccessMessage, setScanSuccessMessage] = useState<string | null>(null);
+  const [scanErrorMessage, setScanErrorMessage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Form State
   const [vendorName, setVendorName] = useState('');
@@ -196,7 +206,68 @@ export const Purchases: React.FC = () => {
     setTaxAmount(0);
     setAmountPaid('');
     setNotes('');
+    setBillImagePreview(null);
+    setScanSuccessMessage(null);
+    setScanErrorMessage(null);
     setItems([{ item_name: '', quantity: 1, unit: 'kg', unit_price: 0, auto_update_stock: true }]);
+  };
+
+  const handleBillImageUpload = async (file: File) => {
+    if (!file) return;
+    try {
+      setScanningBill(true);
+      setScanErrorMessage(null);
+      setScanSuccessMessage(null);
+
+      // Create local image preview
+      const previewUrl = URL.createObjectURL(file);
+      setBillImagePreview(previewUrl);
+
+      // Ensure modal is open so the user sees the extraction happening live
+      setShowAddModal(true);
+
+      const res = await purchaseApi.extractBill(file);
+      const data = res.data?.data;
+      if (data) {
+        if (data.vendor_name) setVendorName(data.vendor_name);
+        if (data.vendor_bill_number) setVendorBillNumber(data.vendor_bill_number);
+        if (data.vendor_phone) setVendorPhone(data.vendor_phone);
+        if (data.vendor_gstin) setVendorGstin(data.vendor_gstin);
+        if (data.purchase_date) setPurchaseDate(data.purchase_date);
+        if (data.category) setCategory(data.category);
+        if (data.payment_method) setPaymentMethod(data.payment_method);
+        if (data.tax_amount !== undefined) setTaxAmount(Number(data.tax_amount) || 0);
+        if (data.amount_paid !== undefined) setAmountPaid(data.amount_paid);
+        if (data.notes) setNotes(data.notes);
+
+        if (Array.isArray(data.items) && data.items.length > 0) {
+          setItems(
+            data.items.map((it: any) => ({
+              item_name: it.item_name || it.product || '',
+              product_id: undefined,
+              quantity: Number(it.quantity) || 1,
+              unit: it.unit || 'kg',
+              unit_price: Number(it.unit_price || it.price) || 0,
+              auto_update_stock: it.auto_update_stock !== false,
+            }))
+          );
+        }
+        setScanSuccessMessage(
+          isTamil
+            ? 'பில் விவரங்கள் மற்றும் பொருட்கள் வெற்றிகரமாகப் பிரிக்கப்பட்டு அட்டவணையில் சேர்க்கப்பட்டன!'
+            : 'Bill details and line items extracted and arranged in table successfully!'
+        );
+      }
+    } catch (err: any) {
+      console.error('Error scanning purchase bill:', err);
+      setScanErrorMessage(
+        isTamil
+          ? 'பில் படம் ஸ்கேன் செய்வதில் பிழை ஏற்பட்டது. கைமுறையாக விவரங்களை நிரப்பவும்.'
+          : 'Failed to extract bill image. You can enter details manually.'
+      );
+    } finally {
+      setScanningBill(false);
+    }
   };
 
   const handleDelete = async (id: number) => {
@@ -220,17 +291,51 @@ export const Purchases: React.FC = () => {
         }
         badge={isTamil ? 'கொள்முதல் மேலாண்மை' : 'Stock Inward Ledger'}
         actions={
-          <button
-            onClick={() => {
-              resetForm();
-              setShowAddModal(true);
-            }}
-            className="flex items-center space-x-2 px-5 py-2.5 rounded-full text-xs sm:text-sm font-black transition-all shadow-md active:scale-95 cursor-pointer"
-            style={{ background: '#2D6A4F', color: 'white' }}
-          >
-            <Plus className="w-4 h-4 text-[#C68B3A]" />
-            <span>{isTamil ? 'புதிய கொள்முதல் சேர்' : 'Record Inward Bill'}</span>
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,.pdf"
+              capture="environment"
+              className="hidden"
+              onChange={(e) => {
+                if (e.target.files && e.target.files[0]) {
+                  handleBillImageUpload(e.target.files[0]);
+                }
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={scanningBill}
+              className="flex items-center space-x-2 px-4 py-2.5 rounded-full text-xs sm:text-sm font-black border-2 transition-all shadow-xs active:scale-95 cursor-pointer disabled:opacity-50"
+              style={{ background: '#EBF5EE', borderColor: '#B7D9C4', color: '#2D6A4F' }}
+              title={isTamil ? 'பில் புகைப்படம் எடுத்து விவரங்களை எடுக்க' : 'Snap or Upload Bill Photo'}
+            >
+              {scanningBill ? (
+                <RefreshCw className="w-4 h-4 animate-spin text-[#2D6A4F]" />
+              ) : (
+                <Camera className="w-4 h-4 text-[#C68B3A]" />
+              )}
+              <span>
+                {scanningBill
+                  ? (isTamil ? 'பிரித்தெடுக்கிறது...' : 'Scanning...')
+                  : (isTamil ? '📷 பில் படம் எடுக்க / சேர்க்க' : '📷 Snap Bill Photo')}
+              </span>
+            </button>
+
+            <button
+              onClick={() => {
+                resetForm();
+                setShowAddModal(true);
+              }}
+              className="flex items-center space-x-2 px-5 py-2.5 rounded-full text-xs sm:text-sm font-black transition-all shadow-md active:scale-95 cursor-pointer"
+              style={{ background: '#2D6A4F', color: 'white' }}
+            >
+              <Plus className="w-4 h-4 text-[#C68B3A]" />
+              <span>{isTamil ? 'புதிய கொள்முதல் சேர்' : 'Record Inward Bill'}</span>
+            </button>
+          </div>
         }
       />
 
@@ -458,6 +563,96 @@ export const Purchases: React.FC = () => {
             </div>
 
             <form onSubmit={handleSubmitPurchase} className="space-y-4 text-xs">
+              {/* AI BILL PHOTO SCANNER DROPZONE */}
+              <div
+                className="p-3.5 sm:p-4 rounded-2xl border-2 border-dashed transition-all"
+                style={{
+                  background: '#F7F5EF',
+                  borderColor: billImagePreview ? '#2D6A4F' : '#B7D9C4',
+                }}
+              >
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="flex items-center space-x-3">
+                    {billImagePreview ? (
+                      <div className="relative w-14 h-14 rounded-xl overflow-hidden border border-[#2D6A4F] flex-shrink-0 shadow-xs bg-white">
+                        <img src={billImagePreview} alt="Bill Preview" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setBillImagePreview(null);
+                            setScanSuccessMessage(null);
+                          }}
+                          className="absolute top-0 right-0 p-0.5 bg-black/60 text-white rounded-bl"
+                          title="Remove Image"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#EBF5EE', color: '#2D6A4F' }}>
+                        <Camera className="w-5 h-5 text-[#2D6A4F]" />
+                      </div>
+                    )}
+                    <div>
+                      <p className="font-black text-xs sm:text-sm flex items-center space-x-1.5" style={{ color: '#1C1A15' }}>
+                        <span>{isTamil ? 'பில் புகைப்படம் / பில் சீட்டை இணைக்கவும் (AI OCR)' : 'Attach or Snap Purchase Bill (AI OCR)'}</span>
+                        <Sparkles className="w-3.5 h-3.5 text-[#C68B3A]" />
+                      </p>
+                      <p className="text-[11px] font-medium" style={{ color: '#8C8880' }}>
+                        {isTamil
+                          ? 'படம் இணைத்தால் சப்ளையர் பெயர், பில் எண் மற்றும் பொருட்களை தானாகவே அட்டவணையில் பிரித்து அமைக்கும்'
+                          : 'Attaching photo auto-extracts supplier, bill number, and item rows into the table'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <input
+                      id="modal-bill-upload"
+                      type="file"
+                      accept="image/*,.pdf"
+                      capture="environment"
+                      className="hidden"
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          handleBillImageUpload(e.target.files[0]);
+                        }
+                      }}
+                    />
+                    <label
+                      htmlFor="modal-bill-upload"
+                      className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-black shadow-xs cursor-pointer active:scale-95 transition-all"
+                      style={{ background: '#2D6A4F', color: 'white' }}
+                    >
+                      {scanningBill ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#C68B3A]" />
+                          <span>{isTamil ? 'ஸ்கேன் ஆகிறது...' : 'Extracting...'}</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-3.5 h-3.5 text-[#C68B3A]" />
+                          <span>{billImagePreview ? (isTamil ? 'வேறு படம் மாற்றுக' : 'Change Photo') : (isTamil ? 'படம் சேர்க்க / எடுக்க' : 'Upload / Snap Photo')}</span>
+                        </>
+                      )}
+                    </label>
+                  </div>
+                </div>
+
+                {scanSuccessMessage && (
+                  <div className="mt-2.5 p-2 rounded-xl text-xs font-bold flex items-center space-x-2 border" style={{ background: '#EBF5EE', borderColor: '#B7D9C4', color: '#2D6A4F' }}>
+                    <CheckCircle className="w-4 h-4 flex-shrink-0" style={{ color: '#2D6A4F' }} />
+                    <span>{scanSuccessMessage}</span>
+                  </div>
+                )}
+                {scanErrorMessage && (
+                  <div className="mt-2.5 p-2 rounded-xl text-xs font-bold flex items-center space-x-2 border" style={{ background: '#FEF3F2', borderColor: '#FECDCA', color: '#B42318' }}>
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" style={{ color: '#B42318' }} />
+                    <span>{scanErrorMessage}</span>
+                  </div>
+                )}
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold mb-1" style={{ color: '#4A4740' }}>
