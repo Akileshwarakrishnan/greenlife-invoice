@@ -37,7 +37,7 @@ export const NewOrder: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | ''>('');
   
-  // Order Line Items
+  // Order Line Items (Non-GST Direct Retail Billing)
   const [items, setItems] = useState<OrderItem[]>([
     {
       product_id: undefined,
@@ -149,7 +149,7 @@ export const NewOrder: React.FC = () => {
           unit: product.unit || 'kg',
           unit_price: product.price,
           quantity: 1,
-          tax_percentage: product.tax_percentage || 0,
+          tax_percentage: 0,
           discount: 0,
           total_amount: product.price,
         },
@@ -164,7 +164,7 @@ export const NewOrder: React.FC = () => {
         unit: product.unit || 'kg',
         unit_price: product.price,
         quantity: 1,
-        tax_percentage: product.tax_percentage || 0,
+        tax_percentage: 0,
         discount: 0,
         total_amount: product.price,
       },
@@ -306,14 +306,9 @@ export const NewOrder: React.FC = () => {
   const subtotal = Number(
     items.reduce((sum, item) => sum + (Number(item.quantity) * Number(item.unit_price) || 0), 0).toFixed(2)
   );
-  const totalTax = Number(
-    items.reduce((sum, item) => {
-      const lineBase = Math.max(0, (Number(item.quantity) * Number(item.unit_price) || 0) - (Number(item.discount) || 0));
-      return sum + ((lineBase * (Number(item.tax_percentage) || 0)) / 100);
-    }, 0).toFixed(2)
-  );
+  const totalTax = 0;
   const appliedPreviousBalance = includePreviousBalance ? Number(previousBalance || 0) : 0;
-  const grandTotal = Number((subtotal + totalTax + appliedPreviousBalance + Number(courierCharges || 0) - Number(discountAmount || 0)).toFixed(2));
+  const grandTotal = Number((subtotal + appliedPreviousBalance + Number(courierCharges || 0) - Number(discountAmount || 0)).toFixed(2));
 
   const handleQuickAddCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -912,12 +907,7 @@ export const NewOrder: React.FC = () => {
                   <span className="font-bold text-base text-white">₹{subtotal.toLocaleString('en-IN')}</span>
                 </div>
 
-                {totalTax > 0 && (
-                  <div className="flex justify-between items-center font-bold text-[#74C69D]">
-                    <span>{isTamil ? '+ வரி (GST / Tax):' : '+ GST / Tax:'}</span>
-                    <span className="text-base">+ ₹{totalTax.toLocaleString('en-IN')}</span>
-                  </div>
-                )}
+
 
                 {appliedPreviousBalance > 0 && (
                   <div className="flex justify-between items-center font-bold" style={{ color: '#C68B3A' }}>

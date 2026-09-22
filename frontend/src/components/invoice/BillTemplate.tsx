@@ -103,11 +103,6 @@ export const BillTemplate: React.FC<BillTemplateProps> = ({ invoice, mode = 'bil
             <span className="w-24 font-bold text-slate-800 flex-shrink-0">Mobile &nbsp;&nbsp;:</span>
             <span className="font-bold text-slate-900">{invoice.customer_phone || '—'}</span>
           </div>
-
-          <div className="flex pr-4">
-            <span className="font-bold text-slate-800">GST : &nbsp;</span>
-            <span className="font-bold text-slate-900">{invoice.customer_gstin || 'Not Applicable'}</span>
-          </div>
         </div>
       </div>
 
@@ -295,12 +290,7 @@ export const BillTemplate: React.FC<BillTemplateProps> = ({ invoice, mode = 'bil
               <span>Product Total</span>
               <span className="font-bold">₹ {subtotal.toFixed(2)}</span>
             </div>
-            {taxAmount > 0 && (
-              <div className="flex justify-between p-1.5 text-slate-800">
-                <span>GST / Tax (வரி)</span>
-                <span className="font-bold text-[#284B35]">+₹ {taxAmount.toFixed(2)}</span>
-              </div>
-            )}
+
             {previousBalance > 0 && (
               <div className="flex justify-between p-1.5 text-slate-800">
                 <span>Old Due (பாக்கி)</span>

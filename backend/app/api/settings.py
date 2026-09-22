@@ -15,15 +15,26 @@ def get_system_settings(current_user: User = Depends(get_current_user)) -> Any:
     return SystemSettingsOut(
         business={
             "business_name": settings.BUSINESS_NAME,
+            "business_name_ta": getattr(settings, "BUSINESS_NAME_TA", "கிரீன் லைப் நேச்சுரல் புட்ஸ்"),
+            "business_proprietor": getattr(settings, "BUSINESS_PROPRIETOR", "RVS.Arumugam"),
             "business_tagline": settings.BUSINESS_TAGLINE,
             "business_address": settings.BUSINESS_ADDRESS,
             "business_phone": settings.BUSINESS_PHONE,
             "business_email": settings.BUSINESS_EMAIL,
             "business_website": settings.BUSINESS_WEBSITE,
+            "business_fssai": getattr(settings, "BUSINESS_FSSAI", "22416495000038"),
+            "business_msme": getattr(settings, "BUSINESS_MSME", "TN28D0028521"),
             "business_gstin": settings.BUSINESS_GSTIN,
+            "business_bank_name": getattr(settings, "BUSINESS_BANK_NAME", "SBI BRANCH - UDUMALPET"),
+            "business_ifsc": getattr(settings, "BUSINESS_IFSC", "SBIN0000944"),
+            "business_account_name": getattr(settings, "BUSINESS_ACCOUNT_NAME", "GREEN LIFE NATURAL FOODS"),
+            "business_account_number": getattr(settings, "BUSINESS_ACCOUNT_NUMBER", "35949191474"),
             "business_upi_id": settings.BUSINESS_UPI_ID,
             "currency_symbol": settings.CURRENCY_SYMBOL,
-            "invoice_prefix": settings.INVOICE_PREFIX
+            "invoice_prefix": settings.INVOICE_PREFIX,
+            "default_gst_mode": getattr(settings, "DEFAULT_GST_MODE", "exempt"),
+            "default_b2b_gst_rate": getattr(settings, "DEFAULT_B2B_GST_RATE", 5.0),
+            "default_retail_gst_rate": getattr(settings, "DEFAULT_RETAIL_GST_RATE", 0.0),
         },
         automation={
             "n8n_webhook_url": settings.N8N_WEBHOOK_URL,

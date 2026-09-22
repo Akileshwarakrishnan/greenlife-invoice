@@ -206,15 +206,26 @@ export interface ExtractedInvoiceData {
 
 export interface BusinessSettings {
   business_name: string;
+  business_name_ta?: string;
+  business_proprietor?: string;
   business_tagline: string;
   business_address: string;
   business_phone: string;
   business_email: string;
   business_website: string;
+  business_fssai?: string;
+  business_msme?: string;
   business_gstin: string;
+  business_bank_name?: string;
+  business_ifsc?: string;
+  business_account_name?: string;
+  business_account_number?: string;
   business_upi_id: string;
   currency_symbol: string;
   invoice_prefix: string;
+  default_gst_mode?: string;
+  default_b2b_gst_rate?: number;
+  default_retail_gst_rate?: number;
 }
 
 export interface SystemSettings {

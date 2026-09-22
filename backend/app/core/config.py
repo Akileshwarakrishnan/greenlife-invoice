@@ -69,6 +69,9 @@ class Settings(BaseSettings):
     BUSINESS_UPI_ID: str = "greenlife@upi"
     CURRENCY_SYMBOL: str = "₹"
     INVOICE_PREFIX: str = "GLNF"
+    DEFAULT_GST_MODE: str = "exempt"
+    DEFAULT_B2B_GST_RATE: float = 5.0
+    DEFAULT_RETAIL_GST_RATE: float = 0.0
     
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = [
