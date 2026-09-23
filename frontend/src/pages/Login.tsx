@@ -1,645 +1,557 @@
-/* Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V5 */
-/* redesign: Login.tsx · genre: editorial · theme: Garden
- * macrostructure: Split-screen Workbench
- * all colors/fonts inlined to bypass global body overrides in index.css
- */
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { useLanguage } from '../context/LanguageContext';
-import { Leaf, Lock, Mail, ArrowRight, Languages, ShieldCheck, Sparkles, Clock } from 'lucide-react';
+import { useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUpRight,
+  Check,
+  Eye,
+  EyeOff,
+  Leaf,
+  LockKeyhole,
+  Mail,
+  Package,
+  ReceiptText,
+  ShieldCheck,
+  Users,
+} from "lucide-react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
 
-// Garden theme — hardcoded to bypass index.css body overrides
-const G = {
-  paper:        '#F7F5EF',
-  paper2:       '#EEEAE0',
-  ink:          '#1C1A15',
-  ink2:         '#4A4740',
-  inkMuted:     '#8C8880',
-  accent:       '#2D6A4F',
-  accentHover:  '#235C42',
-  accentLight:  '#EBF5EE',
-  accentBorder: '#B7D9C4',
-  panel:        '#1B3A2A',
-  amber:        '#C68B3A',
-  errorBg:      '#FEF3F2',
-  errorBorder:  '#FECDCA',
-  errorText:    '#B42318',
-  fontDisplay:  "'Georgia', 'Times New Roman', serif",
-  fontBody:     "'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, sans-serif",
-};
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
-export const Login: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [emailFocus, setEmailFocus] = useState(false);
-  const [passFocus, setPassFocus] = useState(false);
+export const Login = () => {
+  const root = useRef<HTMLElement>(null);
   const { login } = useAuth();
-  const { language, toggleLanguage, t } = useLanguage();
+  const { language, toggleLanguage } = useLanguage();
+  const ta = language === "ta";
   const navigate = useNavigate();
-  const isTamil = language === 'ta';
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [visible, setVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [help, setHelp] = useState(false);
+  const [activeFeature, setActiveFeature] = useState(0);
+  const [slide, setSlide] = useState(0);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        gsap.from(".intro-reveal", {
+          y: 22,
+          opacity: 0,
+          duration: 0.85,
+          stagger: 0.1,
+          ease: "power3.out",
+        });
+        gsap.fromTo(
+          ".story-word",
+          { opacity: 0.18 },
+          {
+            opacity: 1,
+            stagger: 0.15,
+            scrollTrigger: {
+              trigger: ".brand-story",
+              start: "top 78%",
+              end: "bottom 65%",
+              scrub: 1,
+            },
+          },
+        );
+      });
+      mm.add(
+        "(min-width: 1024px) and (prefers-reduced-motion: no-preference)",
+        () => {
+          ScrollTrigger.create({
+            trigger: ".workflow-section",
+            start: "top 140px",
+            end: "bottom 530px",
+            pin: ".workflow-heading",
+            pinSpacing: false,
+          });
+        },
+      );
+      return () => mm.revert();
+    },
+    { scope: root, dependencies: [language], revertOnUpdate: true },
+  );
+
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError("");
     setLoading(true);
     try {
       await login({ email, password });
-      navigate('/');
-    } catch (err: any) {
+      navigate("/");
+    } catch (err: unknown) {
+      const detail = (err as { response?: { data?: { detail?: string } } })
+        .response?.data?.detail;
       setError(
-        err.response?.data?.detail ||
-          (isTamil
-            ? 'உள்நுழைவு தோல்வியடைந்தது. உங்கள் மின்னஞ்சல் மற்றும் கடவுச்சொல்லைச் சரிபார்க்கவும்.'
-            : 'Failed to sign in. Please verify your email and password.')
+        detail ||
+          (ta
+            ? "உள்நுழைய முடியவில்லை. மீண்டும் முயற்சிக்கவும்."
+            : "Unable to sign in. Check your details and try again."),
       );
     } finally {
       setLoading(false);
     }
   };
-
-  const handleDemoFill = (demoEmail: string, demoPass: string) => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
-    setError(null);
-  };
+  const features = [
+    {
+      icon: ReceiptText,
+      title: ta ? "எளிமையான பில்லிங்." : "Beautifully simple billing.",
+      text: ta
+        ? "பொருட்களைத் தேர்ந்தெடுத்து, துல்லியமான பில்களை நொடிகளில் உருவாக்குங்கள்."
+        : "From the first item to the final receipt. Create clear, accurate invoices in a few thoughtful steps.",
+      detail: ta
+        ? "பில்கள், கட்டணங்கள், ரசீதுகள்"
+        : "Invoices, payments & receipts",
+    },
+    {
+      icon: Package,
+      title: ta ? "ஒவ்வொரு பொருளும் கணக்கில்." : "Every product, in place.",
+      text: ta
+        ? "இருப்பு, விலை மற்றும் கொள்முதல் விவரங்களை ஒரே இடத்தில் நிர்வகிக்கவும்."
+        : "Keep your oils, grains and everyday essentials organised, with prices and stock always close at hand.",
+      detail: ta ? "பொருட்கள் மற்றும் இருப்பு" : "Products, stock & purchases",
+    },
+    {
+      icon: Users,
+      title: ta ? "நல்ல உறவுகள் வளரட்டும்." : "Good relationships grow.",
+      text: ta
+        ? "வாடிக்கையாளர் விவரங்கள் மற்றும் பாக்கித் தொகைகளை எளிதாகக் கண்காணிக்கவும்."
+        : "Know your customers, follow up on balances and give every regular a more personal experience.",
+      detail: ta ? "வாடிக்கையாளர்கள் மற்றும் பாக்கி" : "Customers & balances",
+    },
+  ];
+  const steps = ta
+    ? [
+        [
+          "வாடிக்கையாளரைத் தேர்ந்தெடுக்கவும்",
+          "சேமித்த வாடிக்கையாளரைத் தேர்ந்தெடுக்கவும் அல்லது புதியவரைச் சேர்க்கவும்.",
+        ],
+        [
+          "பொருட்களைச் சேர்க்கவும்",
+          "பொருட்கள், அளவு மற்றும் தள்ளுபடியை உள்ளிடவும். மொத்தம் தானாகக் கணக்கிடப்படும்.",
+        ],
+        [
+          "பில்லை உருவாக்கவும்",
+          "விவரங்களைச் சரிபார்த்து, பில்லை உருவாக்கி அச்சிடவும்.",
+        ],
+      ]
+    : [
+        [
+          "A familiar face. A fresh order.",
+          "Choose a returning customer or add someone new. Their details and previous balance are ready when you are.",
+        ],
+        [
+          "A little of everything good.",
+          "Add products, quantities and discounts. Your totals are calculated as you go, so you can focus on the customer.",
+        ],
+        [
+          "A receipt. And a reason to return.",
+          "Review the order, create the invoice and print a clear receipt. Every payment stays connected to the bill.",
+        ],
+      ];
+  const story = ta
+    ? "இயற்கையின் நன்மை. உங்கள் வியாபாரத்தில் ஒவ்வொரு நாளும்."
+    : "Rooted in nature. Made for the way you work.";
 
   return (
-    <>
-      {/* ── MOBILE PHONE VIEW (< lg): Leafora Botanical Glassmorphism App ── */}
-      <div
-        className="lg:hidden min-h-screen relative flex flex-col justify-between p-5 overflow-hidden text-white"
-        style={{
-          background: 'radial-gradient(circle at 50% 15%, #183827 0%, #0D2015 45%, #061009 100%)',
-          fontFamily: G.fontBody,
-        }}
-      >
-        {/* Soft atmospheric ambient light rings */}
-        <div className="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-[#4E8765]/20 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -right-24 w-80 h-80 rounded-full bg-[#2D6A4F]/25 blur-3xl pointer-events-none" />
-
-        {/* Top bar with Language Toggle */}
-        <div className="flex items-center justify-between z-10 pt-2">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
-              <Leaf className="w-4 h-4 text-[#A3C9A8]" />
-            </div>
-            <span className="text-xs font-bold tracking-wider uppercase text-white/80">GreenLife</span>
-          </div>
-
-          <button
-            onClick={toggleLanguage}
-            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-bold text-white/90 active:scale-95 transition-all"
-          >
-            <Languages className="w-3.5 h-3.5 text-[#A3C9A8]" />
-            <span>{language === 'en' ? 'தமிழ்' : 'English'}</span>
-          </button>
+    <main ref={root} className="auth-site overflow-x-hidden w-full max-w-full">
+      <a href="#sign-in" className="skip-link">
+        Skip to sign in
+      </a>
+      <nav className="public-nav" aria-label="Main navigation">
+        <Link to="/login" className="brand">
+          <span className="brand-symbol">
+            <Leaf size={23} strokeWidth={1.5} />
+          </span>
+          <span>
+            greenlife<span className="brand-period">.</span>
+            <small>NATURAL FOODS</small>
+          </span>
+        </Link>
+        <div className="public-nav-links">
+          <a href="#why-greenlife">
+            {ta ? "ஏன் கிரீன்லைஃப்" : "A simpler workday"}
+          </a>
+          <a href="#workflow">{ta ? "செயல்முறை" : "How it works"}</a>
         </div>
-
-        {/* Center Floating Glass Card (Screen 1 from Leafora reference) */}
-        <div className="my-auto z-10 py-6">
-          <div
-            className="w-full max-w-sm mx-auto rounded-3xl p-6 sm:p-8 border shadow-2xl backdrop-blur-2xl"
-            style={{
-              background: 'rgba(255, 255, 255, 0.07)',
-              borderColor: 'rgba(255, 255, 255, 0.16)',
-              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.25)',
-            }}
-          >
-            {/* Botanical Emblem & Title */}
-            <div className="text-center mb-6">
-              <div
-                className="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-4 border"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(78, 135, 101, 0.4) 0%, rgba(45, 106, 79, 0.2) 100%)',
-                  borderColor: 'rgba(163, 201, 168, 0.3)',
-                  boxShadow: '0 8px 24px rgba(45, 106, 79, 0.35)',
-                }}
-              >
-                <Leaf className="w-8 h-8 text-[#A3C9A8]" />
-              </div>
-
-              <h1
-                className="text-3xl font-normal tracking-tight text-white mb-1.5"
-                style={{ fontFamily: G.fontDisplay }}
-              >
-                GreenLife
-              </h1>
-              <p className="text-xs font-medium tracking-wide text-[#A3C9A8]">
-                {isTamil ? 'இயற்கை அங்காடி' : 'Bring Nature Home'}
-              </p>
-              <p className="text-[11px] text-white/60 mt-1 max-w-xs mx-auto">
-                {isTamil ? 'தூய மரச்செக்கு எண்ணெய் & இயற்கை உணவுப் பொருட்கள்' : 'Pure organic cold-pressed oils & traditional foods.'}
-              </p>
-            </div>
-
-            {error && (
-              <div className="mb-4 p-3 rounded-2xl bg-rose-500/20 border border-rose-500/30 text-rose-200 text-xs font-medium text-center">
-                {error}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-[10px] font-extrabold uppercase tracking-widest text-white/70 mb-1.5">
-                  {isTamil ? 'மின்னஞ்சல்' : 'Email Address'}
-                </label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@greenlife.com"
-                    className="w-full pl-10 pr-4 py-3 rounded-2xl text-xs font-bold text-white placeholder-white/40 border transition-all focus:outline-none focus:border-[#A3C9A8]"
-                    style={{
-                      background: 'rgba(0, 0, 0, 0.25)',
-                      borderColor: 'rgba(255, 255, 255, 0.14)',
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-extrabold uppercase tracking-widest text-white/70 mb-1.5">
-                  {isTamil ? 'கடவுச்சொல்' : 'Password'}
-                </label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  <input
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full pl-10 pr-4 py-3 rounded-2xl text-xs font-bold text-white placeholder-white/40 border transition-all focus:outline-none focus:border-[#A3C9A8]"
-                    style={{
-                      background: 'rgba(0, 0, 0, 0.25)',
-                      borderColor: 'rgba(255, 255, 255, 0.14)',
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Big Pill Button from Screen 1 */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full mt-2 py-3.5 px-6 rounded-full font-black text-sm tracking-wide transition-all shadow-xl flex items-center justify-center space-x-2 active:scale-95 disabled:opacity-50 cursor-pointer"
-                style={{
-                  background: 'linear-gradient(135deg, #A3C9A8 0%, #4E8765 100%)',
-                  color: '#0D2015',
-                  boxShadow: '0 8px 24px rgba(78, 135, 101, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.6)',
-                }}
-              >
-                <span>
-                  {loading
-                    ? (isTamil ? 'உள்நுழைகிறது...' : 'Signing in...')
-                    : (isTamil ? 'உள்நுழைக →' : 'Get Started →')}
-                </span>
-              </button>
-            </form>
-
-            {/* Quick Demo Fill Chips */}
-            <div className="mt-5 pt-4 border-t border-white/10">
-              <span className="block text-[10px] font-bold text-center uppercase tracking-wider text-white/50 mb-2.5">
-                {isTamil ? 'விரைவு அணுகல்' : '1-Tap Quick Access'}
-              </span>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleDemoFill('admin@greenlife.com', 'admin123')}
-                  className="py-2 px-3 rounded-xl text-[11px] font-bold text-[#A3C9A8] border transition-all active:scale-95"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.08)',
-                    borderColor: 'rgba(163, 201, 168, 0.3)',
-                  }}
-                >
-                  👑 {isTamil ? 'நிர்வாகி' : 'Admin Demo'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDemoFill('staff@greenlife.com', 'staff123')}
-                  className="py-2 px-3 rounded-xl text-[11px] font-bold text-white/80 border transition-all active:scale-95"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    borderColor: 'rgba(255, 255, 255, 0.15)',
-                  }}
-                >
-                  👤 {isTamil ? 'பணியாளர்' : 'Staff Demo'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom indicator dots (Screen 1 footer) */}
-        <div className="flex items-center justify-center space-x-1.5 pb-2 z-10">
-          <div className="w-6 h-1.5 rounded-full bg-[#A3C9A8]" />
-          <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
-          <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
-        </div>
-      </div>
-
-      {/* ── DESKTOP & LAPTOP VIEW (lg:flex): 100% UNTOUCHED ORIGINAL SPLIT SCREEN ── */}
-      <div style={{
-        minHeight: '100vh',
-        background: G.paper,
-        fontFamily: G.fontBody,
-        overflowX: 'hidden',
-      }} className="hidden lg:flex w-full">
-
-        {/* ── Left Brand Panel (desktop only) ── */}
-        <div style={{
-          background: G.panel,
-          position: 'relative',
-          overflow: 'hidden',
-          flexShrink: 0,
-        }} className="lg:flex lg:flex-col lg:w-[44%] xl:w-[40%]">
-
-          {/* Pure-CSS organic rings */}
-          {[
-            { b:'-12%', r:'-22%', w:'78%' },
-            { b:'-6%',  r:'-13%', w:'60%' },
-            { b:'2%',   r:'-5%',  w:'44%' },
-            { t:'-18%', l:'-18%', w:'58%' },
-          ].map((ring, i) => (
-            <div key={i} style={{
-              position:'absolute',
-              bottom: ring.b, right: ring.r,
-              top: ring.t,    left: ring.l,
-              width: ring.w,  paddingBottom: ring.w,
-              borderRadius:'50%',
-              border:`1px solid rgba(255,255,255,${0.04 + i * 0.01})`,
-              pointerEvents:'none',
-            }} />
-          ))}
-
-          {/* Language toggle */}
-          <div style={{ position:'absolute', top:24, left:24, zIndex:20 }}>
-            <button
-              onClick={toggleLanguage}
-              style={{
-                display:'flex', alignItems:'center', gap:6,
-                padding:'6px 12px',
-                background:'rgba(255,255,255,0.08)',
-                border:'1px solid rgba(255,255,255,0.14)',
-                borderRadius:8,
-                color:'rgba(255,255,255,0.75)',
-                fontFamily: G.fontBody,
-                fontSize:12, fontWeight:600, cursor:'pointer',
-              }}
-            >
-              <Languages size={13} />
-              <span>{language === 'en' ? 'தமிழ்' : 'English'}</span>
-            </button>
-          </div>
-
-          {/* Botanical brand block */}
-          <div style={{
-            position:'relative', zIndex:10,
-            padding:'80px 48px 48px',
-            flex:1, display:'flex', flexDirection:'column',
-            justifyContent:'space-between',
-          }}>
-            <div>
-              <div style={{
-                display:'inline-flex', alignItems:'center', gap:8,
-                padding:'6px 14px',
-                background:'rgba(255,255,255,0.08)',
-                border:'1px solid rgba(255,255,255,0.12)',
-                borderRadius:999, marginBottom:32,
-              }}>
-                <Leaf size={14} color={G.amber} />
-                <span style={{
-                  fontFamily: G.fontBody, fontSize:11, fontWeight:700,
-                  letterSpacing:'0.12em', textTransform:'uppercase',
-                  color:'rgba(255,255,255,0.85)',
-                }}>
-                  {isTamil ? 'இயற்கை அங்காடி' : 'Traditional Foods'}
-                </span>
-              </div>
-
-              <h1 style={{
-                fontFamily: G.fontDisplay,
-                fontSize:'clamp(2rem,3.2vw,2.8rem)',
-                fontWeight:400, fontStyle:'normal',
-                color:'#FFFFFF', lineHeight:1.15,
-                margin:'0 0 16px', letterSpacing:'-0.01em',
-              }}>
-                GreenLife<br />Natural Foods
-              </h1>
-
-              <p style={{
-                fontFamily: G.fontBody,
-                fontSize:14, lineHeight:1.65,
-                color:'rgba(255,255,255,0.60)',
-                margin:'0 0 40px', maxWidth:320,
-              }}>
-                {isTamil
-                  ? 'மரச்செக்கு எண்ணெய், மூலிகைப் பொடிகள் மற்றும் பாரம்பரிய சிறுதானியங்கள்.'
-                  : 'Pure cold-pressed oils, spice podis, and farm-fresh organic millets.'}
-              </p>
-
-              {/* Trust signals */}
-              <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
-                {[
-                  { icon: ShieldCheck, en: '100% Chemical & Sulphur Free', ta: '100% ரசாயனம் மற்றும் சல்பர் அற்றது' },
-                  { icon: Sparkles,    en: 'Traditional Chekku Cold Pressed', ta: 'பாரம்பரிய மரச்செக்கு முறை' },
-                  { icon: Clock,       en: 'Instant GST & POS Billing', ta: 'உடனடி ஜிஎஸ்டி மற்றும் பில்லிங்' },
-                ].map((item, i) => {
-                  const Icon = item.icon;
-                  return (
-                    <div key={i} style={{ display:'flex', alignItems:'center', gap:12 }}>
-                      <div style={{
-                        width:28, height:28, borderRadius:8,
-                        background:'rgba(255,255,255,0.08)',
-                        border:'1px solid rgba(255,255,255,0.12)',
-                        display:'flex', alignItems:'center', justifyContent:'center',
-                        flexShrink:0,
-                      }}>
-                        <Icon size={14} color={G.amber} />
-                      </div>
-                      <span style={{
-                        fontFamily: G.fontBody, fontSize:13,
-                        color:'rgba(255,255,255,0.80)', fontWeight:500,
-                      }}>
-                        {isTamil ? item.ta : item.en}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Bottom brand note */}
-            <div style={{ paddingTop:32 }}>
-              <p style={{
-                fontFamily: G.fontBody, fontSize:11,
-                color:'rgba(255,255,255,0.35)', margin:0,
-                letterSpacing:'0.04em',
-              }}>
-                Kangeyam · Tirupur · Tamil Nadu · Est. 2024
-              </p>
-            </div>
-          </div>
-
-          {/* Amber bottom rule */}
-          <div style={{
-            position:'absolute', bottom:0, left:0, right:0,
-            height:3, background: G.amber, opacity:0.75,
-          }} />
-        </div>
-
-        {/* ── Right Form Panel (desktop only) ── */}
-        <div style={{
-          flex:1, display:'flex', flexDirection:'column',
-          background: G.paper, minHeight:'100vh', position:'relative',
-        }}>
-
-          {/* Form — centred vertically */}
-          <div style={{
-            flex:1, display:'flex', alignItems:'center',
-            justifyContent:'center', padding:'48px 24px',
-          }}>
-            <div style={{ width:'100%', maxWidth:360 }}>
-
-            {/* Heading */}
-            <div style={{ marginBottom:36 }}>
-              <p style={{
-                fontFamily: G.fontBody,
-                fontSize:10, fontWeight:700,
-                textTransform:'uppercase', letterSpacing:'0.14em',
-                color: G.amber, margin:'0 0 8px',
-              }}>
-                {isTamil ? 'கணக்கு அணுகல்' : 'Account Access'}
-              </p>
-              <h2 style={{
-                fontFamily: G.fontDisplay,
-                fontSize:'clamp(1.6rem,4vw,2rem)',
-                fontWeight:400, fontStyle:'normal',
-                color: G.ink, margin:0, lineHeight:1.2,
-              }}>
-                {isTamil ? 'உள்நுழைக' : 'Sign in'}
-              </h2>
-            </div>
-
-            {/* Error */}
-            {error && (
-              <div style={{
-                marginBottom:20, padding:'12px 16px',
-                background: G.errorBg,
-                border:`1px solid ${G.errorBorder}`,
-                borderRadius:12, color: G.errorText,
-                fontFamily: G.fontBody, fontSize:12, fontWeight:500,
-              }}>
-                {error}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} style={{ display:'flex', flexDirection:'column', gap:20 }}>
-
-              {/* Email */}
-              <div>
-                <label style={{
-                  display:'block', fontFamily: G.fontBody,
-                  fontSize:10, fontWeight:700,
-                  textTransform:'uppercase', letterSpacing:'0.08em',
-                  color: G.ink2, marginBottom:8,
-                }}>
-                  {isTamil ? 'மின்னஞ்சல் முகவரி' : 'Email Address'}
-                </label>
-                <div style={{ position:'relative' }}>
-                  <Mail size={15} color={G.inkMuted} style={{
-                    position:'absolute', left:14, top:'50%',
-                    transform:'translateY(-50%)', pointerEvents:'none',
-                  }} />
-                  <input
-                    type="email" required value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    placeholder="admin@greenlife.com"
-                    onFocus={() => setEmailFocus(true)}
-                    onBlur={() => setEmailFocus(false)}
-                    style={{
-                      width:'100%', boxSizing:'border-box',
-                      paddingLeft:42, paddingRight:14,
-                      paddingTop:12, paddingBottom:12,
-                      background:'#FFFFFF',
-                      border:`1.5px solid ${emailFocus ? G.accent : G.paper2}`,
-                      borderRadius:12,
-                      boxShadow: emailFocus ? `0 0 0 3px rgba(45,106,79,0.12)` : 'none',
-                      fontFamily: G.fontBody, fontSize:14,
-                      color: G.ink, outline:'none',
-                      transition:'border-color 0.15s, box-shadow 0.15s',
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Password */}
-              <div>
-                <label style={{
-                  display:'block', fontFamily: G.fontBody,
-                  fontSize:10, fontWeight:700,
-                  textTransform:'uppercase', letterSpacing:'0.08em',
-                  color: G.ink2, marginBottom:8,
-                }}>
-                  {isTamil ? 'கடவுச்சொல்' : 'Password'}
-                </label>
-                <div style={{ position:'relative' }}>
-                  <Lock size={15} color={G.inkMuted} style={{
-                    position:'absolute', left:14, top:'50%',
-                    transform:'translateY(-50%)', pointerEvents:'none',
-                  }} />
-                  <input
-                    type="password" required value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    onFocus={() => setPassFocus(true)}
-                    onBlur={() => setPassFocus(false)}
-                    style={{
-                      width:'100%', boxSizing:'border-box',
-                      paddingLeft:42, paddingRight:14,
-                      paddingTop:12, paddingBottom:12,
-                      background:'#FFFFFF',
-                      border:`1.5px solid ${passFocus ? G.accent : G.paper2}`,
-                      borderRadius:12,
-                      boxShadow: passFocus ? `0 0 0 3px rgba(45,106,79,0.12)` : 'none',
-                      fontFamily: G.fontBody, fontSize:14,
-                      color: G.ink, outline:'none',
-                      transition:'border-color 0.15s, box-shadow 0.15s',
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Remember + Forgot row */}
-              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                <label style={{
-                  display:'flex', alignItems:'center', gap:8,
-                  fontFamily: G.fontBody, fontSize:13,
-                  color: G.ink2, cursor:'pointer',
-                }}>
-                  <input
-                    type="checkbox" checked={rememberMe}
-                    onChange={e => setRememberMe(e.target.checked)}
-                    style={{ accentColor: G.accent, width:15, height:15 }}
-                  />
-                  {isTamil ? 'என்னை நினைவில் கொள்' : 'Remember me'}
-                </label>
-                <a
-                  href="#forgot"
-                  onClick={e => {
-                    e.preventDefault();
-                    alert(isTamil
-                      ? 'கடவுச்சொல் மீட்டமைக்க admin@greenlife.com ஐத் தொடர்பு கொள்ளவும்.'
-                      : 'Contact system administrator at admin@greenlife.com for password reset.');
-                  }}
-                  style={{
-                    fontFamily: G.fontBody, fontSize:12, fontWeight:600,
-                    color: G.accent, textDecoration:'none',
-                  }}
-                >
-                  {isTamil ? 'கடவுச்சொல் மறந்ததா?' : 'Forgot password?'}
-                </a>
-              </div>
-
-              {/* Sign In button */}
-              <button
-                type="submit" disabled={loading}
-                style={{
-                  display:'flex', alignItems:'center', justifyContent:'center', gap:8,
-                  padding:'14px 20px',
-                  background: loading ? G.inkMuted : G.accent,
-                  color:'#FFFFFF',
-                  border:'none', borderRadius:12,
-                  fontFamily: G.fontBody, fontSize:14, fontWeight:600,
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  boxShadow: loading ? 'none' : '0 4px 16px rgba(45,106,79,0.38)',
-                  transition:'background 0.15s, box-shadow 0.15s',
-                  marginTop:4,
-                }}
-                onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.background = G.accentHover; }}
-                onMouseLeave={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.background = G.accent; }}
-              >
-                <span>
-                  {loading
-                    ? (isTamil ? 'சரிபார்க்கிறது...' : 'Authenticating...')
-                    : (isTamil ? 'உள்நுழைக' : 'Sign In to Dashboard')}
-                </span>
-                {!loading && <ArrowRight size={16} />}
-              </button>
-            </form>
-
-            {/* Demo Access */}
-            <div style={{
-              marginTop:28, paddingTop:24,
-              borderTop:`1px solid ${G.paper2}`,
-            }}>
-              <p style={{
-                fontFamily: G.fontBody, fontSize:10, fontWeight:700,
-                textTransform:'uppercase', letterSpacing:'0.14em',
-                color: G.inkMuted, textAlign:'center', margin:'0 0 14px',
-              }}>
-                {isTamil ? 'ஒரு-கிளிக் சோதனை அணுகல்' : 'One-Click Demo Access'}
-              </p>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
-                <button
-                  type="button"
-                  onClick={() => handleDemoFill('admin@greenlife.com', 'admin123')}
-                  style={{
-                    padding:'11px 12px',
-                    background: G.accentLight,
-                    border:`1.5px solid ${G.accentBorder}`,
-                    borderRadius:12, color: G.accent,
-                    fontFamily: G.fontBody, fontSize:12, fontWeight:600,
-                    cursor:'pointer', textAlign:'center',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#D8EDE1')}
-                  onMouseLeave={e => (e.currentTarget.style.background = G.accentLight)}
-                >
-                  👑 {isTamil ? 'நிர்வாகி (Admin)' : 'Admin Demo'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDemoFill('staff@greenlife.com', 'staff123')}
-                  style={{
-                    padding:'11px 12px',
-                    background: G.paper2,
-                    border:`1.5px solid #D4CFC5`,
-                    borderRadius:12, color: G.ink2,
-                    fontFamily: G.fontBody, fontSize:12, fontWeight:600,
-                    cursor:'pointer', textAlign:'center',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#E4DFDA')}
-                  onMouseLeave={e => (e.currentTarget.style.background = G.paper2)}
-                >
-                  👤 {isTamil ? 'பணியாளர் (Staff)' : 'Staff Demo'}
-                </button>
-              </div>
-            </div>
-
-            {/* Sign up link */}
-            <p style={{
-              marginTop:24, textAlign:'center',
-              fontFamily: G.fontBody, fontSize:12, color: G.inkMuted,
-            }}>
-              {isTamil ? 'கணக்கு இல்லையா?' : "Don't have an account?"}{' '}
-              <Link to="/signup" style={{
-                color: G.accent, fontWeight:600, textDecoration:'none',
-              }}>
-                {isTamil ? 'புதிய கணக்கு பதிவு' : 'Create an account'}
-              </Link>
+        <button className="language-button" onClick={toggleLanguage}>
+          {ta ? "English" : "தமிழ்"} <ArrowUpRight size={14} />
+        </button>
+      </nav>
+      <section className="login-hero">
+        <div className="hero-editorial">
+          <div className="hero-copy intro-reveal">
+            <p className="eyebrow">
+              {ta
+                ? "இயற்கையுடன் இணைந்த வியாபாரம்"
+                : "NATURALLY BETTER BUSINESS"}
             </p>
-
+            <h1 className="w-full max-w-5xl">
+              {ta ? (
+                <>
+                  நல்ல வியாபாரம்.
+                  <br />
+                  <em>இயல்பாகவே.</em>
+                </>
+              ) : (
+                <>
+                  Good things.
+                  <br />
+                  <em>Growing together.</em>
+                </>
+              )}
+            </h1>
+            <p className="hero-description">
+              {ta
+                ? "இயற்கை உணவுகள் மீதான உங்கள் அக்கறைக்கு, எளிமையான கடை நிர்வாகம்."
+                : "You care for the little things. We help you take care of the business."}
+            </p>
+          </div>
+          <div className="forest-frame intro-reveal">
+            <img
+              src="/images/forest.jpg"
+              width="1400"
+              height="933"
+              alt="Sunlight finding its way through a lush green forest"
+              fetchPriority="high"
+            />
+            <div className="forest-caption">
+              <span>
+                {ta
+                  ? "நல்ல வேர்கள். நல்ல வளர்ச்சி."
+                  : "Good roots. Better days."}
+              </span>
+              <ArrowUpRight size={28} strokeWidth={1} />
+            </div>
+          </div>
+          <a href="#why-greenlife" className="explore-link intro-reveal">
+            <span className="round-arrow">
+              <ArrowDown size={17} />
+            </span>
+            {ta ? "மேலும் அறிய" : "A little more about GreenLife"}
+          </a>
+        </div>
+        <div className="login-form-column intro-reveal" id="sign-in">
+          <div className="login-form-heading">
+            <span className="small-sprout">
+              <Leaf size={23} strokeWidth={1.5} />
+            </span>
+            <p className="eyebrow">
+              {ta ? "உங்கள் பணியிடம்" : "YOUR DAILY WORKSPACE"}
+            </p>
+            <h2>{ta ? "மீண்டும் வருக." : "Welcome back."}</h2>
+            <p>
+              {ta
+                ? "உங்கள் கடையின் புதிய நாளைத் தொடங்குங்கள்."
+                : "A fresh day. A little less admin."}
+            </p>
+          </div>
+          <form onSubmit={submit} className="auth-form">
+            {error && (
+              <p className="form-error" role="alert">
+                {error}
+              </p>
+            )}
+            <label htmlFor="login-email">
+              {ta ? "மின்னஞ்சல் முகவரி" : "Email address"}
+            </label>
+            <div className="input-with-icon">
+              <Mail size={17} />
+              <input
+                id="login-email"
+                name="email"
+                type="email"
+                autoComplete="username"
+                placeholder="you@greenlife.com"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div className="label-row">
+              <label htmlFor="login-password">
+                {ta ? "கடவுச்சொல்" : "Password"}
+              </label>
+              <button
+                type="button"
+                className="text-button"
+                onClick={() => setHelp(!help)}
+                aria-expanded={help}
+              >
+                {ta ? "உதவி வேண்டுமா?" : "Need help?"}
+              </button>
+            </div>
+            <div className="input-with-icon">
+              <LockKeyhole size={17} />
+              <input
+                id="login-password"
+                name="password"
+                type={visible ? "text" : "password"}
+                autoComplete="current-password"
+                placeholder={
+                  ta ? "கடவுச்சொல்லை உள்ளிடவும்" : "Enter your password"
+                }
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setVisible(!visible)}
+                aria-label={visible ? "Hide password" : "Show password"}
+              >
+                {visible ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
+            </div>
+            {help && (
+              <p className="form-help" role="status">
+                {ta
+                  ? "கணக்கு உதவிக்கு உங்கள் கடை நிர்வாகியை அணுகவும். கீழே மாதிரி கணக்கையும் பயன்படுத்தலாம்."
+                  : "Contact your store administrator for account access, or use a demo account below to explore."}
+              </p>
+            )}
+            <button
+              type="submit"
+              disabled={loading}
+              className="primary-button sign-in-button"
+            >
+              <span>
+                {loading
+                  ? ta
+                    ? "உள்நுழைகிறது…"
+                    : "Signing you in…"
+                  : ta
+                    ? "உள்நுழைய"
+                    : "Sign in to your workspace"}
+              </span>
+              <ArrowRight size={18} />
+            </button>
+          </form>
+          <div className="demo-divider">
+            <span>
+              {ta
+                ? "முதன்முறை வருகையா? முயற்சிக்கவும்"
+                : "Just looking? Make yourself at home."}
+            </span>
+          </div>
+          <div className="demo-buttons">
+            {(["admin", "staff"] as const).map((role) => (
+              <button
+                key={role}
+                type="button"
+                disabled={loading}
+                onClick={() => {
+                  setEmail(`${role}@greenlife.com`);
+                  setPassword(`${role}123`);
+                  setError("");
+                }}
+              >
+                <span>
+                  {role === "admin" ? (
+                    <ShieldCheck size={17} />
+                  ) : (
+                    <Users size={17} />
+                  )}
+                  {role === "admin"
+                    ? ta
+                      ? "நிர்வாகி மாதிரி"
+                      : "Admin demo"
+                    : ta
+                      ? "ஊழியர் மாதிரி"
+                      : "Staff demo"}
+                </span>
+                <ArrowUpRight size={15} />
+              </button>
+            ))}
+          </div>
+          <p className="signup-prompt">
+            {ta ? "புதிய கணக்கு வேண்டுமா?" : "New to the team?"}{" "}
+            <Link to="/signup">
+              {ta ? "கணக்கு உருவாக்க" : "Create an account"}{" "}
+              <ArrowUpRight size={13} />
+            </Link>
+          </p>
+          <div className="secure-note">
+            <LockKeyhole size={13} />{" "}
+            {ta
+              ? "பாதுகாப்பான அணுகல். உங்கள் வியாபாரத்திற்காக."
+              : "Secure access. Thoughtfully built for your business."}
           </div>
         </div>
+      </section>
+      <div
+        className="nature-marquee"
+        aria-label="Cold-pressed oils, wholesome grains, natural goodness"
+      >
+        <div aria-hidden="true">
+          {Array.from({ length: 4 }, (_, i) => (
+            <span key={i}>
+              Cold-pressed oils <Leaf /> Wholesome grains <Leaf /> Natural
+              goodness <Leaf /> Everyday care <Leaf />
+            </span>
+          ))}
+        </div>
       </div>
-    </div>
-  </>
-);
+      <section className="features-section" id="why-greenlife">
+        <div className="section-intro">
+          <p className="eyebrow">
+            {ta ? "உங்கள் நாளை எளிதாக்க" : "LESS BUSYWORK. MORE GOOD WORK."}
+          </p>
+          <h2>
+            {ta ? (
+              "கடைக்குத் தேவையான அனைத்தும்."
+            ) : (
+              <>
+                Room to grow.
+                <br />
+                Less to juggle.
+              </>
+            )}
+          </h2>
+          <p>
+            {ta
+              ? "பில்லிங் முதல் இருப்பு வரை, அனைத்தும் ஒரே இடத்தில்."
+              : "The everyday essentials for your store, brought together in one considered workspace."}
+          </p>
+        </div>
+        <div
+          className="feature-accordion"
+          style={{
+            gridTemplateColumns: `${activeFeature === 0 ? "1.4" : "1"}fr ${activeFeature === 1 ? "1.4" : "1"}fr ${activeFeature === 2 ? "1.4" : "1"}fr`,
+          }}
+        >
+          {features.map((f, i) => (
+            <button
+              key={i}
+              onClick={() => setActiveFeature(i)}
+              onMouseEnter={() => setActiveFeature(i)}
+              onFocus={() => setActiveFeature(i)}
+              aria-expanded={activeFeature === i}
+              className={`feature-panel ${activeFeature === i ? "is-expanded" : ""}`}
+            >
+              <f.icon size={28} strokeWidth={1.4} />
+              <span className="feature-detail">{f.detail}</span>
+              <h3>{f.title}</h3>
+              <p>{f.text}</p>
+              <ArrowUpRight className="feature-arrow" size={23} />
+            </button>
+          ))}
+        </div>
+      </section>
+      <section className="brand-story">
+        <p aria-label={story}>
+          {story.split(" ").map((word, i) => (
+            <span className="story-word" key={i} aria-hidden="true">
+              {word}{" "}
+            </span>
+          ))}
+        </p>
+        <Leaf size={54} strokeWidth={1} />
+      </section>
+      <section className="workflow-section" id="workflow">
+        <div className="workflow-heading">
+          <p className="eyebrow">
+            {ta ? "எளிய செயல்முறை" : "A NATURAL RHYTHM"}
+          </p>
+          <h2>
+            {ta ? (
+              "சிறிய படிகள். நல்ல நாட்கள்."
+            ) : (
+              <>
+                Small steps.
+                <br />
+                Better days.
+              </>
+            )}
+          </h2>
+          <p>
+            {ta
+              ? "ஒரு ஆர்டரை எளிதாக பில்லாக மாற்றுங்கள்."
+              : "From a friendly hello to a finished bill. Find a flow that feels like second nature."}
+          </p>
+          <a href="#sign-in" className="text-link">
+            {ta ? "தொடங்குங்கள்" : "Find your flow"} <ArrowRight size={17} />
+          </a>
+        </div>
+        <div className="workflow-carousel">
+          <div className="workflow-image">
+            <img
+              src="/images/greenlife-landscape.jpg"
+              alt="Quiet mountain landscape"
+              loading="lazy"
+              width="1920"
+              height="1080"
+            />
+            <span>{ta ? "வளர இடமுண்டு." : "A little space to breathe."}</span>
+          </div>
+          <div className="workflow-copy" aria-live="polite">
+            <span className="step-count">
+              {String(slide + 1).padStart(2, "0")} / 03
+            </span>
+            <h3>{steps[slide][0]}</h3>
+            <p>{steps[slide][1]}</p>
+          </div>
+          <div className="carousel-controls">
+            <div className="carousel-dots">
+              {steps.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setSlide(i)}
+                  className={slide === i ? "active" : ""}
+                  aria-label={`Show step ${i + 1}`}
+                  aria-pressed={slide === i}
+                />
+              ))}
+            </div>
+            <div>
+              <button
+                className="icon-button"
+                aria-label="Previous step"
+                onClick={() => setSlide((slide + 2) % 3)}
+              >
+                <ArrowLeft size={18} />
+              </button>
+              <button
+                className="icon-button"
+                aria-label="Next step"
+                onClick={() => setSlide((slide + 1) % 3)}
+              >
+                <ArrowRight size={18} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+      <footer className="public-footer">
+        <div>
+          <Leaf size={25} />
+          <h2>
+            {ta ? "நல்ல நாளைத் தொடங்குங்கள்." : "Let’s make today a good day."}
+          </h2>
+          <a href="#sign-in" className="primary-button">
+            {ta ? "உங்கள் பணியிடத்திற்குச் செல்ல" : "Open your workspace"}
+            <ArrowUpRight size={19} />
+          </a>
+        </div>
+        <div className="footer-bottom">
+          <span>© {new Date().getFullYear()} GreenLife Natural Foods</span>
+          <span>Rooted in nature. Made with care.</span>
+          <span>
+            <Check size={14} /> {ta ? "தமிழ் & English" : "English & தமிழ்"}
+          </span>
+        </div>
+      </footer>
+    </main>
+  );
 };

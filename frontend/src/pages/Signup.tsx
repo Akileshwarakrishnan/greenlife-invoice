@@ -1,159 +1,223 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { useLanguage } from '../context/LanguageContext';
-import { Leaf, Lock, Mail, User, ArrowRight, Globe } from 'lucide-react';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  ArrowLeft,
+  ArrowRight,
+  ArrowUpRight,
+  Eye,
+  EyeOff,
+  Leaf,
+  LockKeyhole,
+  Mail,
+  UserRound,
+} from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
 
-export const Signup: React.FC = () => {
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'admin' | 'staff'>('staff');
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+export const Signup = () => {
   const { signup } = useAuth();
-  const { language, toggleLanguage, t } = useLanguage();
+  const { language, toggleLanguage } = useLanguage();
+  const ta = language === "ta";
   const navigate = useNavigate();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState<"admin" | "staff">("staff");
+  const [visible, setVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError("");
     setLoading(true);
-
     try {
       await signup({ full_name: fullName, email, password, role });
-      navigate('/');
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to sign up. Please try again.');
+      navigate("/");
+    } catch (err: unknown) {
+      setError(
+        (err as { response?: { data?: { detail?: string } } }).response?.data
+          ?.detail ||
+          (ta
+            ? "கணக்கை உருவாக்க முடியவில்லை. மீண்டும் முயற்சிக்கவும்."
+            : "We couldn’t create your account. Please try again."),
+      );
     } finally {
       setLoading(false);
     }
   };
-
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden" style={{ background: '#1B3A2A' }}>
-      <div className="absolute top-1/4 -left-20 w-96 h-96 rounded-full blur-3xl pointer-events-none" style={{ background: 'rgba(45,106,79,0.2)' }}></div>
-      <div className="absolute bottom-1/4 -right-20 w-96 h-96 rounded-full blur-3xl pointer-events-none" style={{ background: 'rgba(27,58,42,0.4)' }}></div>
-
-      {/* Language Switcher Top-Right */}
-      <div className="absolute top-6 right-6 z-20">
-        <button
-          onClick={toggleLanguage}
-          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold backdrop-blur-md transition-all cursor-pointer shadow-xs"
-          style={{ background: 'rgba(255,255,255,0.1)', borderColor: 'rgba(45,106,79,0.3)', color: '#B7D9C4' }}
-        >
-          <Globe className="w-3.5 h-3.5" />
-          <span>{language === 'en' ? 'தமிழ்' : 'English'}</span>
+    <main className="auth-site signup-site overflow-x-hidden w-full max-w-full">
+      <nav className="public-nav" aria-label="Main navigation">
+        <Link to="/login" className="brand">
+          <span className="brand-symbol">
+            <Leaf size={23} strokeWidth={1.5} />
+          </span>
+          <span>
+            greenlife<span className="brand-period">.</span>
+            <small>NATURAL FOODS</small>
+          </span>
+        </Link>
+        <button className="language-button" onClick={toggleLanguage}>
+          {ta ? "English" : "தமிழ்"}
+          <ArrowUpRight size={14} />
         </button>
-      </div>
-
-      <div className="w-full max-w-md rounded-3xl shadow-2xl border overflow-hidden relative z-10" style={{ background: 'white', borderColor: '#EEEAE0' }}>
-        <div className="p-8 text-center border-b" style={{ background: '#1B3A2A', borderColor: 'rgba(255,255,255,0.1)' }}>
-          <div className="inline-flex p-3 rounded-2xl mb-3 shadow-md" style={{ background: '#2D6A4F' }}>
-            <Leaf className="w-7 h-7 text-white" />
+      </nav>
+      <section className="login-hero signup-hero">
+        <div className="hero-editorial">
+          <div className="hero-copy">
+            <p className="eyebrow">
+              {ta ? "ஒன்றாக வளர்வோம்" : "THERE’S ROOM TO GROW"}
+            </p>
+            <h1 className="w-full max-w-5xl">
+              {ta ? (
+                <>
+                  ஒரு புதிய தொடக்கம்.
+                  <br />
+                  <em>ஒன்றாக.</em>
+                </>
+              ) : (
+                <>
+                  A fresh start.
+                  <br />
+                  <em>A shared purpose.</em>
+                </>
+              )}
+            </h1>
+            <p className="hero-description">
+              {ta
+                ? "உங்கள் குழுவுடன் இணையுங்கள். கடை நிர்வாகத்தை எளிதாக்குங்கள்."
+                : "Join your team. Bring a little more ease to the everyday."}
+            </p>
           </div>
-          <h2 className="text-2xl font-black tracking-tight" style={{ color: 'white' }}>{t('brand.name', 'GreenLife Natural Foods')}</h2>
-          <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.85)' }}>
-            {t('brand.tagline', 'Pure, Traditional & Unadulterated Wellness')}
-          </p>
+          <div className="forest-frame">
+            <img
+              src="/images/forest.jpg"
+              alt="Warm sunlight through a green forest"
+              width="1400"
+              height="933"
+            />
+            <div className="forest-caption">
+              <span>
+                {ta ? "ஒன்றாக, இயல்பாக." : "Better together. Naturally."}
+              </span>
+              <Leaf size={27} strokeWidth={1.3} />
+            </div>
+          </div>
+          <Link to="/login" className="explore-link">
+            <span className="round-arrow">
+              <ArrowLeft size={17} />
+            </span>
+            {ta ? "உள்நுழைவுக்குத் திரும்ப" : "Back to sign in"}
+          </Link>
         </div>
-
-        <div className="p-8">
-          {error && (
-            <div className="mb-5 p-3.5 border text-xs font-semibold rounded-xl" style={{ background: '#FDF3E3', borderColor: '#C68B3A', color: '#C68B3A' }}>
-              {error}
+        <div className="login-form-column">
+          <div className="login-form-heading">
+            <p className="eyebrow">
+              {ta ? "குழுவில் இணையுங்கள்" : "MAKE YOURSELF AT HOME"}
+            </p>
+            <h2>{ta ? "கணக்கு உருவாக்க." : "Join the team."}</h2>
+            <p>
+              {ta
+                ? "தொடங்க சில விவரங்கள் போதும்."
+                : "A few details, and you’re on your way."}
+            </p>
+          </div>
+          <form className="auth-form" onSubmit={submit}>
+            {error && (
+              <p className="form-error" role="alert">
+                {error}
+              </p>
+            )}
+            <label htmlFor="signup-name">
+              {ta ? "முழுப் பெயர்" : "Full name"}
+            </label>
+            <div className="input-with-icon">
+              <UserRound size={17} />
+              <input
+                id="signup-name"
+                autoComplete="name"
+                required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder={ta ? "உங்கள் பெயர்" : "Your full name"}
+              />
             </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold mb-1" style={{ color: '#4A4740' }}>
-                {t('cust.name', 'Full Name')}
-              </label>
-              <div className="relative">
-                <User className="w-4 h-4 absolute left-3.5 top-3.5" style={{ color: '#8C8880' }} />
-                <input
-                  type="text"
-                  required
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Kavitha Shanmugam"
-                  className="w-full pl-10 pr-4 py-2.5 border rounded-xl text-xs font-medium focus:outline-hidden"
-                  style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
-                />
-              </div>
+            <label htmlFor="signup-email">
+              {ta ? "மின்னஞ்சல் முகவரி" : "Email address"}
+            </label>
+            <div className="input-with-icon">
+              <Mail size={17} />
+              <input
+                id="signup-email"
+                type="email"
+                autoComplete="username"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@greenlife.com"
+              />
             </div>
-
-            <div>
-              <label className="block text-xs font-bold mb-1" style={{ color: '#4A4740' }}>
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="w-4 h-4 absolute left-3.5 top-3.5" style={{ color: '#8C8880' }} />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="staff@greenlife.com"
-                  className="w-full pl-10 pr-4 py-2.5 border rounded-xl text-xs font-medium focus:outline-hidden"
-                  style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold mb-1" style={{ color: '#4A4740' }}>
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="w-4 h-4 absolute left-3.5 top-3.5" style={{ color: '#8C8880' }} />
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-2.5 border rounded-xl text-xs font-medium focus:outline-hidden"
-                  style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold mb-1" style={{ color: '#4A4740' }}>
-                Role Assignment
-              </label>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value as 'admin' | 'staff')}
-                className="w-full px-3.5 py-2.5 border rounded-xl text-xs font-semibold focus:outline-hidden"
-                style={{ background: '#F7F5EF', borderColor: '#EEEAE0', color: '#1C1A15' }}
+            <label htmlFor="signup-password">
+              {ta ? "கடவுச்சொல்" : "Password"}
+            </label>
+            <div className="input-with-icon">
+              <LockKeyhole size={17} />
+              <input
+                id="signup-password"
+                type={visible ? "text" : "password"}
+                autoComplete="new-password"
+                required
+                minLength={6}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={
+                  ta ? "குறைந்தது 6 எழுத்துகள்" : "At least 6 characters"
+                }
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setVisible(!visible)}
+                aria-label={visible ? "Hide password" : "Show password"}
               >
-                <option value="staff">{t('role.staff', 'Staff Access')}</option>
-                <option value="admin">{t('role.admin', 'Admin Access')}</option>
-              </select>
+                {visible ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
             </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 px-4 font-bold rounded-xl text-xs tracking-wide shadow-md transition-all flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-60"
-              style={{ background: '#2D6A4F', color: 'white' }}
+            <label htmlFor="signup-role">
+              {ta ? "உங்கள் பங்கு" : "Your role"}
+            </label>
+            <select
+              id="signup-role"
+              className="auth-select"
+              value={role}
+              onChange={(e) => setRole(e.target.value as "admin" | "staff")}
             >
-              <span>{loading ? 'Creating Account...' : 'Register Account'}</span>
-              <ArrowRight className="w-4 h-4" />
+              <option value="staff">{ta ? "ஊழியர்" : "Staff member"}</option>
+              <option value="admin">{ta ? "நிர்வாகி" : "Administrator"}</option>
+            </select>
+            <button
+              className="primary-button sign-in-button"
+              disabled={loading}
+            >
+              {loading
+                ? ta
+                  ? "உருவாக்குகிறது…"
+                  : "Creating your account…"
+                : ta
+                  ? "கணக்கு உருவாக்க"
+                  : "Create your account"}
+              <ArrowRight size={18} />
             </button>
           </form>
-
-          <div className="mt-6 text-center text-xs" style={{ color: '#8C8880' }}>
-            Already have an account?{' '}
-            <Link to="/login" className="hover:underline font-bold" style={{ color: '#2D6A4F' }}>
-              Sign In
+          <p className="signup-prompt">
+            {ta ? "ஏற்கனவே கணக்கு உள்ளதா?" : "Already part of the team?"}{" "}
+            <Link to="/login">
+              {ta ? "உள்நுழைய" : "Sign in"}
+              <ArrowUpRight size={13} />
             </Link>
-          </div>
+          </p>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 };

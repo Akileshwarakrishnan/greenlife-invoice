@@ -1,7 +1,5 @@
-import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { useLanguage } from '../../context/LanguageContext';
+import { useEffect, useRef } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   FileText,
@@ -10,195 +8,191 @@ import {
   BarChart3,
   ScanText,
   Settings,
-  PlusCircle,
   X,
   BookOpen,
   Leaf,
   LogOut,
-  Truck
-} from 'lucide-react';
+  Truck,
+  Plus,
+  ArrowUpRight,
+  Workflow,
+} from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import { useLanguage } from "../../context/LanguageContext";
 
-interface SidebarProps {
+export const Sidebar = ({
+  isOpen,
+  onClose,
+}: {
   isOpen: boolean;
   onClose: () => void;
-}
-
-export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
-  const { isAdmin, logout } = useAuth();
-  const { t, language } = useLanguage();
+}) => {
+  const { isAdmin, logout, user } = useAuth();
+  const { language } = useLanguage();
+  const ta = language === "ta";
   const navigate = useNavigate();
-  const isTamil = language === 'ta';
-
-  const primaryItems = [
-    { label: t('nav.dashboard'), to: '/', icon: LayoutDashboard },
-    { label: t('nav.new_order'), to: '/orders/new', icon: PlusCircle, isSpecial: true },
-    { label: t('nav.invoices'), to: '/invoices', icon: FileText },
-    { label: isTamil ? 'கொள்முதல்' : 'Purchases', to: '/purchases', icon: Truck },
-    { label: t('nav.customers'), to: '/customers', icon: Users },
-    { label: t('nav.products'), to: '/products', icon: Package },
-  ];
-
-  const secondaryItems = [
-    { label: t('nav.reports'), to: '/reports', icon: BarChart3 },
-    { label: t('nav.ai_extract'), to: '/ai-extraction', icon: ScanText },
-    { label: t('nav.manual'), to: '/manual', icon: BookOpen },
-    { label: t('nav.settings'), to: '/settings', icon: Settings, adminOnly: true },
-  ];
-
+  const panel = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!isOpen) return;
+    const previous = document.activeElement as HTMLElement | null;
+    panel.current?.querySelector<HTMLElement>("a, button")?.focus();
+    const key = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+      if (event.key === "Tab") {
+        const elements =
+          panel.current?.querySelectorAll<HTMLElement>("a, button");
+        if (!elements?.length) return;
+        const first = elements[0],
+          last = elements[elements.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        }
+        if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.addEventListener("keydown", key);
+    return () => {
+      document.removeEventListener("keydown", key);
+      previous?.focus();
+    };
+  }, [isOpen, onClose]);
+  const items = [
+    ["/", ta ? "முகப்பு" : "Overview", LayoutDashboard],
+    ["/invoices", ta ? "பில்கள்" : "Invoices", FileText],
+    ["/orders", ta ? "ஆர்டர்கள்" : "Orders", Truck],
+    ["/customers", ta ? "வாடிக்கையாளர்கள்" : "Customers", Users],
+    ["/products", ta ? "பொருட்கள் & இருப்பு" : "Products & stock", Package],
+    ["/purchases", ta ? "கொள்முதல்" : "Purchases", Truck],
+    ["/reports", ta ? "அறிக்கைகள்" : "Reports", BarChart3],
+  ] as const;
+  const toolItems = [
+    ["/ai-extraction", ta ? "பில் ஸ்கேன்" : "Scan a bill", ScanText],
+    ...(isAdmin
+      ? [
+          ["/automation", ta ? "தானியக்கம்" : "Automations", Workflow] as const,
+          [
+            "/settings",
+            ta ? "அமைப்புகள்" : "Store settings",
+            Settings,
+          ] as const,
+        ]
+      : []),
+    ["/manual", ta ? "உதவி" : "Help & guide", BookOpen],
+  ] as const;
   return (
     <>
-      {/* Mobile backdrop */}
       {isOpen && (
-        <div
+        <button
+          className="sidebar-backdrop"
           onClick={onClose}
-          className="fixed inset-0 z-40 backdrop-blur-xs lg:hidden"
-          style={{ background: 'rgba(27, 58, 42, 0.6)' }}
+          aria-label="Close navigation"
         />
       )}
-
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 w-64 flex flex-col border-r transition-transform duration-200 ease-in-out lg:translate-x-0 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-        style={{ background: '#13281C', color: 'rgba(255,255,255,0.85)', borderColor: 'rgba(255,255,255,0.08)' }}
+        ref={panel}
+        className={`workspace-sidebar ${isOpen ? "is-open" : ""}`}
+        aria-label="Store navigation"
       >
-        {/* Brand Header */}
-        <div className="h-18 flex items-center justify-between px-6 border-b" style={{ borderColor: 'rgba(255,255,255,0.10)' }}>
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-sm" style={{ background: '#2D6A4F', color: 'white' }}>
-              <Leaf className="w-5 h-5" style={{ color: '#C68B3A' }} />
-            </div>
-            <div>
-              <span className="font-black text-sm block leading-tight" style={{ color: 'rgba(255,255,255,0.85)' }}>
-                GreenLife Foods
-              </span>
-              <span className="text-[11px] font-bold" style={{ color: '#B7D9C4' }}>
-                {isTamil ? 'இயற்கை அங்காடி' : 'Natural Foods Store'}
-              </span>
-            </div>
-          </div>
+        <div className="sidebar-brand-row">
+          <Link to="/" className="brand" onClick={onClose}>
+            <span className="brand-symbol">
+              <Leaf size={23} strokeWidth={1.5} />
+            </span>
+            <span>
+              greenlife<span className="brand-period">.</span>
+              <small>NATURAL FOODS</small>
+            </span>
+          </Link>
           <button
             onClick={onClose}
-            className="lg:hidden p-2 rounded-xl cursor-pointer"
-            style={{ color: 'rgba(255,255,255,0.85)' }}
+            className="icon-button mobile-menu"
+            aria-label="Close navigation"
           >
-            <X className="w-5 h-5" />
+            <X size={19} />
           </button>
         </div>
-
-        {/* Navigation list */}
-        <nav className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
-          {/* Main tasks section */}
-          <div>
-            <span className="text-[11px] font-extrabold uppercase tracking-wider px-3 mb-2 block" style={{ color: 'rgba(255,255,255,0.40)' }}>
-              {isTamil ? 'முக்கிய வேலைகள்' : 'MAIN ACTIONS'}
-            </span>
-            <div className="space-y-1.5">
-              {primaryItems.map((item) => {
-                const Icon = item.icon;
-                if (item.isSpecial) {
-                  return (
-                    <NavLink
-                      key={item.to}
-                      to={item.to}
-                      onClick={() => onClose()}
-                      className={({ isActive }) =>
-                        `flex items-center space-x-3 px-4 py-3 rounded-2xl text-sm font-black transition-all ${
-                          isActive
-                            ? 'scale-[1.02]'
-                            : 'shadow-xs hover:opacity-90'
-                        }`
-                      }
-                      style={({ isActive }) => ({
-                        background: isActive ? '#C68B3A' : '#C68B3A',
-                        color: isActive ? '#1C1A15' : '#1C1A15',
-                        border: 'none',
-                        fontWeight: 'bold'
-                      })}
-                    >
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center font-black text-xs flex-shrink-0" style={{ background: 'rgba(0,0,0,0.1)', color: 'inherit' }}>
-                        +
-                      </div>
-                      <span className="truncate">{item.label}</span>
-                    </NavLink>
-                  );
-                }
-
-                return (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    onClick={() => onClose()}
-                    className="flex items-center space-x-3.5 px-4 py-3 rounded-2xl text-sm font-bold transition-all"
-                    style={({ isActive }) => ({
-                      background: isActive ? '#2D6A4F' : 'transparent',
-                      color: isActive ? 'white' : 'rgba(255,255,255,0.70)'
-                    })}
-                  >
-                    <Icon className="w-5 h-5 flex-shrink-0" />
-                    <span className="truncate">{item.label}</span>
-                  </NavLink>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* More options section */}
-          <div>
-            <span className="text-[11px] font-extrabold uppercase tracking-wider px-3 mb-2 block" style={{ color: 'rgba(255,255,255,0.40)' }}>
-              {isTamil ? 'கூடுதல் விவரங்கள்' : 'MORE OPTIONS'}
-            </span>
-            <div className="space-y-1">
-              {secondaryItems.map((item) => {
-                if (item.adminOnly && !isAdmin) return null;
-                const Icon = item.icon;
-
-                return (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    onClick={() => onClose()}
-                    className="flex items-center space-x-3.5 px-4 py-2.5 rounded-2xl text-sm font-bold transition-all"
-                    style={({ isActive }) => ({
-                      background: isActive ? '#2D6A4F' : 'transparent',
-                      color: isActive ? 'white' : 'rgba(255,255,255,0.70)'
-                    })}
-                  >
-                    <Icon className="w-5 h-5 flex-shrink-0" />
-                    <span className="truncate">{item.label}</span>
-                  </NavLink>
-                );
-              })}
-            </div>
-          </div>
+        <Link
+          to="/orders/new"
+          onClick={onClose}
+          className="primary-button sidebar-create"
+        >
+          <Plus size={18} />
+          {ta ? "புதிய பில்" : "Create invoice"}
+          <span className="shortcut">+</span>
+        </Link>
+        <nav className="sidebar-links">
+          <p className="nav-label">{ta ? "பணியிடம்" : "WORKSPACE"}</p>
+          {items.map(([to, label, Icon]) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={to === "/"}
+              onClick={onClose}
+              className={({ isActive }) =>
+                `sidebar-link ${isActive ? "active" : ""}`
+              }
+            >
+              <Icon size={18} strokeWidth={1.6} />
+              <span>{label}</span>
+              <span className="active-dot" />
+            </NavLink>
+          ))}
+          <p className="nav-label tools-label">
+            {ta ? "கருவிகள்" : "TOOLS & SUPPORT"}
+          </p>
+          {toolItems.map(([to, label, Icon]) => (
+            <NavLink
+              key={to}
+              to={to}
+              onClick={onClose}
+              className={({ isActive }) =>
+                `sidebar-link ${isActive ? "active" : ""}`
+              }
+            >
+              <Icon size={18} strokeWidth={1.6} />
+              <span>{label}</span>
+            </NavLink>
+          ))}
         </nav>
-
-        {/* Footer info badge & Logout button */}
-        <div className="p-4 border-t space-y-3" style={{ borderColor: 'rgba(255,255,255,0.10)' }}>
-          <button
-            onClick={() => {
-              onClose();
-              logout();
-              navigate('/login');
-            }}
-            className="w-full flex items-center justify-center space-x-2.5 px-4 py-3 rounded-2xl text-xs font-black transition-all active:scale-95 cursor-pointer"
-            style={{
-              background: 'rgba(239, 68, 68, 0.18)',
-              color: '#FCA5A5',
-              border: '1px solid rgba(239, 68, 68, 0.35)',
-            }}
-          >
-            <LogOut className="w-4 h-4 text-[#FCA5A5]" />
-            <span>{isTamil ? 'வெளியேறு (Logout)' : 'Sign Out / Logout'}</span>
-          </button>
-
-          <div className="p-3 rounded-2xl space-y-1 text-center" style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)' }}>
-            <span className="text-xs font-black block" style={{ color: 'rgba(255,255,255,0.85)' }}>
-              {isTamil ? 'கிரீன்லைஃப் இயற்கை பில்லிங்' : 'GreenLife Store System'}
+        <div className="sidebar-bottom">
+          <Link to="/manual" className="sidebar-note" onClick={onClose}>
+            <Leaf size={21} strokeWidth={1.3} />
+            <span>
+              {ta ? "வளர, ஒரு சிறிய உதவி." : "A little help to grow."}
+              <small>{ta ? "கடை வழிகாட்டி" : "Explore your store guide"}</small>
             </span>
-            <p className="text-[11px] font-semibold" style={{ color: 'rgba(255,255,255,0.45)' }}>
-              {isTamil ? 'எளிய கடை கணக்கு' : 'Easy Retail Billing'}
-            </p>
+            <ArrowUpRight size={17} />
+          </Link>
+          <div className="sidebar-account">
+            <Link to="/profile" onClick={onClose}>
+              <span className="user-avatar">{user?.full_name?.[0] || "G"}</span>
+              <span>
+                {user?.full_name || "GreenLife"}
+                <small>
+                  {isAdmin
+                    ? ta
+                      ? "நிர்வாகி"
+                      : "Store administrator"
+                    : ta
+                      ? "ஊழியர்"
+                      : "Store team"}
+                </small>
+              </span>
+            </Link>
+            <button
+              className="icon-button"
+              aria-label="Sign out"
+              onClick={() => {
+                logout();
+                navigate("/login");
+              }}
+            >
+              <LogOut size={17} />
+            </button>
           </div>
         </div>
       </aside>

@@ -39,7 +39,7 @@ export const Products: React.FC = () => {
   const [parsedItems, setParsedItems] = useState<any[]>([]);
   const [savingBatch, setSavingBatch] = useState(false);
   const [batchSuccessMessage, setBatchSuccessMessage] = useState<string | null>(null);
-  const [isPasteSpaceOpen, setIsPasteSpaceOpen] = useState(true);
+  const [isPasteSpaceOpen, setIsPasteSpaceOpen] = useState(false);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -262,7 +262,7 @@ export const Products: React.FC = () => {
               <p className="text-xs font-medium" style={{ color: '#8C8880' }}>
                 {isTamil
                   ? 'வாட்ஸ்அப் மெசேஜ் அல்லது பட்டியலை இங்கே ஒட்டினால், சிஸ்டம் தானாகவே தமிழ்+ஆங்கில பெயர், எடை மற்றும் விலையை உரிய காலத்தில் சேர்க்கும்!'
-                  : 'Paste WhatsApp product list here — auto-extracts Tamil & English names, unit/kg, and price into DB columns!'}
+                  : 'Paste a product list to add names, quantities and prices together. Review every item before saving.'}
               </p>
             </div>
           </div>
@@ -351,7 +351,7 @@ export const Products: React.FC = () => {
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4" style={{ color: '#C68B3A' }} />
-                    <span>{isTamil ? 'விவரங்களை பிரித்தெடு ✨' : 'Parse Product Details ✨'}</span>
+                    <span>{isTamil ? 'விவரங்களை பிரித்தெடு ✨' : 'Review product details'}</span>
                   </>
                 )}
               </button>
