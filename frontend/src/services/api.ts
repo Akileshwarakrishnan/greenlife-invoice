@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { authStorage, clearAuth } from './authStorage';
 import {
   Customer,
   Product,
@@ -22,7 +23,7 @@ const api = axios.create({
 
 // Interceptor to attach token
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('greenlife_token');
+  const token = authStorage().getItem('greenlife_token');
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -34,8 +35,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem('greenlife_token');
-      localStorage.removeItem('greenlife_user');
+      clearAuth();
       if (window.location.pathname !== '/login' && window.location.pathname !== '/signup') {
         window.location.href = '/login';
       }

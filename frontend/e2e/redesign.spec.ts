@@ -6,7 +6,7 @@ async function login(page: Page) {
   await page.goto("/login");
   await page.getByRole("button", { name: "Admin demo", exact: true }).click();
   await page
-    .getByRole("button", { name: "Sign in to your workspace", exact: true })
+    .getByRole("button", { name: "Sign in to Dashboard", exact: true })
     .click();
   await expect(page).toHaveURL("/");
   await expect(
@@ -29,7 +29,7 @@ test("sign-in controls, account help and invalid credentials", async ({
   page,
 }) => {
   await page.goto("/login");
-  await page.getByRole("button", { name: "Need help?" }).click();
+  await page.getByRole("button", { name: "Forgot password?" }).click();
   await expect(page.getByRole("status")).toContainText(
     "Contact your store administrator",
   );
@@ -49,54 +49,46 @@ test("sign-in controls, account help and invalid credentials", async ({
     "password",
   );
   await page.locator("#login-password").fill("incorrect-password");
-  await page.getByRole("button", { name: "Sign in to your workspace" }).click();
+  await page.getByRole("button", { name: "Sign in" }).click();
   await expect(page.getByRole("alert")).toBeVisible();
   await expect(page).toHaveURL("/login");
 });
 
-test("public interactions, responsive layout and reduced motion", async ({
-  page,
-}) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
+test("remember me controls session persistence", async ({ page, context }) => {
   await page.goto("/login");
-  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  await expect(page.locator(".forest-frame img")).toHaveJSProperty(
-    "naturalWidth",
-    1400,
-  );
-  await page.getByRole("button", { name: "Next step", exact: true }).click();
-  await expect(
-    page.getByRole("heading", { name: "A little of everything good." }),
-  ).toBeVisible();
-  await page
-    .getByRole("button", { name: "Previous step", exact: true })
-    .click();
-  await expect(
-    page.getByRole("heading", { name: "A familiar face. A fresh order." }),
-  ).toBeVisible();
-  await page
-    .getByRole("button", { name: /Products, stock & purchases/ })
-    .click();
-  await expect(
-    page.getByRole("button", { name: /Products, stock & purchases/ }),
-  ).toHaveAttribute("aria-expanded", "true");
-  expect(
-    await page
-      .locator(".nature-marquee > div")
-      .evaluate((el) => getComputedStyle(el).animationName),
-  ).toBe("none");
+  await page.getByLabel("Remember me", { exact: true }).uncheck();
+  await page.getByRole("button", { name: "Admin demo", exact: true }).click();
+  await page.getByRole("button", { name: "Sign in to Dashboard", exact: true }).click();
+  await expect(page).toHaveURL("/");
+  expect(await page.evaluate(() => !!sessionStorage.getItem("greenlife_token") && !localStorage.getItem("greenlife_token"))).toBeTruthy();
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Your store, at a glance." })).toBeVisible();
+  const otherTab = await context.newPage();
+  await otherTab.goto("/");
+  await expect(otherTab).toHaveURL("/login");
+  await otherTab.close();
+  await page.getByRole("button", { name: "Sign out", exact: true }).click();
+  await expect(page).toHaveURL("/login");
+  expect(await page.evaluate(() => sessionStorage.getItem("greenlife_token"))).toBeNull();
+  await login(page);
+  expect(await page.evaluate(() => !!localStorage.getItem("greenlife_token") && !sessionStorage.getItem("greenlife_token"))).toBeTruthy();
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Your store, at a glance." })).toBeVisible();
+});
+
+test("sign-in fits desktop and mobile screens", async ({ page }) => {
+  await page.goto("/login");
+  await expect(page.getByRole("heading", { name: "Sign in", exact: true })).toBeVisible();
   for (const width of [1440, 1024, 768, 390, 320]) {
-    await page.setViewportSize({ width, height: 900 });
+    await page.setViewportSize({ width, height: 800 });
     await noOverflow(page);
+    await expect(page.getByRole("button", { name: "Sign in to Dashboard", exact: true })).toBeInViewport();
+    await expect(page.getByRole("link", { name: "Create an account" })).toBeInViewport();
   }
-  await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.evaluate(() => window.scrollTo(0, 0));
-  await page.screenshot({ path: "test-results/redesign-login-desktop.png" });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.screenshot({ path: "test-results/reference-login-desktop.png" });
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.screenshot({
-    path: "test-results/redesign-login-mobile.png",
-    fullPage: true,
-  });
+  await page.screenshot({ path: "test-results/reference-login-mobile.png" });
 });
 
 test("dashboard, reporting periods, themes and language", async ({ page }) => {
@@ -223,5 +215,3 @@ test("signup and Tamil public pages fit narrow viewports", async ({ page }) => {
   await expect(page.locator("html")).toHaveAttribute("lang", "ta");
   await noOverflow(page);
 });
-
-

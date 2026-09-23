@@ -2216,3 +2216,78 @@ html.dark .auth-site select {
   color: var(--muted);
   font-size: 14px;
 }
+
+/* Two quiet sections: a store introduction and a focused sign-in. */
+.reference-login {
+  --ink: #f5f5e9;
+  --body: #e2ebe1;
+  --muted: #a0b4a7;
+  --line: #355440;
+  min-height: 100svh;
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #f3f2eb;
+  color: var(--body);
+}
+.login-header { position: absolute; inset: 0 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 26px 40px; color: #244c38; }
+.login-wordmark { display: inline-flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 700; letter-spacing: -.6px; line-height: 1; }
+.login-wordmark small { display: block; margin-top: 6px; font-size: 10px; font-weight: 500; letter-spacing: 1.2px; }
+.login-language { display: inline-flex; align-items: center; gap: 7px; padding: 9px 12px; border-radius: 6px; font-size: 12px; color: #d7e6d3; }
+.login-language:hover { background: #ffffff0a; }
+.login-welcome { display: grid; place-items: center; padding: 120px 56px; color: #244c38; }
+.login-welcome-copy { max-width: 420px; width: 100%; }
+.login-welcome-label { margin-bottom: 24px; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #64745c; }
+.reference-login .login-welcome h2 { font-size: clamp(36px, 4.2vw, 64px); line-height: 1.07; letter-spacing: -2.4px; font-weight: 500; color: #244c38 !important; }
+.login-welcome-description { max-width: 325px; margin-top: 25px; font-size: 16px; line-height: 1.7; color: #637064; }
+.login-welcome-details { margin-top: 44px; font-size: 12px; letter-spacing: .6px; color: #637064; }
+.login-form-panel { display: grid; place-items: center; padding: 110px 40px 64px; background: #183e2d; }
+.login-form-inner { width: 100%; max-width: 352px; color-scheme: dark; }
+.login-form-inner h1 { font-size: 30px; font-weight: 500; line-height: 1.2; letter-spacing: -.8px; color: #fbf9ef; }
+.login-intro { margin-top: 9px; font-size: 14px; color: #bdcfc2; }
+.reference-login .auth-form { margin-top: 28px; }
+.reference-login .auth-form > label { font-size: 12px; font-weight: 500; }
+.reference-login .input-with-icon { min-height: 48px; margin: 8px 0 19px; border-color: #496651; border-radius: 7px; background: #214735; color: #b4c8b8; }
+.reference-login .input-with-icon input { padding: 12px 0; font-size: 14px; color: #f5f6ee; }
+.reference-login .input-with-icon input::placeholder { color: #a7bead; opacity: 1; }
+.reference-login .input-with-icon:focus-within { border-color: #a8c5a7; box-shadow: 0 0 0 3px #a8c5a71a; }
+.reference-login .password-toggle { margin-right: -7px; padding: 9px; }
+.login-options { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 24px; font-size: 12px; }
+.reference-login .login-remember { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 400; cursor: pointer; }
+.login-remember input { width: 14px; height: 14px; accent-color: #aac6a6; }
+.login-help { color: #d7e6d3; font-weight: 500; font-size: 12px; }
+.login-submit { display: flex; justify-content: center; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 12px 16px; border-radius: 7px; background: #e3ebcc; color: #1d3f2d; font-size: 14px; font-weight: 700; transition: background .15s ease; }
+.login-submit:hover { background: #f0f4e1; }
+.reference-login button:disabled { opacity: .6; cursor: wait; }
+.reference-login button:focus-visible, .reference-login a:focus-visible, .login-remember input:focus-visible { outline: 2px solid #9cac68; outline-offset: 4px; }
+.login-help:hover, .reference-login .signup-prompt a:hover { text-decoration: underline; }
+.login-demo-title { margin-top: 24px; padding-top: 20px; border-top: 1px solid #ffffff21; text-align: center; font-size: 12px; color: #b3c7b8; }
+.reference-login .demo-buttons { margin-top: 12px; }
+.reference-login .demo-buttons button { justify-content: center; gap: 7px; min-height: 40px; padding: 9px; border: 1px solid #58745f; border-radius: 7px; background: transparent; color: #e4ecdf; font-size: 12px; }
+.reference-login .demo-buttons button:hover { background: #ffffff08; }
+.reference-login .signup-prompt { margin-top: 22px; font-size: 12px; color: #b7cbbd; }
+.reference-login .signup-prompt a { padding-left: 0; color: #e3ebcc; font-weight: 500; }
+.reference-login .form-error { background: #462c26; color: #ffd0bf; border: 1px solid #985b46; }
+.reference-login .form-help { color: #d1e0cf; background: #214735; border: 1px solid #496651; margin: -9px 0 20px; padding: 12px; border-radius: 7px; font-size: 12px; line-height: 1.5; }
+@media (max-width: 700px) {
+  .reference-login { grid-template-columns: minmax(0, 1fr); }
+  .login-header { position: static; }
+  .login-language { color: #244c38; }
+  .login-language:hover { background: #244c380a; }
+  .login-welcome { padding: 14px 24px 25px; }
+  .login-welcome-copy { max-width: 352px; }
+  .reference-login .login-welcome h2 { font-size: 27px; letter-spacing: -.7px; }
+  .login-welcome h2 br { display: none; }
+  .login-welcome-label, .login-welcome-description, .login-welcome-details { display: none; }
+  .login-form-panel { padding: 28px 24px 32px; }
+  .reference-login .auth-form { margin-top: 24px; }
+}
+@media (max-width: 480px) {
+  .login-header { padding: 20px 24px; }
+  .login-wordmark { font-size: 20px; }
+  .login-wordmark small { font-size: 9px; }
+  .reference-login .input-with-icon input { font-size: 16px; }
+  .login-options { gap: 6px; }
+  .reference-login .login-remember, .login-help { font-size: 11px; }
+  .reference-login .signup-prompt { font-size: 11px; }
+}
