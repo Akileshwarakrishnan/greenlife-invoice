@@ -123,7 +123,7 @@ export const customerApi = {
 };
 
 export const productApi = {
-  list: async (params?: { category?: string; search?: string; active_only?: boolean }) => {
+  list: async (params?: { category?: string; search?: string; active_only?: boolean; skip?: number; limit?: number }) => {
     const key = `products_${JSON.stringify(params || {})}`;
     const cached = getCached<any>(key);
     if (cached) {

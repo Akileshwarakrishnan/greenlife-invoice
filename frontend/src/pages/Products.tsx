@@ -60,16 +60,24 @@ export const Products: React.FC = () => {
 
   useEffect(() => {
     loadProducts();
-  }, [categoryFilter]);
+  }, []);
 
   const loadProducts = async () => {
     try {
       setLoading(true);
-      const res = await productApi.list({
-        category: categoryFilter || undefined,
-        active_only: false,
-      });
-      setProducts(res.data);
+      // Keep the complete catalog so filtering cannot remove category choices.
+      const catalog: Product[] = [];
+      const pageSize = 100;
+      while (true) {
+        const res = await productApi.list({
+          active_only: false,
+          skip: catalog.length,
+          limit: pageSize,
+        });
+        catalog.push(...res.data);
+        if (res.data.length < pageSize) break;
+      }
+      setProducts(catalog);
     } catch (err) {
       console.error('Failed to load products:', err);
     } finally {
@@ -217,6 +225,7 @@ export const Products: React.FC = () => {
   };
 
   const filteredProducts = products.filter((p) => {
+    if (categoryFilter && p.category !== categoryFilter) return false;
     const s = search.toLowerCase();
     return (
       p.name.toLowerCase().includes(s) ||
@@ -519,9 +528,10 @@ export const Products: React.FC = () => {
         </div>
 
         {/* Categories Bar */}
-        <div className="flex items-center space-x-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+        <div role="group" aria-label={isTamil ? 'பொருள் வகைகள்' : 'Product categories'} className="flex items-center space-x-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
           <button
             onClick={() => setCategoryFilter('')}
+            aria-pressed={categoryFilter === ''}
             className="px-4 py-2 rounded-2xl text-xs font-black transition-all cursor-pointer whitespace-nowrap shadow-xs"
             style={{
               background: categoryFilter === '' ? '#2D6A4F' : '#EEEAE0',
@@ -535,6 +545,7 @@ export const Products: React.FC = () => {
             <button
               key={c}
               onClick={() => setCategoryFilter(c)}
+              aria-pressed={categoryFilter === c}
               className="px-4 py-2 rounded-2xl text-xs font-black transition-all cursor-pointer whitespace-nowrap shadow-xs"
               style={{
                 background: categoryFilter === c ? '#2D6A4F' : '#EEEAE0',

@@ -25,6 +25,61 @@ async function noOverflow(page: Page) {
   ).toBeTruthy();
 }
 
+test("product categories remain available while filtering and searching", async ({ page }) => {
+  await login(page);
+  const categories = ["Millets & Flakes", "Cold Pressed Oils", "Podis & Masalas", "Natural Sweeteners"];
+  const products = categories.map((category, index) => ({
+    id: index + 1, name: `Catalog item ${index + 1}`, category,
+    sku: `TEST-${index + 1}`, unit: "kg", price: 100,
+    tax_percentage: 0, stock_quantity: 25, is_active: true,
+  }));
+  await page.route("**/api/products?*", async (route) => {
+    const category = new URL(route.request().url()).searchParams.get("category");
+    await route.fulfill({ json: category ? products.filter((p) => p.category === category) : products });
+  });
+  await page.goto("/products");
+  const filters = page.getByRole("group", { name: "Product categories" });
+  const search = page.getByPlaceholder("Search product name or category...");
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const [index, category] of categories.entries()) {
+      await filters.getByRole("button", { name: category, exact: true }).click();
+      await expect(filters.getByRole("button")).toHaveCount(categories.length + 1);
+      await expect(filters.getByRole("button", { name: category, exact: true })).toHaveAttribute("aria-pressed", "true");
+      await expect(page.getByRole("heading", { level: 3 })).toHaveText([products[index].name]);
+    }
+    await search.fill("no-matching-product");
+    await expect(page.getByText("No products found.", { exact: true })).toBeVisible();
+    await expect(filters.getByRole("button")).toHaveCount(5);
+    await filters.getByRole("button", { name: categories[0], exact: true }).click();
+    await search.fill(products[0].sku);
+    await expect(page.getByRole("heading", { level: 3 })).toHaveText([products[0].name]);
+    await search.fill("");
+    await filters.getByRole("button", { name: "All Products", exact: true }).click();
+    await expect(page.getByRole("heading", { level: 3 })).toHaveText(products.map((p) => p.name));
+    await noOverflow(page);
+  }
+});
+
+test("product filters include categories beyond the first catalog page", async ({ page }) => {
+  await login(page);
+  const products = Array.from({ length: 101 }, (_, index) => ({
+    id: index + 1, name: `Product ${index + 1}`, category: index < 100 ? "Oils" : "Millets",
+    unit: "kg", price: 100, tax_percentage: 0, stock_quantity: 20, is_active: true,
+  }));
+  await page.route("**/api/products?*", async (route) => {
+    const params = new URL(route.request().url()).searchParams;
+    const skip = Number(params.get("skip") || 0);
+    const limit = Number(params.get("limit") || 100);
+    await route.fulfill({ json: products.slice(skip, skip + limit) });
+  });
+  await page.goto("/products");
+  const filters = page.getByRole("group", { name: "Product categories" });
+  await filters.getByRole("button", { name: "Millets", exact: true }).click();
+  await expect(page.getByRole("heading", { level: 3 })).toHaveText(["Product 101"]);
+  await expect(filters.getByRole("button", { name: "Oils", exact: true })).toBeVisible();
+});
+
 test("sign-in controls, account help and invalid credentials", async ({
   page,
 }) => {
