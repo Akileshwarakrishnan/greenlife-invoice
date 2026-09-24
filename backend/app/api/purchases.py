@@ -1,6 +1,6 @@
 from typing import List, Optional, Any
 from datetime import date, datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, Query, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Query, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
 
@@ -69,6 +69,7 @@ def get_purchase_stats(
 @router.post("/extract-bill")
 async def extract_purchase_bill(
     file: UploadFile = File(...),
+    ocr_text: Optional[str] = Form(None),
     current_user: User = Depends(get_current_user)
 ) -> Any:
     """
@@ -82,7 +83,8 @@ async def extract_purchase_bill(
     extracted_data = await extract_purchase_bill_from_file(
         file_bytes=contents,
         file_name=file_name,
-        file_type=file_type
+        file_type=file_type,
+        client_ocr_text=ocr_text
     )
     return {
         "success": True,

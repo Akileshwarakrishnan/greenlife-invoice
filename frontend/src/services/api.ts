@@ -95,13 +95,15 @@ export const authApi = {
 };
 
 export const customerApi = {
-  list: async (params?: { search?: string; skip?: number; limit?: number }) => {
+  list: async (params?: { search?: string; skip?: number; limit?: number }, forceRefresh?: boolean) => {
     const key = `customers_${JSON.stringify(params || {})}`;
-    const cached = getCached<any>(key);
-    if (cached) {
-      // Revalidate in background
-      api.get<Customer[]>('/customers', { params }).then((res) => setCached(key, res)).catch(() => {});
-      return cached;
+    if (!forceRefresh) {
+      const cached = getCached<any>(key);
+      if (cached && Array.isArray(cached.data) && cached.data.length > 0) {
+        // Revalidate in background
+        api.get<Customer[]>('/customers', { params }).then((res) => setCached(key, res)).catch(() => {});
+        return cached;
+      }
     }
     const res = await api.get<Customer[]>('/customers', { params });
     setCached(key, res);
@@ -120,6 +122,9 @@ export const customerApi = {
     clearApiCache('customers_');
     return api.delete(`/customers/${id}`);
   },
+  clearCache: () => {
+    clearApiCache('customers_');
+  }
 };
 
 export const productApi = {
@@ -185,9 +190,12 @@ export const purchaseApi = {
   create: (data: any) => api.post<any>('/purchases', data),
   delete: (id: number) => api.delete(`/purchases/${id}`),
   getStats: () => api.get<{ total_bills: number; total_amount: number; total_paid: number; total_due: number }>('/purchases/stats'),
-  extractBill: (file: File) => {
+  extractBill: (file: File, ocrText?: string) => {
     const formData = new FormData();
     formData.append('file', file);
+    if (ocrText) {
+      formData.append('ocr_text', ocrText);
+    }
     return api.post<{ success: boolean; file_name: string; data: any }>('/purchases/extract-bill', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });

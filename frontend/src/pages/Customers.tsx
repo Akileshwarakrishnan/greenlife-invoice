@@ -16,7 +16,8 @@ import {
   MessageSquare,
   AlertCircle,
   CheckCircle2,
-  Clock
+  Clock,
+  RefreshCw
 } from 'lucide-react';
 
 export const Customers: React.FC = () => {
@@ -50,10 +51,10 @@ export const Customers: React.FC = () => {
     loadCustomers();
   }, []);
 
-  const loadCustomers = async () => {
+  const loadCustomers = async (forceRefresh = false) => {
     try {
       setLoading(true);
-      const res = await customerApi.list();
+      const res = await customerApi.list(undefined, forceRefresh);
       setCustomers(res.data);
     } catch (err) {
       console.error('Failed to load customers:', err);
@@ -149,14 +150,27 @@ export const Customers: React.FC = () => {
         subtitle={isTamil ? 'வாடிக்கையாளர்களின் விவரங்கள், முகவரி மற்றும் பாக்கி பண விபரம்' : 'Manage store customers, contact numbers, addresses, and pending dues'}
         badge={isTamil ? 'வாடிக்கையாளர் கணக்கு' : 'Customer Ledger'}
         actions={
-          <button
-            onClick={handleOpenAdd}
-            className="flex items-center space-x-2 px-5 py-3 font-black rounded-2xl text-xs sm:text-sm shadow-md transition-all cursor-pointer"
-            style={{ background: '#2D6A4F', color: 'white' }}
-          >
-            <UserPlus className="w-4 h-4" style={{ color: '#C68B3A' }} />
-            <span>+ {isTamil ? 'புதிய வாடிக்கையாளர் சேர்க்க' : 'Add New Customer'}</span>
-          </button>
+          <div className="flex items-center space-x-2">
+            <button
+              type="button"
+              onClick={() => loadCustomers(true)}
+              disabled={loading}
+              className="flex items-center space-x-1.5 px-4 py-2.5 font-bold rounded-2xl text-xs sm:text-sm border-2 transition-all cursor-pointer disabled:opacity-50"
+              style={{ background: '#EBF5EE', borderColor: '#B7D9C4', color: '#2D6A4F' }}
+              title={isTamil ? 'புதுப்பிக்க' : 'Refresh Customers'}
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">{isTamil ? 'புதுப்பி' : 'Refresh'}</span>
+            </button>
+            <button
+              onClick={handleOpenAdd}
+              className="flex items-center space-x-2 px-5 py-2.5 font-black rounded-2xl text-xs sm:text-sm shadow-md transition-all cursor-pointer"
+              style={{ background: '#2D6A4F', color: 'white' }}
+            >
+              <UserPlus className="w-4 h-4" style={{ color: '#C68B3A' }} />
+              <span>+ {isTamil ? 'புதிய வாடிக்கையாளர்' : 'Add New Customer'}</span>
+            </button>
+          </div>
         }
       />
 
