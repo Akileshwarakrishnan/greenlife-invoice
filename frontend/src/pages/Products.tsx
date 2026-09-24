@@ -249,7 +249,7 @@ export const Products: React.FC = () => {
             style={{ background: '#2D6A4F', color: 'white' }}
           >
             <PlusCircle className="w-4 h-4" style={{ color: '#C68B3A' }} />
-            <span>+ {isTamil ? 'புதிய பொருள் சேர்க்க' : 'Add New Product'}</span>
+            <span>{isTamil ? 'புதிய பொருள் சேர்க்க' : 'Add New Product'}</span>
           </button>
         }
       />

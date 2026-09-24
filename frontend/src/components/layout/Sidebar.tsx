@@ -122,7 +122,6 @@ export const Sidebar = ({
         >
           <Plus size={18} />
           {ta ? "புதிய பில்" : "Create invoice"}
-          <span className="shortcut">+</span>
         </Link>
         <nav className="sidebar-links">
           <p className="nav-label">{ta ? "பணியிடம்" : "WORKSPACE"}</p>
