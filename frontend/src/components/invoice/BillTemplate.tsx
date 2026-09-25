@@ -47,10 +47,10 @@ export const BillTemplate: React.FC<BillTemplateProps> = ({ invoice, mode = 'bil
 
         {/* Center: Title & Address */}
         <div className="flex-1 text-center space-y-1">
-          <h1 className="text-xl sm:text-2xl font-black text-[#284B35] tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight" style={{ color: '#284B35' }}>
             கிரீன் லைப் நேச்சுரல் புட்ஸ்
           </h1>
-          <h2 className="text-2xl sm:text-4xl font-black text-[#284B35] tracking-wide">
+          <h2 className="text-2xl sm:text-4xl font-black tracking-wide" style={{ color: '#284B35' }}>
             GREENLIFE NATURAL FOODS
           </h2>
           <p className="text-xs sm:text-sm font-bold text-slate-700">

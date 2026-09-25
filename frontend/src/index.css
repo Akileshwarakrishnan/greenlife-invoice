@@ -42,6 +42,20 @@ html.dark h6 {
   color: #F4F7F4 !important;
 }
 
+/* Printable Bill: preserve authentic branding colors regardless of theme */
+.print-sheet h1,
+.print-sheet h2,
+html.dark .print-sheet h1,
+html.dark .print-sheet h2 {
+  color: #284B35 !important;
+}
+
+.print-sheet,
+html.dark .print-sheet {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
 /* Invert all dark inline text colors to bright readable tones */
 /* Primary text: #1C1A15 -> #F4F7F4 */
 html.dark [style*="color: #1C1A15"],
@@ -198,4 +212,14 @@ html.dark .divide-y > div:hover {
   .no-print { display: none !important; }
   .print-only { display: block !important; }
   body { background: white !important; color: black !important; }
+  .print-sheet {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .print-sheet h1,
+  .print-sheet h2 {
+    color: #284B35 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
 }

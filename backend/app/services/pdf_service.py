@@ -8,6 +8,32 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_RIGHT, TA_LEFT, TA_CENTER
 from app.core.config import settings
 from app.utils.number_words import number_to_words_inr
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.graphics.shapes import Drawing, Rect, Line
+
+STATIC_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
+TAMIL_FONT_REGULAR = os.path.join(STATIC_DIR, "MuktaMalar-Regular.ttf")
+TAMIL_FONT_BOLD = os.path.join(STATIC_DIR, "MuktaMalar-Bold.ttf")
+
+FONT_REGULAR = "Helvetica"
+FONT_BOLD = "Helvetica-Bold"
+
+if os.path.exists(TAMIL_FONT_REGULAR) and os.path.exists(TAMIL_FONT_BOLD):
+    try:
+        pdfmetrics.registerFont(TTFont("MuktaMalar", TAMIL_FONT_REGULAR))
+        pdfmetrics.registerFont(TTFont("MuktaMalar-Bold", TAMIL_FONT_BOLD))
+        pdfmetrics.registerFontFamily(
+            "MuktaMalar",
+            normal="MuktaMalar",
+            bold="MuktaMalar-Bold",
+            italic="MuktaMalar",
+            boldItalic="MuktaMalar-Bold"
+        )
+        FONT_REGULAR = "MuktaMalar"
+        FONT_BOLD = "MuktaMalar-Bold"
+    except Exception:
+        pass
 
 def draw_page_frame(canvas, doc):
     """Draws the dark green outer rounded border matching client's official template."""
@@ -42,11 +68,11 @@ def generate_invoice_pdf(invoice_data: dict, is_quotation: bool = False) -> byte
     c_sage = colors.HexColor("#E4EFE7")
     c_border = colors.HexColor("#284B35")
 
-    # Typography styles (Using standard Helvetica with 'Rs.' to prevent Unicode '■' boxes)
+    # Typography styles (Using NotoSansTamil to cleanly render Tamil characters, with Helvetica fallback)
     tbl_hdr_style = ParagraphStyle(
         "TblHdr",
         parent=styles["Normal"],
-        fontName="Helvetica-Bold",
+        fontName=FONT_BOLD,
         fontSize=8,
         leading=10,
         alignment=TA_CENTER,
@@ -55,7 +81,7 @@ def generate_invoice_pdf(invoice_data: dict, is_quotation: bool = False) -> byte
     tbl_cell_style = ParagraphStyle(
         "TblCell",
         parent=styles["Normal"],
-        fontName="Helvetica",
+        fontName=FONT_REGULAR,
         fontSize=8,
         leading=10,
         textColor=colors.black
@@ -73,7 +99,7 @@ def generate_invoice_pdf(invoice_data: dict, is_quotation: bool = False) -> byte
     box_hdr_style = ParagraphStyle(
         "BoxHdr",
         parent=styles["Normal"],
-        fontName="Helvetica-Bold",
+        fontName=FONT_BOLD,
         fontSize=7.5,
         leading=9,
         alignment=TA_CENTER,
@@ -82,7 +108,7 @@ def generate_invoice_pdf(invoice_data: dict, is_quotation: bool = False) -> byte
     box_text_style = ParagraphStyle(
         "BoxText",
         parent=styles["Normal"],
-        fontName="Helvetica",
+        fontName=FONT_REGULAR,
         fontSize=7,
         leading=9,
         textColor=colors.HexColor("#222222")
@@ -90,7 +116,7 @@ def generate_invoice_pdf(invoice_data: dict, is_quotation: bool = False) -> byte
     meta_pill_style = ParagraphStyle(
         "MetaPill",
         parent=styles["Normal"],
-        fontName="Helvetica-Bold",
+        fontName=FONT_BOLD,
         fontSize=10,
         leading=12,
         alignment=TA_CENTER,
@@ -210,7 +236,7 @@ def generate_invoice_pdf(invoice_data: dict, is_quotation: bool = False) -> byte
     items_data.append([
         Paragraph("<b>TOTAL</b>", ParagraphStyle("TotHdr", parent=tbl_hdr_style, alignment=TA_RIGHT)),
         "", "", "", "",
-        Paragraph(f"<b>{subtotal:.2f}</b>", ParagraphStyle("TotVal", parent=tbl_cell_r_style, fontName="Helvetica-Bold"))
+        Paragraph(f"<b>{subtotal:.2f}</b>", ParagraphStyle("TotVal", parent=tbl_cell_r_style, fontName=FONT_BOLD))
     ])
 
     items_table = Table(
@@ -285,7 +311,7 @@ def generate_invoice_pdf(invoice_data: dict, is_quotation: bool = False) -> byte
     old_items_data.append([
         Paragraph("<b>OLD BILL TOTAL</b>", ParagraphStyle("OldTot", parent=tbl_hdr_style, alignment=TA_RIGHT)),
         "", "", "", "",
-        Paragraph(f"<b>{prev_balance:.2f}</b>", ParagraphStyle("OldVal", parent=tbl_cell_r_style, fontName="Helvetica-Bold"))
+        Paragraph(f"<b>{prev_balance:.2f}</b>", ParagraphStyle("OldVal", parent=tbl_cell_r_style, fontName=FONT_BOLD))
     ])
 
     old_table = Table(old_items_data, colWidths=[35, 235, 75, 45, 75, 75])
@@ -309,36 +335,76 @@ def generate_invoice_pdf(invoice_data: dict, is_quotation: bool = False) -> byte
     is_walkin = courier_charges == 0
     is_courier = courier_charges > 0
 
-    delivery_text = f"""
-    <b>DELIVERY MODE</b><br/><br/>
-    {'[X]' if is_walkin else '[  ]'} Walk-in<br/>
-    {'[X]' if is_courier else '[  ]'} Courier<br/>
-    [  ] Home Delivery
-    """
+    def make_checkbox(checked: bool):
+        d = Drawing(10, 10)
+        d.add(Rect(0, 0, 9, 9, strokeColor=c_deep_green, strokeWidth=1, fillColor=c_deep_green if checked else colors.white, rx=1, ry=1))
+        if checked:
+            d.add(Line(2, 4.5, 4, 2, strokeColor=colors.white, strokeWidth=1.2))
+            d.add(Line(4, 2, 7.5, 7.5, strokeColor=colors.white, strokeWidth=1.2))
+        return d
 
-    payment_text = f"""
-    <b>PAYMENT MODE</b><br/><br/>
-    {'[X]' if pay_method == 'cash' else '[  ]'} Cash<br/>
-    {'[X]' if pay_method == 'upi' else '[  ]'} UPI<br/>
-    {'[X]' if pay_method == 'bank_transfer' else '[  ]'} Bank Transfer<br/>
-    {'[X]' if pay_method == 'credit' else '[  ]'} Credit
-    """
+    def make_checkbox_table(options: list):
+        data = [[make_checkbox(chk), Paragraph(lbl, box_text_style)] for chk, lbl in options]
+        t = Table(data, colWidths=[12, 85])
+        t.setStyle(TableStyle([
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('LEFTPADDING', (0, 0), (-1, -1), 0),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+            ('TOPPADDING', (0, 0), (-1, -1), 1),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 1),
+        ]))
+        return t
 
-    courier_text = f"""
-    <b>COURIER DETAILS</b><br/><br/>
-    Courier Partner : {'ST Courier' if is_courier else '...............'}<br/>
-    Tracking No. &nbsp;&nbsp;&nbsp;&nbsp;: {'TRK-' + str(inv_num)[-4:] if is_courier else '...............'}
-    """
+    delivery_box = Table([
+        [Paragraph("<b>DELIVERY MODE</b>", box_hdr_style)],
+        [make_checkbox_table([
+            (is_walkin, "Walk-in"),
+            (is_courier, "Courier"),
+            (False, "Home Delivery")
+        ])]
+    ], colWidths=[105])
+    delivery_box.setStyle(TableStyle([
+        ('BOX', (0, 0), (-1, -1), 0.5, c_border),
+        ('PADDING', (0, 0), (-1, -1), 2.5),
+        ('LINEBELOW', (0, 0), (0, 0), 0.5, c_border),
+    ]))
+
+    payment_box = Table([
+        [Paragraph("<b>PAYMENT MODE</b>", box_hdr_style)],
+        [make_checkbox_table([
+            (pay_method == 'cash', "Cash"),
+            (pay_method == 'upi', "UPI"),
+            (pay_method == 'bank_transfer', "Bank Transfer"),
+            (pay_method == 'credit', "Credit")
+        ])]
+    ], colWidths=[105])
+    payment_box.setStyle(TableStyle([
+        ('BOX', (0, 0), (-1, -1), 0.5, c_border),
+        ('PADDING', (0, 0), (-1, -1), 2.5),
+        ('LINEBELOW', (0, 0), (0, 0), 0.5, c_border),
+    ]))
+
+    courier_partner_val = "ST Courier / Professional" if is_courier else "................"
+    tracking_no_val = f"TRK-{str(inv_num)[-4:]}" if is_courier else "................"
+    courier_box = Table([
+        [Paragraph("<b>COURIER DETAILS</b>", box_hdr_style)],
+        [Paragraph(f"Courier Partner : {courier_partner_val}<br/>Tracking No. &nbsp;&nbsp;&nbsp;&nbsp;: {tracking_no_val}", box_text_style)]
+    ], colWidths=[150])
+    courier_box.setStyle(TableStyle([
+        ('BOX', (0, 0), (-1, -1), 0.5, c_border),
+        ('PADDING', (0, 0), (-1, -1), 2.5),
+        ('LINEBELOW', (0, 0), (0, 0), 0.5, c_border),
+    ]))
 
     summary_rows = [
         [Paragraph("<b>BILL SUMMARY</b>", ParagraphStyle("SumHdr", parent=box_hdr_style, textColor=colors.white)), ""],
-        [Paragraph("Product Total", box_text_style), Paragraph(f"Rs. {subtotal:,.2f}", tbl_cell_r_style)],
-        [Paragraph("Courier Charges", box_text_style), Paragraph(f"Rs. {courier_charges:,.2f}", tbl_cell_r_style)],
-        [Paragraph("<b>GRAND TOTAL</b>", ParagraphStyle("GTText", parent=box_text_style, fontName="Helvetica-Bold", fontSize=8)),
-         Paragraph(f"<b>Rs. {grand_total:,.2f}</b>", ParagraphStyle("GTVAl", parent=tbl_cell_r_style, fontName="Helvetica-Bold", fontSize=8, textColor=c_deep_green))]
+        [Paragraph("Product Total", box_text_style), Paragraph(f"₹ {subtotal:,.2f}", tbl_cell_r_style)],
+        [Paragraph("Courier Charges", box_text_style), Paragraph(f"{'+ ' if courier_charges > 0 else ''}₹ {courier_charges:,.2f}", tbl_cell_r_style)],
+        [Paragraph("<b>GRAND TOTAL</b>", ParagraphStyle("GTText", parent=box_text_style, fontName=FONT_BOLD, fontSize=8, textColor=c_deep_green)),
+         Paragraph(f"<b>₹ {grand_total:,.2f}</b>", ParagraphStyle("GTVAl", parent=tbl_cell_r_style, fontName=FONT_BOLD, fontSize=8, textColor=c_deep_green))]
     ]
-    summary_table = Table(summary_rows, colWidths=[80, 80])
-    summary_table.setStyle(TableStyle([
+    summary_box = Table(summary_rows, colWidths=[90, 90])
+    summary_box.setStyle(TableStyle([
         ('SPAN', (0, 0), (1, 0)),
         ('BACKGROUND', (0, 0), (1, 0), c_deep_green),
         ('BACKGROUND', (0, 3), (1, 3), c_sage),
@@ -348,23 +414,12 @@ def generate_invoice_pdf(invoice_data: dict, is_quotation: bool = False) -> byte
     ]))
 
     bottom_boxes_table = Table(
-        [
-            [
-                Paragraph(delivery_text, box_text_style),
-                Paragraph(payment_text, box_text_style),
-                Paragraph(courier_text, box_text_style),
-                summary_table
-            ]
-        ],
+        [[delivery_box, payment_box, courier_box, summary_box]],
         colWidths=[105, 105, 150, 180]
     )
     bottom_boxes_table.setStyle(TableStyle([
-        ('BOX', (0, 0), (0, 0), 0.5, c_border),
-        ('BOX', (1, 0), (1, 0), 0.5, c_border),
-        ('BOX', (2, 0), (2, 0), 0.5, c_border),
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('PADDING', (0, 0), (2, 0), 3),
-        ('PADDING', (3, 0), (3, 0), 0),
+        ('PADDING', (0, 0), (-1, -1), 0),
     ]))
     story.append(bottom_boxes_table)
     story.append(Spacer(1, 4))
@@ -388,20 +443,20 @@ def generate_invoice_pdf(invoice_data: dict, is_quotation: bool = False) -> byte
     story.append(Spacer(1, 4))
 
     # 8. FOOTER BANK DETAILS BOX (SBI UDUMALPET)
+    bank_icon_path = os.path.join(static_dir, "bank_icon.png")
+    bank_img = RLImage(bank_icon_path, width=20, height=20) if os.path.exists(bank_icon_path) else Paragraph("", tbl_cell_style)
     bank_text = f"""
     <b>BANK:</b> {settings.BUSINESS_BANK_NAME} &nbsp;|&nbsp; <b>IFSC:</b> {settings.BUSINESS_IFSC}<br/>
     <b>A/C NAME:</b> {settings.BUSINESS_ACCOUNT_NAME} &nbsp;|&nbsp; <b>C/C :</b> {settings.BUSINESS_ACCOUNT_NUMBER}
     """
     bank_table = Table(
-        [
-            [Paragraph(bank_text, ParagraphStyle("BankP", parent=tbl_cell_style, fontSize=7.5, leading=9, alignment=TA_CENTER))]
-        ],
-        colWidths=[540]
+        [[bank_img, Paragraph(bank_text, ParagraphStyle("BankP", parent=tbl_cell_style, fontSize=7.5, leading=9.5, alignment=TA_CENTER))]],
+        colWidths=[30, 510]
     )
     bank_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, -1), c_sage),
         ('BOX', (0, 0), (-1, -1), 1, c_border),
-        ('PADDING', (0, 0), (-1, -1), 3),
+        ('PADDING', (0, 0), (-1, -1), 2.5),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
     ]))
     story.append(bank_table)
