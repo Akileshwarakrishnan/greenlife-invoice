@@ -4,6 +4,7 @@ import { invoiceApi } from '../services/api';
 import { Invoice } from '../types';
 import { BillTemplate } from '../components/invoice/BillTemplate';
 import { useLanguage } from '../context/LanguageContext';
+import { exportBillToPdf, exportBillToImage } from '../utils/pdfExport';
 import {
   Printer,
   Download,
@@ -11,7 +12,8 @@ import {
   MessageSquare,
   CheckCircle2,
   FileText,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Image as ImageIcon
 } from 'lucide-react';
 
 export const InvoiceDetail: React.FC = () => {
@@ -23,6 +25,8 @@ export const InvoiceDetail: React.FC = () => {
   const [templateMode, setTemplateMode] = useState<'bill' | 'quotation'>('bill');
   const [loading, setLoading] = useState(true);
   const [notificationMsg, setNotificationMsg] = useState<string | null>(null);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const [isExportingImg, setIsExportingImg] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -44,6 +48,34 @@ export const InvoiceDetail: React.FC = () => {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleDownloadPdf = async () => {
+    if (!invoice) return;
+    try {
+      setIsExportingPdf(true);
+      const safeNum = (invoice.invoice_number || `INV-${invoice.id}`).replace(/[/\\?%*:|"<>]/g, '-');
+      await exportBillToPdf('printable-bill', `${safeNum}.pdf`);
+    } catch (err) {
+      console.error('Failed client PDF export:', err);
+      // Fallback to server PDF if client rendering encounters any restriction
+      window.open(invoiceApi.getPdfUrl(invoice.id), '_blank');
+    } finally {
+      setIsExportingPdf(false);
+    }
+  };
+
+  const handleDownloadImage = async () => {
+    if (!invoice) return;
+    try {
+      setIsExportingImg(true);
+      const safeNum = (invoice.invoice_number || `INV-${invoice.id}`).replace(/[/\\?%*:|"<>]/g, '-');
+      await exportBillToImage('printable-bill', `${safeNum}.jpg`);
+    } catch (err) {
+      console.error('Failed image export:', err);
+    } finally {
+      setIsExportingImg(false);
+    }
   };
 
   const handleWhatsAppSend = async () => {
@@ -137,11 +169,12 @@ export const InvoiceDetail: React.FC = () => {
         <div className="flex flex-wrap items-center gap-2.5">
           <button
             onClick={handlePrint}
-            className="flex items-center space-x-2 px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-black shadow-md cursor-pointer transition-all"
+            className="flex items-center space-x-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-black shadow-md cursor-pointer transition-all"
             style={{ background: '#2D6A4F', color: 'white' }}
+            title={isTamil ? 'அச்சு இயந்திரத்தில் அச்சிட' : 'Print to physical printer'}
           >
             <Printer className="w-4 h-4" style={{ color: '#C68B3A' }} />
-            <span>{isTamil ? 'பிரிண்ட் எடுங்க' : 'Print Invoice'}</span>
+            <span>{isTamil ? 'பிரிண்ட்' : 'Print'}</span>
           </button>
 
           <button
@@ -153,16 +186,27 @@ export const InvoiceDetail: React.FC = () => {
             <span>{isTamil ? 'வாட்ஸ்அப்' : 'WhatsApp'}</span>
           </button>
 
-          <a
-            href={invoiceApi.getPdfUrl(invoice.id)}
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center space-x-2 px-4 py-2.5 border-2 rounded-2xl text-xs sm:text-sm font-bold shadow-xs cursor-pointer transition-all"
-            style={{ background: 'white', borderColor: '#EEEAE0', color: '#1C1A15' }}
+          <button
+            onClick={handleDownloadPdf}
+            disabled={isExportingPdf}
+            className="flex items-center space-x-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-black shadow-md cursor-pointer transition-all disabled:opacity-60"
+            style={{ background: '#2D6A4F', color: 'white' }}
+            title={isTamil ? 'அப்படியே PDF ஆக பதிவிறக்க (100% நேரில் பார்க்கும் அதே வடிவம்)' : 'Download Pixel-Perfect PDF (Exact as seen on screen)'}
           >
-            <Download className="w-4 h-4" />
-            <span>PDF</span>
-          </a>
+            <Download className={`w-4 h-4 ${isExportingPdf ? 'animate-bounce' : ''}`} style={{ color: '#C68B3A' }} />
+            <span>{isExportingPdf ? (isTamil ? 'உருவாகிறது...' : 'Generating...') : (isTamil ? 'PDF பதிவிறக்கம்' : 'Download PDF')}</span>
+          </button>
+
+          <button
+            onClick={handleDownloadImage}
+            disabled={isExportingImg}
+            className="flex items-center space-x-1.5 px-3 py-2.5 border-2 rounded-2xl text-xs sm:text-sm font-bold shadow-xs cursor-pointer transition-all disabled:opacity-60"
+            style={{ background: 'white', borderColor: '#EEEAE0', color: '#1C1A15' }}
+            title={isTamil ? 'வாட்ஸ்அப் படமாக சேமிக்க (JPG)' : 'Save as Image for WhatsApp (JPG)'}
+          >
+            <ImageIcon className="w-4 h-4 text-[#2D6A4F]" />
+            <span>{isExportingImg ? '...' : (isTamil ? 'படம் (JPG)' : 'Image')}</span>
+          </button>
         </div>
       </div>
 
@@ -173,7 +217,11 @@ export const InvoiceDetail: React.FC = () => {
         </div>
       )}
 
-      <BillTemplate invoice={invoice} mode={templateMode} />
+      {/* PRINTABLE BILL CONTAINER (CAPTURED FOR EXACT 100% PDF EXPORT) */}
+      <div id="printable-bill" className="bg-white rounded-2xl overflow-hidden shadow-xs">
+        <BillTemplate invoice={invoice} mode={templateMode} />
+      </div>
     </div>
   );
 };
+export default InvoiceDetail;

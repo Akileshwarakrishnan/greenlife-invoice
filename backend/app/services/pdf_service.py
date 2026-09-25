@@ -8,6 +8,29 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_RIGHT, TA_LEFT, TA_CENTER
 from app.core.config import settings
 from app.utils.number_words import number_to_words_inr
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
+STATIC_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
+TAMIL_FONT_PATH = os.path.join(STATIC_DIR, "NotoSansTamil-Regular.ttf")
+
+FONT_REGULAR = "Helvetica"
+FONT_BOLD = "Helvetica-Bold"
+
+if os.path.exists(TAMIL_FONT_PATH):
+    try:
+        pdfmetrics.registerFont(TTFont("NotoSansTamil", TAMIL_FONT_PATH))
+        pdfmetrics.registerFontFamily(
+            "NotoSansTamil",
+            normal="NotoSansTamil",
+            bold="NotoSansTamil",
+            italic="NotoSansTamil",
+            boldItalic="NotoSansTamil"
+        )
+        FONT_REGULAR = "NotoSansTamil"
+        FONT_BOLD = "NotoSansTamil"
+    except Exception:
+        pass
 
 def draw_page_frame(canvas, doc):
     """Draws the dark green outer rounded border matching client's official template."""
@@ -42,11 +65,11 @@ def generate_invoice_pdf(invoice_data: dict, is_quotation: bool = False) -> byte
     c_sage = colors.HexColor("#E4EFE7")
     c_border = colors.HexColor("#284B35")
 
-    # Typography styles (Using standard Helvetica with 'Rs.' to prevent Unicode '■' boxes)
+    # Typography styles (Using NotoSansTamil to cleanly render Tamil characters, with Helvetica fallback)
     tbl_hdr_style = ParagraphStyle(
         "TblHdr",
         parent=styles["Normal"],
-        fontName="Helvetica-Bold",
+        fontName=FONT_BOLD,
         fontSize=8,
         leading=10,
         alignment=TA_CENTER,
@@ -55,7 +78,7 @@ def generate_invoice_pdf(invoice_data: dict, is_quotation: bool = False) -> byte
     tbl_cell_style = ParagraphStyle(
         "TblCell",
         parent=styles["Normal"],
-        fontName="Helvetica",
+        fontName=FONT_REGULAR,
         fontSize=8,
         leading=10,
         textColor=colors.black
@@ -73,7 +96,7 @@ def generate_invoice_pdf(invoice_data: dict, is_quotation: bool = False) -> byte
     box_hdr_style = ParagraphStyle(
         "BoxHdr",
         parent=styles["Normal"],
-        fontName="Helvetica-Bold",
+        fontName=FONT_BOLD,
         fontSize=7.5,
         leading=9,
         alignment=TA_CENTER,
@@ -82,7 +105,7 @@ def generate_invoice_pdf(invoice_data: dict, is_quotation: bool = False) -> byte
     box_text_style = ParagraphStyle(
         "BoxText",
         parent=styles["Normal"],
-        fontName="Helvetica",
+        fontName=FONT_REGULAR,
         fontSize=7,
         leading=9,
         textColor=colors.HexColor("#222222")
@@ -90,7 +113,7 @@ def generate_invoice_pdf(invoice_data: dict, is_quotation: bool = False) -> byte
     meta_pill_style = ParagraphStyle(
         "MetaPill",
         parent=styles["Normal"],
-        fontName="Helvetica-Bold",
+        fontName=FONT_BOLD,
         fontSize=10,
         leading=12,
         alignment=TA_CENTER,
@@ -210,7 +233,7 @@ def generate_invoice_pdf(invoice_data: dict, is_quotation: bool = False) -> byte
     items_data.append([
         Paragraph("<b>TOTAL</b>", ParagraphStyle("TotHdr", parent=tbl_hdr_style, alignment=TA_RIGHT)),
         "", "", "", "",
-        Paragraph(f"<b>{subtotal:.2f}</b>", ParagraphStyle("TotVal", parent=tbl_cell_r_style, fontName="Helvetica-Bold"))
+        Paragraph(f"<b>{subtotal:.2f}</b>", ParagraphStyle("TotVal", parent=tbl_cell_r_style, fontName=FONT_BOLD))
     ])
 
     items_table = Table(
@@ -285,7 +308,7 @@ def generate_invoice_pdf(invoice_data: dict, is_quotation: bool = False) -> byte
     old_items_data.append([
         Paragraph("<b>OLD BILL TOTAL</b>", ParagraphStyle("OldTot", parent=tbl_hdr_style, alignment=TA_RIGHT)),
         "", "", "", "",
-        Paragraph(f"<b>{prev_balance:.2f}</b>", ParagraphStyle("OldVal", parent=tbl_cell_r_style, fontName="Helvetica-Bold"))
+        Paragraph(f"<b>{prev_balance:.2f}</b>", ParagraphStyle("OldVal", parent=tbl_cell_r_style, fontName=FONT_BOLD))
     ])
 
     old_table = Table(old_items_data, colWidths=[35, 235, 75, 45, 75, 75])
@@ -309,19 +332,22 @@ def generate_invoice_pdf(invoice_data: dict, is_quotation: bool = False) -> byte
     is_walkin = courier_charges == 0
     is_courier = courier_charges > 0
 
+    box_chk = '☑' if FONT_REGULAR == 'NotoSansTamil' else '[X]'
+    box_unchk = '☐' if FONT_REGULAR == 'NotoSansTamil' else '[  ]'
+
     delivery_text = f"""
     <b>DELIVERY MODE</b><br/><br/>
-    {'[X]' if is_walkin else '[  ]'} Walk-in<br/>
-    {'[X]' if is_courier else '[  ]'} Courier<br/>
-    [  ] Home Delivery
+    {box_chk if is_walkin else box_unchk} Walk-in<br/>
+    {box_chk if is_courier else box_unchk} Courier<br/>
+    {box_unchk} Home Delivery
     """
 
     payment_text = f"""
     <b>PAYMENT MODE</b><br/><br/>
-    {'[X]' if pay_method == 'cash' else '[  ]'} Cash<br/>
-    {'[X]' if pay_method == 'upi' else '[  ]'} UPI<br/>
-    {'[X]' if pay_method == 'bank_transfer' else '[  ]'} Bank Transfer<br/>
-    {'[X]' if pay_method == 'credit' else '[  ]'} Credit
+    {box_chk if pay_method == 'cash' else box_unchk} Cash<br/>
+    {box_chk if pay_method == 'upi' else box_unchk} UPI<br/>
+    {box_chk if pay_method == 'bank_transfer' else box_unchk} Bank Transfer<br/>
+    {box_chk if pay_method == 'credit' else box_unchk} Credit
     """
 
     courier_text = f"""
@@ -334,8 +360,8 @@ def generate_invoice_pdf(invoice_data: dict, is_quotation: bool = False) -> byte
         [Paragraph("<b>BILL SUMMARY</b>", ParagraphStyle("SumHdr", parent=box_hdr_style, textColor=colors.white)), ""],
         [Paragraph("Product Total", box_text_style), Paragraph(f"Rs. {subtotal:,.2f}", tbl_cell_r_style)],
         [Paragraph("Courier Charges", box_text_style), Paragraph(f"Rs. {courier_charges:,.2f}", tbl_cell_r_style)],
-        [Paragraph("<b>GRAND TOTAL</b>", ParagraphStyle("GTText", parent=box_text_style, fontName="Helvetica-Bold", fontSize=8)),
-         Paragraph(f"<b>Rs. {grand_total:,.2f}</b>", ParagraphStyle("GTVAl", parent=tbl_cell_r_style, fontName="Helvetica-Bold", fontSize=8, textColor=c_deep_green))]
+        [Paragraph("<b>GRAND TOTAL</b>", ParagraphStyle("GTText", parent=box_text_style, fontName=FONT_BOLD, fontSize=8)),
+         Paragraph(f"<b>Rs. {grand_total:,.2f}</b>", ParagraphStyle("GTVAl", parent=tbl_cell_r_style, fontName=FONT_BOLD, fontSize=8, textColor=c_deep_green))]
     ]
     summary_table = Table(summary_rows, colWidths=[80, 80])
     summary_table.setStyle(TableStyle([
