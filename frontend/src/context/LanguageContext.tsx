@@ -130,7 +130,7 @@ const translations: Record<string, Record<Language, string>> = {
 
   // Products
   'prod.title': { en: 'Products & Stock Quantities', ta: 'கடை பொருட்கள் & இருப்பு' },
-  'prod.add_btn': { en: '+ Add New Product', ta: '+ புதிய பொருள் சேர்' },
+  'prod.add_btn': { en: 'Add New Product', ta: 'புதிய பொருள் சேர்' },
   'prod.name': { en: 'Product Name', ta: 'பொருள் பெயர்' },
   'prod.category': { en: 'Category', ta: 'வகை' },
   'prod.stock': { en: 'Stock Left', ta: 'மீதமுள்ள இருப்பு' },

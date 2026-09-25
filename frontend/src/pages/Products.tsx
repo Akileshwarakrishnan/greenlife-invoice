@@ -39,7 +39,7 @@ export const Products: React.FC = () => {
   const [parsedItems, setParsedItems] = useState<any[]>([]);
   const [savingBatch, setSavingBatch] = useState(false);
   const [batchSuccessMessage, setBatchSuccessMessage] = useState<string | null>(null);
-  const [isPasteSpaceOpen, setIsPasteSpaceOpen] = useState(true);
+  const [isPasteSpaceOpen, setIsPasteSpaceOpen] = useState(false);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -60,16 +60,24 @@ export const Products: React.FC = () => {
 
   useEffect(() => {
     loadProducts();
-  }, [categoryFilter]);
+  }, []);
 
   const loadProducts = async () => {
     try {
       setLoading(true);
-      const res = await productApi.list({
-        category: categoryFilter || undefined,
-        active_only: false,
-      });
-      setProducts(res.data);
+      // Keep the complete catalog so filtering cannot remove category choices.
+      const catalog: Product[] = [];
+      const pageSize = 100;
+      while (true) {
+        const res = await productApi.list({
+          active_only: false,
+          skip: catalog.length,
+          limit: pageSize,
+        });
+        catalog.push(...res.data);
+        if (res.data.length < pageSize) break;
+      }
+      setProducts(catalog);
     } catch (err) {
       console.error('Failed to load products:', err);
     } finally {
@@ -217,6 +225,7 @@ export const Products: React.FC = () => {
   };
 
   const filteredProducts = products.filter((p) => {
+    if (categoryFilter && p.category !== categoryFilter) return false;
     const s = search.toLowerCase();
     return (
       p.name.toLowerCase().includes(s) ||
@@ -240,7 +249,7 @@ export const Products: React.FC = () => {
             style={{ background: '#2D6A4F', color: 'white' }}
           >
             <PlusCircle className="w-4 h-4" style={{ color: '#C68B3A' }} />
-            <span>+ {isTamil ? 'புதிய பொருள் சேர்க்க' : 'Add New Product'}</span>
+            <span>{isTamil ? 'புதிய பொருள் சேர்க்க' : 'Add New Product'}</span>
           </button>
         }
       />
@@ -262,7 +271,7 @@ export const Products: React.FC = () => {
               <p className="text-xs font-medium" style={{ color: '#8C8880' }}>
                 {isTamil
                   ? 'வாட்ஸ்அப் மெசேஜ் அல்லது பட்டியலை இங்கே ஒட்டினால், சிஸ்டம் தானாகவே தமிழ்+ஆங்கில பெயர், எடை மற்றும் விலையை உரிய காலத்தில் சேர்க்கும்!'
-                  : 'Paste WhatsApp product list here — auto-extracts Tamil & English names, unit/kg, and price into DB columns!'}
+                  : 'Paste a product list to add names, quantities and prices together. Review every item before saving.'}
               </p>
             </div>
           </div>
@@ -351,7 +360,7 @@ export const Products: React.FC = () => {
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4" style={{ color: '#C68B3A' }} />
-                    <span>{isTamil ? 'விவரங்களை பிரித்தெடு ✨' : 'Parse Product Details ✨'}</span>
+                    <span>{isTamil ? 'விவரங்களை பிரித்தெடு ✨' : 'Review product details'}</span>
                   </>
                 )}
               </button>
@@ -519,9 +528,10 @@ export const Products: React.FC = () => {
         </div>
 
         {/* Categories Bar */}
-        <div className="flex items-center space-x-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+        <div role="group" aria-label={isTamil ? 'பொருள் வகைகள்' : 'Product categories'} className="flex items-center space-x-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
           <button
             onClick={() => setCategoryFilter('')}
+            aria-pressed={categoryFilter === ''}
             className="px-4 py-2 rounded-2xl text-xs font-black transition-all cursor-pointer whitespace-nowrap shadow-xs"
             style={{
               background: categoryFilter === '' ? '#2D6A4F' : '#EEEAE0',
@@ -535,6 +545,7 @@ export const Products: React.FC = () => {
             <button
               key={c}
               onClick={() => setCategoryFilter(c)}
+              aria-pressed={categoryFilter === c}
               className="px-4 py-2 rounded-2xl text-xs font-black transition-all cursor-pointer whitespace-nowrap shadow-xs"
               style={{
                 background: categoryFilter === c ? '#2D6A4F' : '#EEEAE0',
