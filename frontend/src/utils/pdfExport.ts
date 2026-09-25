@@ -14,16 +14,26 @@ export async function exportBillToPdf(
     throw new Error(`Printable element #${elementId} not found in DOM`);
   }
 
-  // Hide elements with 'no-print' during capture if needed
+  // Ensure all images are loaded before capture
+  const imgEls = Array.from(element.querySelectorAll('img'));
+  await Promise.all(
+    imgEls.map((img) => {
+      if (img.complete) return Promise.resolve();
+      return new Promise((resolve) => {
+        img.onload = resolve;
+        img.onerror = resolve;
+      });
+    })
+  );
+
   const canvas = await html2canvas(element, {
     scale: 2.5, // 2.5x provides ultra-crisp 300 DPI text without excessive file size
-    useCORS: true, // Loads logo images (lakshmi_logo, leaf, etc.) without security tainting
-    allowTaint: true,
+    useCORS: true,
+    allowTaint: false,
     backgroundColor: '#ffffff',
     logging: false,
-    windowWidth: 1024, // Consistent layout width across mobile and desktop captures
+    windowWidth: 1024,
     onclone: (clonedDoc) => {
-      // Ensure the cloned container is fully visible and styled for A4 capture
       const clonedEl = clonedDoc.getElementById(elementId);
       if (clonedEl) {
         clonedEl.style.width = '800px';
@@ -86,10 +96,21 @@ export async function exportBillToImage(
     throw new Error(`Printable element #${elementId} not found in DOM`);
   }
 
+  const imgEls = Array.from(element.querySelectorAll('img'));
+  await Promise.all(
+    imgEls.map((img) => {
+      if (img.complete) return Promise.resolve();
+      return new Promise((resolve) => {
+        img.onload = resolve;
+        img.onerror = resolve;
+      });
+    })
+  );
+
   const canvas = await html2canvas(element, {
     scale: 2.5,
     useCORS: true,
-    allowTaint: true,
+    allowTaint: false,
     backgroundColor: '#ffffff',
     logging: false,
     windowWidth: 1024,
