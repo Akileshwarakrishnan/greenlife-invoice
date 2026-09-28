@@ -1,4 +1,8 @@
 from typing import List, Optional, Any
+import os
+import io
+import base64
+from PIL import Image
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Response
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
@@ -8,7 +12,7 @@ from app.models.invoice import Invoice, InvoiceStatus
 from app.models.order import Order
 from app.models.user import User
 from app.models.audit_log import AuditLog
-from app.schemas.invoice import InvoiceOut, InvoiceGenerateRequest, InvoiceResendRequest
+from app.schemas.invoice import InvoiceOut, InvoiceGenerateRequest, InvoiceResendRequest, InvoiceSnapshotRequest
 from app.services.invoice_service import create_invoice_from_order
 from app.services.pdf_service import generate_invoice_pdf
 from app.services.storage_service import storage_service
@@ -80,7 +84,32 @@ def download_invoice_pdf(
     if not invoice:
         raise HTTPException(status_code=404, detail="Invoice not found")
 
-    # Generate PDF on the fly or read from storage
+    filename = f"{invoice.invoice_number}.pdf"
+
+    # 1. Prefer client-captured pixel-perfect screenshot if available (preserves exact browser Tamil text shaping)
+    storage_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "storage", "invoices")
+    snapshot_path = os.path.join(storage_dir, f"{invoice_id}.jpg")
+
+    if os.path.exists(snapshot_path):
+        try:
+            img = Image.open(snapshot_path)
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+            buf = io.BytesIO()
+            img.save(buf, format='PDF', resolution=150.0)
+            pdf_bytes = buf.getvalue()
+            return Response(
+                content=pdf_bytes,
+                media_type="application/pdf",
+                headers={
+                    "Content-Disposition": f"inline; filename={filename}",
+                    "Cache-Control": "no-cache"
+                }
+            )
+        except Exception:
+            pass
+
+    # 2. Generate PDF fallback via ReportLab
     items_snapshot = [
         {
             "product_name": item.product_name,
@@ -119,7 +148,6 @@ def download_invoice_pdf(
     }
 
     pdf_bytes = generate_invoice_pdf(pdf_payload)
-    filename = f"{invoice.invoice_number}.pdf"
 
     return Response(
         content=pdf_bytes,
@@ -129,6 +157,30 @@ def download_invoice_pdf(
             "Cache-Control": "no-cache"
         }
     )
+
+@router.post("/{invoice_id}/snapshot")
+def save_invoice_snapshot(
+    invoice_id: int,
+    payload: InvoiceSnapshotRequest,
+    db: Session = Depends(get_db)
+) -> Any:
+    invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+
+    storage_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "storage", "invoices")
+    os.makedirs(storage_dir, exist_ok=True)
+
+    img_data_str = payload.image_data
+    if "," in img_data_str:
+        img_data_str = img_data_str.split(",", 1)[1]
+
+    img_bytes = base64.b64decode(img_data_str)
+    file_path = os.path.join(storage_dir, f"{invoice_id}.jpg")
+    with open(file_path, "wb") as f:
+        f.write(img_bytes)
+
+    return {"success": True, "invoice_id": invoice_id}
 
 @router.post("/{invoice_id}/resend")
 async def resend_invoice_notification(

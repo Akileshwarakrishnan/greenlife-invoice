@@ -54,3 +54,6 @@ class InvoiceGenerateRequest(BaseModel):
 
 class InvoiceResendRequest(BaseModel):
     channel: str = "both"  # "email", "whatsapp", or "both"
+
+class InvoiceSnapshotRequest(BaseModel):
+    image_data: str

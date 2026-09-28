@@ -175,6 +175,7 @@ export const invoiceApi = {
   get: (id: number) => api.get<Invoice>(`/invoices/${id}`),
   generate: (orderId: number, notes?: string) => api.post<Invoice>('/invoices/generate', { order_id: orderId, notes }),
   getPdfUrl: (id: number) => `${API_BASE}/invoices/${id}/pdf`,
+  uploadSnapshot: (id: number, imageData: string) => api.post(`/invoices/${id}/snapshot`, { image_data: imageData }),
   resend: (id: number, channel: 'email' | 'whatsapp' | 'both') => api.post(`/invoices/${id}/resend`, { channel }),
 };
 
