@@ -27,7 +27,10 @@ export const BillTemplate: React.FC<BillTemplateProps> = ({ invoice, mode = 'bil
   const wordsAmount = numberToWordsInr(grandTotal);
 
   return (
-    <div className="print-sheet bg-white text-slate-900 border-2 border-[#284B35] rounded-2xl sm:rounded-3xl p-3.5 sm:p-8 shadow-lg print:shadow-none print:border-2 print:border-[#284B35] print:p-6 print:rounded-2xl max-w-4xl mx-auto space-y-3.5 sm:space-y-4 font-sans leading-tight">
+    <div
+      className="print-sheet bg-white text-slate-900 border-2 border-[#284B35] rounded-2xl sm:rounded-3xl p-3.5 sm:p-8 shadow-lg print:shadow-none print:border-2 print:border-[#284B35] print:p-6 print:rounded-2xl max-w-4xl mx-auto space-y-3.5 sm:space-y-4 leading-tight"
+      style={{ fontFamily: "'Noto Sans Tamil', 'Segoe UI', system-ui, sans-serif" }}
+    >
       {/* 1. TOP REGISTRATION ROW */}
       <div className="flex justify-between items-center text-xs font-bold text-slate-800 border-b border-transparent pb-1">
         <span>FSSAI: 22416495000038</span>
